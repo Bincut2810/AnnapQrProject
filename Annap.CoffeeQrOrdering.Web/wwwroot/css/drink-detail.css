@@ -1,0 +1,1455 @@
+/* ── Drink detail passport — postal / archival editorial (renderer-light) ── */
+
+#drink-detail-modal {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    contain: strict;
+    isolation: isolate;
+}
+
+#drink-detail-modal.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+#drink-detail-modal.hidden {
+    display: none;
+}
+
+#drink-detail-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 14, 10, 0.92);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+}
+
+#drink-detail-panel {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+#drink-detail-mount {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    contain: layout style paint;
+}
+
+.dd-loading,
+.dd-error {
+    position: relative;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: rgba(26, 20, 16, 0.55);
+}
+
+.dd-loading {
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 1rem;
+    font-style: italic;
+    letter-spacing: 0.02em;
+}
+
+.dd-loading::before {
+    content: "";
+    display: block;
+    width: min(12rem, 62vw);
+    height: 2px;
+    margin: 0 auto 1rem;
+    border-radius: 999px;
+    background:
+        linear-gradient(90deg, rgba(140, 35, 24, 0), rgba(140, 35, 24, 0.42), rgba(196, 168, 130, 0));
+    background-size: 220% 100%;
+    animation: dd-tasting-line 1.45s ease-in-out infinite;
+}
+
+@keyframes dd-tasting-line {
+    from { background-position: 120% 0; opacity: 0.45; }
+    50% { opacity: 1; }
+    to { background-position: -120% 0; opacity: 0.45; }
+}
+
+.drink-detail-close,
+#drink-detail-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 2.75rem;
+    padding: 0 0.65rem;
+    border: none;
+    background: transparent;
+    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: none;
+    color: rgba(26, 20, 16, 0.72);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.drink-detail-close:active,
+#drink-detail-back:active {
+    opacity: 0.78;
+}
+
+.drink-detail-add-top {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0 0.95rem;
+    border: 1px solid rgba(140, 35, 24, 0.28);
+    border-radius: 999px;
+    background: rgba(140, 35, 24, 0.9);
+    color: #faf5eb;
+    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    outline: none;
+    box-shadow: 0 1px 6px rgba(140, 35, 24, 0.12);
+}
+
+.drink-detail-add-top:active:not(:disabled) {
+    opacity: 0.88;
+    transform: scale(0.98);
+}
+
+.drink-detail-add-top--disabled,
+.drink-detail-add-top:disabled {
+    opacity: 0.42;
+    pointer-events: none;
+    background-color: rgba(140, 35, 24, 0.55);
+}
+
+.drink-detail-add-top__label {
+    white-space: nowrap;
+}
+
+#drink-detail-modal:not(.is-open) .drink-detail-action-bar {
+    display: none;
+}
+
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__context,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__identity,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__hero-visual,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__story,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__decision,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
+    animation: none !important;
+    transition: none !important;
+    filter: none !important;
+}
+
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__context,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__identity,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__hero-visual,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__story,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-passport__decision,
+html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
+    opacity: 1 !important;
+    transform: none !important;
+}
+
+/* ── Passport article ─────────────────────────────────────────────────────── */
+
+.dd-passport {
+    position: relative;
+    min-height: 100%;
+    background-color: #f4efe4;
+}
+
+.dd-passport--craft-coffee {
+    background:
+        radial-gradient(ellipse 80% 44% at 78% 0%, rgba(88, 56, 32, 0.16), transparent 64%),
+        linear-gradient(180deg, #f2eadc 0%, #eee2cf 100%);
+}
+
+.dd-passport--comfort-coffee {
+    background:
+        radial-gradient(ellipse 78% 44% at 82% 0%, rgba(196, 168, 130, 0.2), transparent 66%),
+        linear-gradient(180deg, #f6efe3 0%, #f2e8d8 100%);
+}
+
+.dd-passport--craft-coffee .dd-title-block__accent {
+    background: linear-gradient(180deg, rgba(52, 32, 18, 0.88), rgba(140, 80, 40, 0.62));
+}
+
+.dd-passport--comfort-coffee .dd-title-block__accent {
+    background: linear-gradient(180deg, rgba(196, 168, 130, 0.72), rgba(140, 35, 24, 0.32));
+}
+
+.dd-passport--signature {
+    box-shadow:
+        inset 0 0 0 1px rgba(140, 35, 24, 0.08),
+        inset 0 1px 0 rgba(255, 255, 255, 0.42);
+}
+
+.dd-passport--signature .dd-title-block__atelier::after {
+    content: " · house signature";
+    color: rgba(140, 35, 24, 0.56);
+}
+
+.dd-passport--craft-coffee .dd-roast-label::after {
+    content: " · concentrated craft";
+    letter-spacing: 0.16em;
+    color: rgba(52, 32, 18, 0.62);
+}
+
+.dd-passport--comfort-coffee .dd-roast-label::after {
+    content: " · soft milk-forward";
+    letter-spacing: 0.16em;
+    color: rgba(140, 105, 66, 0.62);
+}
+
+#drink-detail-modal.is-open .dd-passport {
+    animation: ddPassportOpen 640ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+#drink-detail-modal.is-open .dd-passport__context,
+#drink-detail-modal.is-open .dd-passport__identity,
+#drink-detail-modal.is-open .dd-passport__hero-visual,
+#drink-detail-modal.is-open .dd-passport__story,
+#drink-detail-modal.is-open .dd-passport__decision,
+#drink-detail-modal.is-open .dd-pairings {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+    animation: ddEditorialReveal 720ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+#drink-detail-modal.is-open .dd-passport__context { animation-delay: 60ms; }
+#drink-detail-modal.is-open .dd-passport__identity { animation-delay: 140ms; }
+#drink-detail-modal.is-open .dd-passport__hero-visual { animation-delay: 240ms; }
+#drink-detail-modal.is-open .dd-passport__story { animation-delay: 360ms; }
+#drink-detail-modal.is-open .dd-passport__decision { animation-delay: 460ms; }
+#drink-detail-modal.is-open .dd-pairings { animation-delay: 560ms; }
+
+@keyframes ddPassportOpen {
+    from {
+        opacity: 0;
+        transform: translate3d(0, 16px, 0) scale(0.992);
+        filter: blur(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes ddEditorialReveal {
+    to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.dd-passport__inner {
+    --dd-tray-clearance: var(--tray-dock-clearance, max(5.75rem, calc(4.85rem + env(safe-area-inset-bottom, 0px))));
+    padding: 0 1rem var(--dd-tray-clearance);
+    padding-top: 1.1rem;
+    scroll-padding-bottom: var(--dd-tray-clearance);
+}
+
+.dd-tasting-kicker {
+    margin: 0 0 1rem;
+    font-size: 0.52rem;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.38);
+    text-align: center;
+}
+
+.dd-airmail {
+    height: 6px;
+    margin: 0 -1rem 1rem;
+    background: repeating-linear-gradient(
+        -45deg,
+        #c94a3d 0,
+        #c94a3d 8px,
+        #f4efe4 8px,
+        #f4efe4 16px,
+        #3d5a80 16px,
+        #3d5a80 24px,
+        #f4efe4 24px,
+        #f4efe4 32px
+    );
+}
+
+.dd-passport__top {
+    position: relative;
+    min-height: 3.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.dd-postmark {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 3.25rem;
+    height: 3.25rem;
+    border: 2px solid rgba(26, 20, 16, 0.35);
+    border-radius: 2px;
+    opacity: 0.55;
+}
+
+.dd-postmark__ring {
+    position: absolute;
+    inset: 0.35rem;
+    border: 1px dashed rgba(26, 20, 16, 0.3);
+    border-radius: 50%;
+}
+
+.dd-postmark__waves {
+    position: absolute;
+    inset: 0.5rem;
+    background: repeating-radial-gradient(circle at 50% 50%, transparent 0, transparent 2px, rgba(26, 20, 16, 0.12) 3px);
+}
+
+.dd-stamp--origin {
+    position: absolute;
+    right: 0;
+    top: 0;
+    max-width: 55%;
+    padding: 0.35rem 0.5rem;
+    border: 2px solid #9b2c2c;
+    color: #9b2c2c;
+    transform: rotate(-4deg);
+    opacity: 0.88;
+}
+
+.dd-stamp__text {
+    font-family: "Crimson Pro", Georgia, serif;
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    line-height: 1.25;
+}
+
+.dd-tracking {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    margin-top: 3.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(26, 20, 16, 0.15);
+    font-family: "Outfit", system-ui, sans-serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.5);
+}
+
+.dd-tracking__atelier {
+    color: rgba(140, 35, 24, 0.48);
+}
+
+.dd-tracking__sep {
+    width: 1px;
+    height: 0.65rem;
+    background: rgba(26, 20, 16, 0.2);
+}
+
+.dd-tracking__cat {
+    margin-left: auto;
+}
+
+.dd-atelier-seal {
+    position: absolute;
+    right: 0;
+    top: 0.05rem;
+    width: 3.7rem;
+    height: 3.7rem;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(140, 35, 24, 0.28);
+    border-radius: 50%;
+    color: rgba(140, 35, 24, 0.6);
+    transform: rotate(8deg);
+    opacity: 0.82;
+}
+
+.dd-atelier-seal__mark {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    line-height: 1;
+}
+
+.dd-atelier-seal__copy {
+    position: absolute;
+    bottom: 0.56rem;
+    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-size: 0.34rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-align: center;
+    text-transform: uppercase;
+    line-height: 1.1;
+}
+
+/* Title block — reference: bold name on accent slab */
+.dd-title-block {
+    position: relative;
+    margin: 1rem 0 1.25rem;
+    padding-left: 0.25rem;
+}
+
+.dd-title-block__accent {
+    position: absolute;
+    left: 0;
+    top: 0.15rem;
+    bottom: 0.15rem;
+    width: 4.5rem;
+    max-width: 28%;
+    z-index: 0;
+}
+
+.dd-title-block__copy {
+    position: relative;
+    z-index: 1;
+    padding-left: 5rem;
+}
+
+.dd-eyebrow {
+    margin: 0 0 0.35rem;
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 0.72rem;
+    font-style: italic;
+    letter-spacing: 0.08em;
+    color: rgba(26, 20, 16, 0.55);
+}
+
+.dd-title {
+    margin: 0;
+    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+    font-size: clamp(1.75rem, 7vw, 2.35rem);
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+    text-transform: none;
+    color: #1a1410;
+}
+
+.dd-title-block__atelier {
+    margin: 0.52rem 0 0;
+    font-size: 0.54rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(140, 35, 24, 0.44);
+}
+
+.dd-sensory-map {
+    margin: -0.25rem 0 1rem;
+    padding: 0.7rem 0.75rem;
+    border: 1px solid rgba(196, 168, 130, 0.24);
+    background:
+        linear-gradient(100deg, rgba(255, 253, 248, 0.46), rgba(236, 223, 204, 0.24));
+}
+
+.dd-sensory-map__label {
+    display: block;
+    margin-bottom: 0.42rem;
+    font-size: 0.52rem;
+    font-weight: 650;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.36);
+}
+
+.dd-sensory-map__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.dd-sensory-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.4rem;
+    padding: 0.18rem 0.46rem;
+    border: 1px solid rgba(140, 105, 66, 0.22);
+    border-radius: 999px;
+    background: rgba(253, 249, 244, 0.5);
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 0.72rem;
+    font-style: italic;
+    line-height: 1;
+    color: rgba(61, 43, 26, 0.7);
+}
+
+.dd-roast-label {
+    margin: 0.5rem 0 0;
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.45);
+}
+
+.dd-passport__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+}
+
+/* Manifest sections — editorial letter blocks */
+.dd-manifest {
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(26, 20, 16, 0.12);
+}
+
+.dd-manifest__lbl {
+    display: block;
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.4);
+    margin-bottom: 0.35rem;
+}
+
+.dd-composition-line,
+.dd-provenance-origin {
+    margin: 0;
+    font-family: "Crimson Pro", Georgia, serif;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: rgba(26, 20, 16, 0.72);
+}
+
+.dd-tasting-body {
+    margin: 0;
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 1rem;
+    font-style: italic;
+    line-height: 1.55;
+    color: rgba(26, 20, 16, 0.78);
+}
+
+.dd-no-poster__name {
+    position: relative;
+    font-family: "Outfit", system-ui, sans-serif;
+    font-size: clamp(1.25rem, 6vw, 1.75rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.82);
+}
+
+.dd-no-poster__cat {
+    position: relative;
+    margin-top: 0.5rem;
+    font-size: 0.58rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.45);
+}
+
+@media (min-width: 480px) {
+    .dd-passport__grid {
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+    }
+}
+
+.dd-metadata {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(26, 20, 16, 0.12);
+}
+
+.dd-meta-row {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr;
+    gap: 0.35rem;
+    padding: 0.35rem 0;
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+.dd-meta-row__lbl {
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.42);
+}
+
+.dd-meta-row__val {
+    font-family: "Crimson Pro", Georgia, serif;
+}
+
+.dd-flavor-path {
+    margin-bottom: 0.85rem;
+}
+
+.dd-flavor-path__lbl,
+.dd-tasting__lbl,
+.dd-trace__lbl {
+    display: block;
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.4);
+    margin-bottom: 0.25rem;
+}
+
+.dd-flavor-path__val {
+    margin: 0;
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.dd-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.85rem;
+}
+
+.dd-tag {
+    padding: 0.2rem 0.5rem;
+    border: 1px solid rgba(26, 20, 16, 0.18);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+.dd-tasting__body {
+    margin: 0;
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 1rem;
+    font-style: italic;
+    line-height: 1.55;
+    color: rgba(26, 20, 16, 0.82);
+}
+
+.dd-caffeine {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.75rem 0;
+}
+
+.dd-caffeine__lbl {
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.4);
+}
+
+.dd-caffeine__dots {
+    display: flex;
+    gap: 0.2rem;
+}
+
+.dd-caffeine-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    border: 1px solid rgba(26, 20, 16, 0.25);
+    background: transparent;
+}
+
+.dd-caffeine-dot--on {
+    background: #1a1410;
+}
+
+.dd-trace {
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid rgba(26, 20, 16, 0.15);
+    background: rgba(255, 255, 255, 0.35);
+}
+
+.dd-trace__origin span {
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 0.58rem;
+}
+
+.dd-trace__producer,
+.dd-trace__process {
+    margin: 0.35rem 0 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.dd-product {
+    margin: 0;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    min-height: 12rem;
+}
+
+.dd-product::before {
+    content: "";
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    bottom: 5%;
+    height: 20%;
+    z-index: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 80% 100% at 50% 100%, rgba(42, 32, 20, 0.11) 0%, transparent 70%);
+}
+
+.dd-product__img {
+    max-width: 100%;
+    max-height: min(42vh, 280px);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: center bottom;
+    position: relative;
+    z-index: 1;
+    content-visibility: auto;
+    contain-intrinsic-size: 240px 280px;
+}
+
+.dd-passport--no-meta .dd-passport__grid {
+    grid-template-columns: 1fr;
+}
+
+.dd-passport--no-meta .dd-passport__col--visual {
+    max-width: 20rem;
+    margin-inline: auto;
+}
+
+.dd-no-poster {
+    position: relative;
+    min-height: 12rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    border: 1px solid rgba(26, 20, 16, 0.12);
+    background: linear-gradient(
+        145deg,
+        rgba(255, 255, 255, 0.55) 0%,
+        color-mix(in srgb, var(--dd-accent, #e8c76b) 28%, #f4efe4) 100%
+    );
+}
+
+.dd-no-poster__wash {
+    position: absolute;
+    inset: 0;
+    opacity: 0.35;
+    background: radial-gradient(circle at 30% 20%, var(--dd-accent, #e8c76b), transparent 55%);
+    pointer-events: none;
+}
+
+.dd-no-poster__glyph {
+    position: relative;
+    font-family: "Outfit", system-ui, sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    color: rgba(26, 20, 16, 0.82);
+}
+
+.dd-no-poster__hint {
+    position: relative;
+    margin: 0.75rem 0 0;
+    font-size: 0.58rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.45);
+}
+
+.dd-cert-seal {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.dd-cert-seal__ring {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 5.5rem;
+    height: 5.5rem;
+    border: 2px solid rgba(26, 20, 16, 0.35);
+    border-radius: 50%;
+    font-size: 0.48rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-align: center;
+    text-transform: uppercase;
+    line-height: 1.2;
+    opacity: 0.65;
+    transform: rotate(-12deg);
+}
+
+.dd-serving-note {
+    margin: 0.75rem 0 0;
+    padding: 0.65rem 0.75rem;
+    border-left: 2px solid #9b2c2c;
+    font-size: 0.8rem;
+    color: rgba(26, 20, 16, 0.7);
+}
+
+.dd-footer {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(26, 20, 16, 0.15);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.75rem;
+}
+
+.dd-footer--price {
+    justify-content: flex-start;
+}
+
+.dd-passport--bakery .dd-passport__grid {
+    grid-template-columns: 1fr;
+}
+
+.dd-passport--bakery .dd-passport__col--visual {
+    max-width: 20rem;
+    margin: 0 auto;
+}
+
+/* ── Suggested pairings strip ─────────────────────────────────────────────── */
+
+.dd-pairings {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(26, 20, 16, 0.08);
+}
+
+.dd-pairings__lead {
+    margin: 0 0 0.85rem;
+    font-family: "EB Garamond", Georgia, serif;
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.35;
+    color: rgba(26, 20, 16, 0.62);
+}
+
+.dd-pairings__title {
+    display: none;
+}
+
+.dd-pairings__strip {
+    display: flex;
+    gap: 0.65rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+    scroll-snap-type: x proximity;
+}
+
+.dd-pairing {
+    position: relative;
+    overflow: hidden;
+    flex: 0 0 auto;
+    width: 7.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.4rem;
+    padding: 0.5rem;
+    border: 1px solid rgba(26, 20, 16, 0.1);
+    background: rgba(253, 249, 244, 0.92);
+    text-align: left;
+    cursor: pointer;
+    scroll-snap-align: start;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+        border-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        background-color 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dd-pairing::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background:
+        radial-gradient(ellipse 84% 54% at 50% 0%, rgba(255, 244, 216, 0.44), transparent 68%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.12), transparent 46%);
+    transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .dd-pairing:hover {
+        transform: translate3d(0, -3px, 0);
+        border-color: rgba(196, 168, 130, 0.46);
+        box-shadow:
+            0 12px 26px rgba(26, 18, 9, 0.08),
+            0 0 22px rgba(196, 168, 130, 0.1);
+    }
+
+    .dd-pairing:hover::after {
+        opacity: 1;
+    }
+}
+
+.dd-pairing:active {
+    border-color: rgba(155, 44, 44, 0.35);
+    background: rgba(253, 249, 244, 1);
+}
+
+.dd-pairing__img,
+.dd-pairing__ph {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 2px;
+    background: rgba(232, 221, 208, 0.5);
+    transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1), filter 0.36s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .dd-pairing:hover .dd-pairing__img,
+    .dd-pairing:hover .dd-pairing__ph {
+        transform: scale(1.035);
+        filter: saturate(1.04) contrast(1.02);
+    }
+}
+
+.dd-pairing__ph {
+    display: block;
+}
+
+.dd-pairing__name {
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 0.72rem;
+    font-weight: 400;
+    line-height: 1.3;
+    color: #1a1410;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.dd-pairing__hint {
+    font-size: 0.5rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(26, 20, 16, 0.38);
+}
+
+.dd-price {
+    margin: 0;
+    font-family: "Playfair Display", Georgia, serif;
+    font-size: 1.35rem;
+    letter-spacing: 0.02em;
+}
+
+.dd-cta {
+    flex: 1 1 auto;
+    min-width: 10rem;
+    max-width: 100%;
+    justify-content: center;
+}
+
+.dd-cta--disabled {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #drink-detail-modal {
+        transition: none;
+    }
+
+    .drink-detail-add-top:active:not(:disabled) {
+        transform: none;
+    }
+
+    .dd-pairing {
+        transition: none;
+    }
+}
+
+/* Touch devices: reduce compositor pressure on detail overlay */
+@media (hover: none) and (pointer: coarse) {
+    #drink-detail-modal {
+        transition: none;
+    }
+
+    #drink-detail-modal,
+    #drink-detail-mount,
+    .dd-passport,
+    .dd-product__img {
+        will-change: auto !important;
+    }
+
+    .dd-pairing:active {
+        transform: none;
+    }
+
+    .dd-product::before {
+        background: radial-gradient(ellipse 80% 100% at 50% 100%, rgba(42, 32, 20, 0.09) 0%, transparent 70%);
+    }
+}
+
+/* ── DETAIL-REFINE-LETTER — composed reading flow, quieter chrome ── */
+
+.dd-passport__context {
+    position: relative;
+    min-height: 2.5rem;
+    margin-bottom: 0.35rem;
+}
+
+.dd-passport__context-deco {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.dd-passport__context .dd-postmark {
+    width: 2.35rem;
+    height: 2.35rem;
+    opacity: 0.38;
+}
+
+.dd-passport__context .dd-atelier-seal {
+    width: 2.65rem;
+    height: 2.65rem;
+    opacity: 0.52;
+}
+
+.dd-passport__context .dd-tracking {
+    margin-top: 0;
+    padding-bottom: 0.4rem;
+    border-bottom-color: rgba(26, 20, 16, 0.1);
+    font-size: 0.52rem;
+    letter-spacing: 0.12em;
+    opacity: 0.72;
+}
+
+.dd-passport__identity {
+    margin-bottom: 0.85rem;
+}
+
+.dd-title-block {
+    margin: 0 0 0.65rem;
+}
+
+.dd-title-block__accent {
+    width: 3.25rem;
+    max-width: 22%;
+    opacity: 0.88;
+}
+
+.dd-title-block__copy {
+    padding-left: 3.85rem;
+}
+
+.dd-title {
+    font-size: clamp(1.85rem, 7.5vw, 2.45rem);
+    line-height: 1.1;
+}
+
+.dd-title-block__atelier {
+    margin-top: 0.4rem;
+    font-size: 0.5rem;
+    letter-spacing: 0.18em;
+    opacity: 0.72;
+}
+
+.dd-sensory-map {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+}
+
+.dd-sensory-map__chips {
+    gap: 0.3rem;
+}
+
+.dd-sensory-chip {
+    min-height: 1.3rem;
+    padding: 0.14rem 0.42rem;
+    font-size: 0.68rem;
+    border-color: rgba(140, 105, 66, 0.18);
+    background: rgba(253, 249, 244, 0.72);
+}
+
+.dd-passport__hero-visual {
+    margin: 0 0 1.15rem;
+    padding: 0.75rem 0.5rem 0.55rem;
+    border-radius: 0.35rem;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 253, 248, 0.55) 0%,
+        rgba(244, 239, 228, 0.35) 100%
+    );
+    border: 1px solid rgba(26, 20, 16, 0.06);
+}
+
+.dd-passport__hero-visual .dd-product {
+    min-height: 14rem;
+    justify-content: center;
+    align-items: center;
+}
+
+.dd-passport__hero-visual .dd-product__img {
+    max-height: min(46vh, 320px);
+}
+
+.dd-passport--no-meta .dd-passport__hero-visual {
+    max-width: 21rem;
+    margin-inline: auto;
+}
+
+.dd-passport__story {
+    margin-bottom: 0.35rem;
+}
+
+.dd-passport__story .dd-manifest {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.65rem;
+    border-bottom-color: rgba(26, 20, 16, 0.08);
+}
+
+.dd-passport__story .dd-manifest:last-of-type {
+    margin-bottom: 0.5rem;
+}
+
+.dd-passport__story .dd-manifest__lbl {
+    margin-bottom: 0.28rem;
+    font-size: 0.54rem;
+    letter-spacing: 0.18em;
+    opacity: 0.78;
+}
+
+.dd-passport__story .dd-serving-note {
+    margin: 0.35rem 0 0;
+    padding: 0.5rem 0 0.5rem 0.65rem;
+    border-left-width: 1px;
+    font-size: 0.75rem;
+    opacity: 0.82;
+}
+
+.dd-passport__decision {
+    margin: 1rem 0 0;
+    padding: 0.85rem 0.95rem;
+    border-radius: 0.4rem;
+    border: 1px solid rgba(26, 20, 16, 0.1);
+    background: rgba(253, 249, 244, 0.72);
+    text-align: center;
+}
+
+.dd-passport__decision .dd-price {
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.1;
+}
+
+.dd-pairings {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top-color: rgba(26, 20, 16, 0.06);
+}
+
+.dd-pairings__lead {
+    margin-bottom: 0.7rem;
+    font-size: 0.95rem;
+    opacity: 0.78;
+}
+
+.dd-pairings__strip {
+    gap: 0.55rem;
+    padding-bottom: 0.35rem;
+}
+
+.dd-pairing {
+    width: 6.85rem;
+    padding: 0.45rem;
+    border-color: rgba(26, 20, 16, 0.08);
+    background: rgba(253, 249, 244, 0.88);
+    border-radius: 0.35rem;
+}
+
+.dd-pairing__hint {
+    font-size: 0.46rem;
+    letter-spacing: 0.14em;
+    opacity: 0.62;
+}
+
+body.drink-detail-open .order-tray-root--dock:not(.order-tray-root--sheet-open) #order-tray-chip {
+    opacity: 0.68 !important;
+    box-shadow: 0 1px 6px rgba(26, 18, 9, 0.04) !important;
+}
+
+body.drink-detail-open .order-tray-chip__kicker {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .dd-passport__inner {
+        --dd-tray-clearance: var(--tray-dock-clearance, max(5.75rem, calc(4.85rem + env(safe-area-inset-bottom, 0px))));
+    }
+
+    .dd-passport__hero-visual .dd-product__img {
+        max-height: min(42vh, 280px);
+    }
+
+    .dd-passport__decision {
+        margin-top: 0.85rem;
+    }
+}
+
+html.annap-guest-no-motion .drink-detail-add-top:active:not(:disabled) {
+    transform: none;
+}
+
+/* ── DETAIL-ACTIONS-REFINE-1 — integrated passport action bar ── */
+
+.drink-detail-action-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding:
+        max(0.45rem, env(safe-area-inset-top, 0px))
+        max(1rem, env(safe-area-inset-right, 0px))
+        0.55rem
+        max(1rem, env(safe-area-inset-left, 0px));
+    background:
+        linear-gradient(
+            180deg,
+            rgba(252, 248, 242, 0.98) 0%,
+            rgba(248, 242, 232, 0.94) 100%
+        );
+    border-bottom: 1px solid rgba(26, 20, 16, 0.07);
+    box-shadow: 0 1px 0 rgba(255, 248, 238, 0.65);
+    z-index: 2;
+}
+
+.drink-detail-action-bar__back {
+    flex-shrink: 0;
+    min-width: 2.75rem;
+}
+
+.drink-detail-action-bar__glyph {
+    font-size: 0.9rem;
+    line-height: 1;
+    opacity: 0.62;
+}
+
+.drink-detail-action-bar__add {
+    flex: 1 1 auto;
+    max-width: 12.5rem;
+    margin-left: auto;
+}
+
+.drink-detail-action-bar__add:disabled,
+.drink-detail-action-bar__add.drink-detail-add-top--disabled {
+    opacity: 0.38;
+    box-shadow: none;
+}
+
+html.annap-correspond-ui .drink-detail-action-bar {
+    background:
+        linear-gradient(
+            180deg,
+            rgba(250, 247, 242, 0.99) 0%,
+            rgba(244, 239, 228, 0.96) 100%
+        );
+    border-bottom-color: rgba(148, 120, 88, 0.16);
+}
+
+html.annap-correspond-ui .drink-detail-action-bar__back {
+    font-family: "EB Garamond", Georgia, serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: rgba(61, 43, 26, 0.72);
+}
+
+html.annap-correspond-ui .drink-detail-action-bar__add {
+    background: rgba(122, 32, 24, 0.88);
+    border-color: rgba(122, 32, 24, 0.22);
+    box-shadow: 0 1px 5px rgba(26, 18, 9, 0.08);
+}
+
+@media (min-width: 640px) {
+    .drink-detail-action-bar {
+        padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+        padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+    }
+
+    .drink-detail-action-bar__add {
+        max-width: 13.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .drink-detail-add-top:active:not(:disabled) {
+        transform: none;
+    }
+}
+
+.dd-passport__hero-visual {
+    margin-top: 0.15rem;
+}
+
+.dd-passport__story .dd-manifest__lbl {
+    text-transform: none;
+    letter-spacing: 0.1em;
+    font-size: 0.58rem;
+}
+
+.dd-passport__story .dd-tasting-body,
+.dd-passport__story .dd-composition-line,
+.dd-passport__story .dd-provenance-origin {
+    font-size: 0.92rem;
+    line-height: 1.55;
+}
+
+.dd-passport__decision {
+    margin-top: 1.1rem;
+    padding: 0.9rem 1rem;
+    border-color: rgba(26, 20, 16, 0.08);
+    background: rgba(253, 249, 244, 0.82);
+}
+
+.dd-passport__decision .dd-price {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+
+.dd-pairings {
+    margin-top: 1.65rem;
+    padding-top: 0.95rem;
+    padding-bottom: 0.35rem;
+}
+
+.dd-pairings__lead {
+    font-size: 0.92rem;
+    letter-spacing: 0.01em;
+}
+
+.dd-pairing {
+    position: relative;
+    gap: 0.35rem;
+}
+
+.dd-pairing__hint {
+    text-transform: none;
+    letter-spacing: 0.04em;
+    font-size: 0.62rem;
+    line-height: 1.25;
+}
+
+.dd-pairing--added {
+    border-color: rgba(196, 168, 130, 0.52);
+    background: rgba(250, 247, 242, 0.96);
+    box-shadow: inset 0 0 0 1px rgba(196, 168, 130, 0.14);
+}
+
+.dd-pairing--added .dd-pairing__hint {
+    color: rgba(91, 65, 38, 0.78);
+}
+
+.dd-pairing__stamp {
+    position: absolute;
+    top: 0.35rem;
+    right: 0.35rem;
+    z-index: 2;
+    padding: 0.14rem 0.34rem;
+    border: 1px solid rgba(196, 168, 130, 0.38);
+    border-radius: 999px;
+    background: rgba(252, 248, 242, 0.94);
+    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-size: 0.46rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    color: rgba(91, 65, 38, 0.82);
+    pointer-events: none;
+}
+
+body.drink-detail-open .order-tray-root--dock:not(.order-tray-root--sheet-open) #order-tray-chip {
+    opacity: 0.62 !important;
+}
+
+body.drink-detail-open.annap-has-order-tray-dock .dd-passport__inner {
+    --dd-tray-clearance: var(--tray-dock-clearance, max(5.85rem, calc(4.95rem + env(safe-area-inset-bottom, 0px))));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dd-pairing__stamp {
+        animation: none !important;
+    }
+}
+
+/* Origin letter — signature specialty detail mode */
+.dd-passport--origin-letter .dd-title-block,
+.dd-passport--origin-letter .dd-sensory-map,
+.dd-passport--origin-letter .dd-passport__story,
+.dd-passport--origin-letter .dd-pairings {
+    display: none !important;
+}
+.dd-letter__kicker {
+    margin: 0 0 0.65rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: rgba(91, 65, 38, 0.62);
+}
+.dd-letter__title {
+    margin: 0;
+    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-size: clamp(1.65rem, 5vw, 2.1rem);
+    font-weight: 400;
+    line-height: 1.15;
+}
+.dd-letter__why,
+.dd-letter__producer,
+.dd-letter__whisper {
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: rgba(42, 32, 24, 0.88);
+}
+.dd-letter__invite {
+    margin: 1.25rem 0 0;
+    font-size: 0.82rem;
+    font-style: italic;
+    color: rgba(91, 65, 38, 0.72);
+}
+.dd-letter__visual {
+    margin-top: 1.25rem;
+}

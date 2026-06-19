@@ -1,0 +1,142 @@
+@page "/admin/experience/discovery"
+@model Annap.CoffeeQrOrdering.Web.Pages.Admin.Experience.Discovery.IndexModel
+@{
+    ViewData["AdminReturnHref"] = Url.Content("~/admin");
+    ViewData["AdminReturnLabel"] = "← Quay lại";
+    ViewData["Title"] = "Nghi thức khám phá";
+    ViewData["AdminNavSection"] = "experience-discovery";
+    ViewData["ExpPreviewMode"] = "discovery";
+    ViewData["ExpPreviewSeedJson"] = Model.ExperiencePreviewSeedJson;
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-experience.css" asp-append-version="true" />
+}
+
+<partial name="Admin/_AdminEditorialReturn" />
+<div class="exp-cms admin-page-head">
+    <p class="exp-kicker">Trải nghiệm khách</p>
+    <h1 class="exp-title">Phòng thư &amp; bốc thăm khám phá</h1>
+    <p class="exp-muted">Khách mở phong bì niêm phong (không có bài kiểm tra hương vị), rồi xem một ly được chọn lọc. Tinh chỉnh nội dung bàn, câu từ chối và những ly nào ở lại hồ bơi.</p>
+</div>
+
+<div class="exp-cms exp-cms__grid exp-cms__grid--split mt-8" data-exp-preview="discovery">
+    <form method="post" class="space-y-8">
+        <div class="exp-card space-y-5">
+            <h2 class="font-display text-xl font-normal text-[rgb(var(--fg))]">Bốc thăm &amp; quay lại</h2>
+
+            <label class="flex items-start gap-3 text-sm text-[rgb(var(--muted))]">
+                <input type="checkbox" asp-for="SettingsForm.SeasonalOnlyPool" class="mt-0.5" />
+                <span><span class="text-[rgb(var(--fg))]">Chỉ hồ bơi theo mùa</span> — khi bật, chỉ các món nổi bật theo mùa được đưa vào khám phá.</span>
+            </label>
+
+            <label class="flex items-start gap-3 text-sm text-[rgb(var(--muted))]">
+                <input type="checkbox" asp-for="SettingsForm.AllowSeasonalCups" class="mt-0.5" />
+                <span><span class="text-[rgb(var(--fg))]">Cho phép ly theo mùa</span> — để các món theo mùa xuất hiện khi hồ bơi trộn lẫn.</span>
+            </label>
+
+            <label class="flex items-start gap-3 text-sm text-[rgb(var(--muted))]">
+                <input type="checkbox" asp-for="SettingsForm.PreferSignaturesFirst" class="mt-0.5" />
+                <span><span class="text-[rgb(var(--fg))]">Ưu tiên đặc trưng trước</span> — đặc trưng dẫn đầu trong bốc thăm có trọng số trước các ly đủ điều kiện khác.</span>
+            </label>
+
+            <label class="flex items-start gap-3 text-sm text-[rgb(var(--muted))]">
+                <input type="checkbox" asp-for="SettingsForm.AllowRerolls" class="mt-0.5" />
+                <span><span class="text-[rgb(var(--fg))]">Cho phép bốc lại</span> — khách có thể yêu cầu một lần tiết lộ khác khi nhịp độ cho phép.</span>
+            </label>
+
+            <div>
+                <label class="exp-muted text-xs tracking-wide">Mức độ phiêu lưu của khám phá?</label>
+                <p class="mt-1 text-[11px] text-[rgb(var(--muted-2))]">1 — thì thầm yên tĩnh · 5 — táo bạo và vui tươi (ảnh hưởng tông và trọng số về sau).</p>
+                <select class="exp-select mt-2 max-w-xs" asp-for="SettingsForm.AdventureTone">
+                    <option value="1">1 · Thầm lặng</option>
+                    <option value="2">2 · Nhẹ nhàng</option>
+                    <option value="3">3 · Cân bằng</option>
+                    <option value="4">4 · Tò mò</option>
+                    <option value="5">5 · Phiêu lưu</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="exp-card space-y-4">
+            <h2 class="font-display text-xl font-normal text-[rgb(var(--fg))]">Nội dung hiển thị cho khách</h2>
+            <p class="text-xs text-[rgb(var(--muted-2))]">Các chuỗi này được tích hợp vào API House Selection khi được đặt — giữ ngắn gọn và tự tin.</p>
+            <div>
+                <label class="exp-muted text-xs tracking-wide">Dòng mở đầu (tùy chọn — thay thế nội dung loading xoay vòng)</label>
+                <textarea class="exp-textarea mt-1" asp-for="SettingsForm.CourierMoodCopy" rows="3" placeholder="Nếu đặt, khách sẽ thấy dòng này trong nhịp giấy thay vì các cụm từ sẵn có."></textarea>
+            </div>
+            <div>
+                <label class="exp-muted text-xs tracking-wide">Thông điệp tin tưởng / niêm phong (nhịp chẵn)</label>
+                <textarea class="exp-textarea mt-1" asp-for="SettingsForm.FatigueCopyEvenLeg" rows="2" placeholder="Khi các lần bốc lại gần cạn kiệt…"></textarea>
+            </div>
+            <div>
+                <label class="exp-muted text-xs tracking-wide">Thông điệp tin tưởng / niêm phong (nhịp lẻ)</label>
+                <textarea class="exp-textarea mt-1" asp-for="SettingsForm.FatigueCopyOddLeg" rows="2"></textarea>
+            </div>
+            <div>
+                <label class="exp-muted text-xs tracking-wide">JSON nhịp độ bốc lại</label>
+                <textarea class="exp-textarea mt-1 font-mono text-xs" asp-for="SettingsForm.RerollPacingJson" rows="4"></textarea>
+            </div>
+            <div>
+                <label class="exp-muted text-xs tracking-wide">Dòng tin tưởng khi nghi thức được niêm phong (tùy chọn)</label>
+                <textarea class="exp-textarea mt-1" asp-for="SettingsForm.RevealCopyNotes" rows="3" placeholder="Hiển thị khi hết lần bốc lại — bình tĩnh, dứt khoát, mời chấp nhận."></textarea>
+            </div>
+        </div>
+
+        <div class="exp-card space-y-3">
+            <h2 class="font-display text-xl font-normal text-[rgb(var(--fg))]">Phòng thư (JSON)</h2>
+            <p class="text-xs text-[rgb(var(--muted-2))]">Optional. Keys: <span class="font-mono">title</span>, <span class="font-mono">subtitle</span>, <span class="font-mono">deskHint</span>, <span class="font-mono">envelopes</span> (3 × label, hint, texture: kraft|cream|ink), <span class="font-mono">ctaPrimary</span>, <span class="font-mono">rerollCta</span>, <span class="font-mono">earnedKicker</span>, <span class="font-mono">refusalLines</span>[], <span class="font-mono">insideLetterLines</span>[], <span class="font-mono">paperTheme</span> (desk|night|dawn). Invalid JSON is ignored.</p>
+            <textarea class="exp-textarea font-mono text-xs" asp-for="SettingsForm.LetterRoomContentJson" rows="14" placeholder='{ "title": "The Letter Room", "envelopes": [ { "label": "For slow evenings", "hint": "Cream stock", "texture": "cream" } ] }'></textarea>
+        </div>
+
+        <div class="exp-card">
+            <h2 class=”font-display text-xl font-normal text-[rgb(var(--fg))]”>Ly đủ điều kiện</h2>
+            <p class=”exp-muted mt-1 text-sm”>Trọng số quyết định sự xuất hiện trong bốc thăm; “Trong hồ bơi” kiểm soát điều kiện; ẩn xóa ly hoàn toàn khỏi nghi thức.</p>
+            <div class="mt-4 max-h-[32rem] space-y-3 overflow-y-auto pr-1">
+                @for (var i = 0; i < Model.MenuForms.Count; i++)
+                {
+                    var row = Model.MenuRows.ElementAtOrDefault(i);
+                    <div class="rounded-xl border border-white/[0.07] bg-black/20 p-3" data-exp-disc-row>
+                        <input type="hidden" asp-for="MenuForms[i].MenuItemId" />
+                        <div class="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                                <p class="text-sm text-[rgb(var(--fg))]">@(row?.Name ?? "")</p>
+                                @if (row?.IsSeasonalHighlight == true)
+                                {
+                                    <p class="mt-0.5 text-[10px] uppercase tracking-wide text-amber-200/80">Seasonal</p>
+                                }
+                            </div>
+                            <div class="flex flex-wrap items-end gap-3">
+                                <div class="w-24">
+                                    <label class="text-[10px] uppercase tracking-wide text-[rgb(var(--muted-2))]">Weight</label>
+                                    <input class="exp-input mt-0.5" asp-for="MenuForms[i].DiscoveryWeight" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 flex flex-wrap gap-4 text-xs text-[rgb(var(--muted))]">
+                            <label class="flex items-center gap-2">
+                                <input asp-for="MenuForms[i].IsDiscoveryEligible" /> Trong hồ bơi khám phá
+                            </label>
+                            <label class="flex items-center gap-2">
+                                <input asp-for="MenuForms[i].IsHiddenDiscovery" /> Ẩn khỏi nghi thức
+                            </label>
+                        </div>
+                        <div class="mt-2">
+                            <label class="text-[10px] uppercase tracking-wide text-[rgb(var(--muted-2))]">Câu chuyện khám phá</label>
+                            <textarea class="exp-textarea mt-1 text-sm" asp-for="MenuForms[i].DiscoveryStory" rows="2" placeholder="Một dòng cho thẻ tiết lộ…"></textarea>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="exp-actions">
+            <button type="submit" class="admin-btn admin-btn--solid">Lưu khám phá</button>
+        </div>
+    </form>
+
+    <partial name="_ExperienceLivePreview" />
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-experience-preview.js" asp-append-version="true"></script>
+}

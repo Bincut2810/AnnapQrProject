@@ -1,0 +1,29 @@
+@page "/admin/experience/homepage"
+@model Annap.CoffeeQrOrdering.Web.Pages.Admin.Experience.Homepage.IndexModel
+@{
+    ViewData["Title"] = "Sảnh khách · bố cục";
+    ViewData["AdminNavSection"] = "experience-homepage";
+    ViewData["ExpPreviewMode"] = "homepage";
+    ViewData["AdminReturnHref"] = Url.Content("~/admin/experience");
+    ViewData["AdminReturnLabel"] = "← Trung tâm điều hành";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-experience.css" asp-append-version="true" />
+}
+
+<partial name="Admin/_AdminEditorialReturn" />
+<div class="exp-cms admin-page-head">
+    <p class="exp-kicker">Sảnh khách</p>
+    <h1 class="exp-title">Bố cục hành trình</h1>
+    <p class="exp-muted">Xưởng chuyên sâu cho sảnh — cùng điều khiển như trung tâm điều hành, thêm xem trước thiết bị khách.</p>
+</div>
+
+<div class="exp-cms exp-cms__grid exp-cms__grid--split mt-6" data-exp-preview="homepage" data-exp-preview-host>
+    <partial name="Experience/_HomepageCompositionPanel" model="Model" />
+    <partial name="_ExperienceLivePreview" />
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-homepage-composition.js" asp-append-version="true"></script>
+    <script src="~/js/admin-experience-preview.js" asp-append-version="true"></script>
+}

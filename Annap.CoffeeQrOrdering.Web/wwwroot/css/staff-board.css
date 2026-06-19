@@ -1,0 +1,244 @@
+/* Staff live floor — motion only; tokens come from guest / staff shell */
+
+/* Guest site uses DM Serif for `font-display`; keep staff editorial serif distinct. */
+.staff-shell .font-display {
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+}
+
+.staff-board--dual .staff-col {
+  min-height: min(70vh, 42rem);
+}
+
+.staff-col-body {
+  position: relative;
+}
+
+.staff-col-skeleton {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.25rem 0;
+}
+
+.staff-col-skeleton.is-visible {
+  display: flex;
+}
+
+.staff-col-skeleton__line {
+  height: 0.65rem;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    rgba(255, 255, 255, 0.09) 45%,
+    rgba(255, 255, 255, 0.04) 100%
+  );
+  background-size: 200% 100%;
+  animation: staff-skel-shimmer 1.4s ease-in-out infinite;
+}
+
+.staff-col-skeleton__line--short {
+  width: 55%;
+}
+
+@keyframes staff-skel-shimmer {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+.staff-order-note {
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: rgb(var(--accent));
+  background: rgba(var(--accent), 0.08);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid rgba(var(--accent), 0.16);
+}
+
+.staff-order-note--ticket {
+  font-weight: 500;
+}
+
+.staff-order-card {
+  transition:
+    box-shadow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s ease,
+    border-color 0.45s ease;
+}
+
+.staff-order-card--enter {
+  animation: staff-card-enter 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes staff-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.staff-order-card--shift {
+  animation: staff-card-shift 0.42s cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes staff-card-shift {
+  0% {
+    box-shadow: 0 0 0 0 rgba(var(--accent), 0);
+  }
+  35% {
+    box-shadow: 0 0 0 1px rgba(var(--accent), 0.12), 0 12px 40px rgba(0, 0, 0, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(var(--accent), 0);
+  }
+}
+
+.staff-order-card--exit {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  pointer-events: none;
+}
+
+.staff-order-card--syncing {
+  opacity: 0.88;
+}
+
+.staff-order-card--syncing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(var(--accent), 0.14);
+}
+
+.staff-order-advance {
+  flex: 1;
+  min-height: 2.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(var(--fg));
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition:
+    background 0.25s ease,
+    border-color 0.25s ease,
+    transform 0.18s ease;
+}
+
+.staff-order-advance:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.staff-order-advance:active {
+  transform: scale(0.98);
+}
+
+.staff-order-back {
+  min-height: 2.75rem;
+  padding: 0 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--muted), 0.95);
+  border: 1px solid transparent;
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease;
+}
+
+.staff-order-back:hover {
+  color: rgb(var(--fg));
+  border-color: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.staff-own-chip {
+  min-height: 2.25rem;
+  padding: 0 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.58rem;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(var(--muted), 0.95);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition:
+    color 0.25s ease,
+    border-color 0.25s ease,
+    background 0.25s ease,
+    transform 0.18s ease;
+}
+
+.staff-own-chip:hover {
+  color: rgb(var(--fg));
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.staff-own-chip:active {
+  transform: scale(0.98);
+}
+
+.staff-pacing {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(var(--muted-2), 0.95);
+}
+
+.staff-pacing__dot {
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 9999px;
+  background: rgba(var(--accent-2), 0.55);
+  box-shadow: 0 0 0 3px rgba(var(--accent-2), 0.08);
+}
+
+.staff-pacing--watch .staff-pacing__dot {
+  background: rgba(199, 168, 122, 0.75);
+  box-shadow: 0 0 0 3px rgba(199, 168, 122, 0.1);
+}
+
+.staff-pacing--brisk .staff-pacing__dot {
+  background: rgba(122, 151, 130, 0.85);
+  box-shadow: 0 0 0 3px rgba(122, 151, 130, 0.12);
+}
+
+.staff-sync-dot {
+  transition: background-color 0.4s ease, box-shadow 0.5s ease;
+}
+
+.staff-sync-dot--live {
+  background: rgb(var(--accent-2)) !important;
+  box-shadow: 0 0 12px rgba(var(--accent-2), 0.35);
+}
+
+.staff-sync-dot--soft {
+  background: rgba(var(--muted-2), 0.5) !important;
+}
+
+.staff-sync-dot--reconnect {
+  background: rgba(199, 168, 122, 0.65) !important;
+  box-shadow: 0 0 10px rgba(199, 168, 122, 0.25);
+}

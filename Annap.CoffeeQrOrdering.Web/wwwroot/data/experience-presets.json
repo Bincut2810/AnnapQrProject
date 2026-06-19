@@ -1,0 +1,48 @@
+{
+  "presets": {
+    "morning-calm": {
+      "label": "Morning calm",
+      "discovery": {
+        "seasonalOnlyPool": false,
+        "allowSeasonalCups": true,
+        "preferSignaturesFirst": true,
+        "allowRerolls": false,
+        "adventureTone": 2,
+        "courierMoodCopy": "The room is still quiet — we will keep discovery gentle and close to the cup."
+      }
+    },
+    "signature-night": {
+      "label": "Signature night",
+      "discovery": {
+        "seasonalOnlyPool": false,
+        "allowSeasonalCups": true,
+        "preferSignaturesFirst": true,
+        "allowRerolls": true,
+        "adventureTone": 4,
+        "courierMoodCopy": "Tonight we lead with house signatures, then let curiosity wander one step at a time."
+      }
+    },
+    "bright-fruit-season": {
+      "label": "Bright fruit season",
+      "discovery": {
+        "seasonalOnlyPool": true,
+        "allowSeasonalCups": true,
+        "preferSignaturesFirst": false,
+        "allowRerolls": true,
+        "adventureTone": 4,
+        "courierMoodCopy": "Seasonal cups only — bright fruit, lifted aromatics, and a little sunlight in the glass."
+      }
+    },
+    "slow-espresso-ritual": {
+      "label": "Slow espresso ritual",
+      "discovery": {
+        "seasonalOnlyPool": false,
+        "allowSeasonalCups": false,
+        "preferSignaturesFirst": true,
+        "allowRerolls": false,
+        "adventureTone": 1,
+        "courierMoodCopy": "A slower envelope — fewer rerolls, no seasonal detour, just the deepest lines on the menu."
+      }
+    }
+  }
+}

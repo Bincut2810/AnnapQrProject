@@ -1,0 +1,376 @@
+@page "/track/{orderId:guid}"
+@model OrderModel
+@{
+    Layout = "_Layout";
+}
+
+<div id="track-root"
+     class="track-root mx-auto max-w-md px-3 pb-[max(5rem,env(safe-area-inset-bottom))] pt-3 leading-relaxed md:px-0 md:pt-8"
+     data-order-id="@Model.OrderId"
+     data-track-token="@Model.TrackToken">
+    <p class="text-center text-[10px] font-medium tracking-[0.32em] uppercase text-[rgb(var(--muted-2))]" data-i18n="track.pageEyebrow">Order status</p>
+
+    <div id="track-state-wrap" class="mt-10">
+        <div id="track-cancelled" class="hidden rounded-2xl border border-[rgba(212,184,150,0.55)] bg-[rgba(253,249,244,0.65)] px-6 py-10 text-center">
+            <p id="track-cancelled-msg" class="text-sm leading-relaxed text-[rgb(var(--muted))]"></p>
+        </div>
+
+        <div id="track-live" class="space-y-10">
+            <header class="text-center">
+                <p class="text-[10px] font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted-2))]" data-i18n="track.tableEyebrow">Table</p>
+                <p id="track-table" class="mt-2 font-display text-4xl tracking-tight text-[rgb(var(--fg))]">—</p>
+                <h1 id="track-hero-title" class="mt-8 font-display text-2xl font-normal leading-snug text-[rgb(var(--fg))] sm:text-[1.65rem]"></h1>
+                <p id="track-hero-line" class="mx-auto mt-4 max-w-sm text-sm leading-[1.55] text-[rgb(var(--muted))]"></p>
+            </header>
+
+            <div id="track-milestones" class="track-milestones relative pl-1" data-i18n-aria="track.progressAria" aria-label="Progress"></div>
+
+            <div id="track-complete-coda" class="hidden text-center">
+                <p class="font-display text-lg text-[rgb(var(--muted))]" data-i18n="track.thankYou">Thank you for joining us.</p>
+                <p class="mt-2 text-xs text-[rgb(var(--muted-2))]" data-i18n="track.untilNext">Until next time.</p>
+            </div>
+
+            <section class="rounded-2xl border border-[rgba(212,184,150,0.5)] bg-[rgba(253,249,244,0.55)] px-5 py-5">
+                <p class="text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]" data-i18n="track.selectionSection">Your selection</p>
+                <ul id="track-items" class="mt-4 space-y-3 text-sm text-[rgb(var(--muted))]"></ul>
+            </section>
+
+            <p id="track-footnote" class="text-center text-[11px] leading-relaxed text-[rgb(var(--muted-2))]" data-i18n="track.footnote">
+                This page refreshes on its own. No need to stay here—your table is noted.
+            </p>
+        </div>
+    </div>
+
+    <p id="track-error" class="mt-8 hidden text-center text-sm text-red-700/90" role="status"></p>
+</div>
+
+@section Scripts {
+    <script src="~/lib/signalr/signalr.min.js" asp-append-version="true"></script>
+    <script>
+        const POLL_MS = 12000;
+        const MILESTONE_FALLBACK = ["Received", "In preparation", "Finishing touches", "On the way", "Served"];
+
+        const root = document.getElementById("track-root");
+        const orderId = root && root.dataset ? root.dataset.orderId : void 0;
+        const trackToken = (root && root.dataset && root.dataset.trackToken) || "";
+        function annapTrackDbgHub(msg) {
+            var d = window.AnnapGuestLanDebug;
+            if (d && typeof d.setHub === "function") d.setHub(msg);
+        }
+        function __annapTrackDevOn() {
+            var adb = typeof window.AnnapGuestBoot !== "undefined" ? window.AnnapGuestBoot : {};
+            return window.__ANNAP_DEV_MODE === true && (window.__ANNAP_DEBUG === true || adb.showBootChecklist === true);
+        }
+        function __annapTrackLog() {
+            if (!__annapTrackDevOn()) return;
+            try {
+                window.console.log.apply(window.console, arguments);
+            } catch (_e) {}
+        }
+        function __annapTrackInfo() {
+            if (!__annapTrackDevOn()) return;
+            try {
+                window.console.info.apply(window.console, arguments);
+            } catch (_e2) {}
+        }
+        function __annapTrackWarn() {
+            if (!__annapTrackDevOn()) return;
+            try {
+                window.console.warn.apply(window.console, arguments);
+            } catch (_e3) {}
+        }
+        let pollTimer = null;
+        let lastStep = null;
+        let pollInFlight = false;
+        let trackPollFailures = 0;
+        let hubConnection = null;
+        let lastTrackPayload = null;
+        let lastOrderHubPulseMs = null;
+        let hubPollDebounce = null;
+
+        function scheduleHubPoll() {
+            if (hubPollDebounce) window.clearTimeout(hubPollDebounce);
+            hubPollDebounce = window.setTimeout(() => {
+                hubPollDebounce = null;
+                trackPollFailures = 0;
+                poll();
+            }, 420);
+        }
+
+        function trackT(k) {
+            try {
+                if (window.LuxuryI18n && LuxuryI18n.t) {
+                    const v = LuxuryI18n.t(k);
+                    if (v) return v;
+                }
+            } catch (e) {
+                /* ignore */
+            }
+            return "";
+        }
+
+        function milestoneLabel(step) {
+            const s = trackT("track.step" + step);
+            if (s) return s;
+            return MILESTONE_FALLBACK[step - 1] || "";
+        }
+
+        function schedulePoll(delay) {
+            if (pollTimer) window.clearTimeout(pollTimer);
+            pollTimer = window.setTimeout(() => {
+                pollTimer = null;
+                poll();
+            }, delay);
+        }
+
+        function el(id) {
+            return document.getElementById(id);
+        }
+
+        function renderMilestones(step, isComplete) {
+            const host = el("track-milestones");
+            if (!host) return;
+            const effective = Number(step) || 1;
+            host.innerHTML = [1, 2, 3, 4, 5]
+                .map((mstep) => {
+                    const m = { step: mstep, label: milestoneLabel(mstep) };
+                    const past = isComplete || effective > m.step;
+                    const current = !isComplete && effective === m.step;
+                    let cls = "track-mile";
+                    if (past) cls += " is-past";
+                    else if (current) cls += " is-current";
+                    else cls += " is-future";
+                    const mark = past
+                        ? `<span class="track-mile-dot track-mile-dot--done" aria-hidden="true"><svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></span>`
+                        : `<span class="track-mile-dot" aria-hidden="true"></span>`;
+                    return `<div class="${cls}" data-step="${m.step}">
+                        <div class="track-mile-rail" aria-hidden="true"></div>
+                        ${mark}
+                        <div class="track-mile-body">
+                            <p class="track-mile-label">${escapeHtml(m.label)}</p>
+                        </div>
+                    </div>`;
+                })
+                .join("");
+        }
+
+        function renderItems(items) {
+            const ul = el("track-items");
+            if (!ul) return;
+            if (!items || !items.length) {
+                const d = trackT("track.detailsUnavailable") || "Details unavailable.";
+                ul.innerHTML = `<li class="text-[rgb(var(--muted-2))]">${escapeHtml(d)}</li>`;
+                return;
+            }
+            ul.innerHTML = items
+                .map(
+                    (it) =>
+                        `<li class="flex justify-between gap-3 border-b border-white/[0.05] py-2 last:border-0"><span class="min-w-0 truncate text-[rgb(var(--fg))]">${escapeHtml(it.name)}</span><span class="shrink-0 tabular-nums text-[rgb(var(--muted))]">×${it.quantity}</span></li>`
+                )
+                .join("");
+        }
+
+        function escapeHtml(s) {
+            return String(s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
+        }
+
+        function applyPayload(data) {
+            var te = el("track-error");
+            if (te) te.classList.add("hidden");
+            if (data.isCancelled) {
+                var tl = el("track-live");
+                if (tl) tl.classList.add("hidden");
+                var tc = el("track-cancelled");
+                if (tc) tc.classList.remove("hidden");
+                const msg = el("track-cancelled-msg");
+                if (msg) msg.textContent = data.message || trackT("track.cancelledFallback") || "This order is no longer active.";
+                lastTrackPayload = null;
+                return;
+            }
+            var tc2 = el("track-cancelled");
+            if (tc2) tc2.classList.add("hidden");
+            var tl2 = el("track-live");
+            if (tl2) tl2.classList.remove("hidden");
+
+            const t = el("track-table");
+            if (t) t.textContent = data.tableCode || "—";
+            const hero = el("track-hero-title");
+            const line = el("track-hero-line");
+            if (hero) hero.textContent = data.title || "";
+            if (line) line.textContent = data.line || "";
+
+            const step = Number(data.step) || 1;
+            const isComplete = !!data.isComplete;
+            if (lastStep !== null && step > lastStep && root) root.classList.add("track-root--pulse");
+            window.setTimeout(function () {
+                if (root) root.classList.remove("track-root--pulse");
+            }, 900);
+            lastStep = step;
+
+            renderMilestones(step, isComplete);
+            renderItems(data.items);
+
+            const coda = el("track-complete-coda");
+            if (coda) coda.classList.toggle("hidden", !isComplete);
+            if (root) root.classList.toggle("track-root--complete", isComplete);
+
+            lastTrackPayload = data;
+        }
+
+        function trackQuery() {
+            if (!trackToken) return "";
+            return `?token=${encodeURIComponent(trackToken)}`;
+        }
+
+        async function poll() {
+            if (!orderId || pollInFlight) return;
+            pollInFlight = true;
+            let nextDelay = POLL_MS;
+            try {
+                const ac = new AbortController();
+                const pt = setTimeout(function () {
+                    ac.abort();
+                }, 18000);
+                let res;
+                try {
+                    const trackPath = "/api/track/orders/" + orderId + trackQuery();
+                    res = await fetch(
+                        typeof window.__annapApiUrl === "function" ? window.__annapApiUrl(trackPath) : trackPath,
+                        {
+                        headers: { Accept: "application/json" },
+                        signal: ac.signal
+                    });
+                } finally {
+                    clearTimeout(pt);
+                }
+                if (res.status === 404) {
+                    const errEl = el("track-error");
+                    if (errEl) {
+                        errEl.textContent = trackT("track.err404") || "We could not find this order.";
+                        errEl.classList.remove("hidden");
+                    }
+                    var tl404 = el("track-live");
+                    if (tl404) tl404.classList.add("hidden");
+                    nextDelay = POLL_MS * 2;
+                    return;
+                }
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                applyPayload(data);
+                trackPollFailures = 0;
+            } catch (_poll) {
+                trackPollFailures++;
+                const errEl = el("track-error");
+                if (errEl && trackPollFailures >= 2) {
+                    errEl.textContent = trackT("track.errSoft") || "A quiet moment—connection is soft. We'll try again shortly.";
+                    errEl.classList.remove("hidden");
+                }
+                nextDelay = Math.min(POLL_MS * 2, 24000);
+            } finally {
+                pollInFlight = false;
+                schedulePoll(nextDelay);
+            }
+        }
+
+        async function start() {
+            var adb = typeof window.AnnapGuestBoot !== "undefined" ? window.AnnapGuestBoot : {};
+            if (adb.disableSignalR === true) {
+                __annapTrackWarn("[annap] track: SignalR disabled (diag/safe)");
+                if (window.AnnapGuestBootHarness) AnnapGuestBootHarness.markSkipped("signalr");
+                await poll();
+                if (window.AnnapGuestBootHarness && typeof AnnapGuestBootHarness.markHydrationDone === "function")
+                    AnnapGuestBootHarness.markHydrationDone();
+                return;
+            }
+            if (orderId && trackToken && window.signalR) {
+                annapTrackDbgHub("Connecting…");
+                const hubStartMs = 22000;
+                try {
+                    hubConnection = new signalR.HubConnectionBuilder()
+                        .withUrl(typeof window.__annapHubUrl === "function" ? window.__annapHubUrl() : "/hubs/orders")
+                        .withAutomaticReconnect([0, 3000, 8000, 20000, 45000, 60000])
+                        .build();
+                    hubConnection.on("orderUpdated", (payload) => {
+                        const at = payload && typeof payload.atUtc === "number" ? payload.atUtc : null;
+                        if (at != null && lastOrderHubPulseMs === at) return;
+                        lastOrderHubPulseMs = at;
+                        scheduleHubPoll();
+                    });
+                    hubConnection.onreconnecting(() => {
+                        annapTrackDbgHub("Reconnecting");
+                    });
+                    hubConnection.onreconnected(() => {
+                        lastOrderHubPulseMs = null;
+                        annapTrackDbgHub("Connected");
+                        scheduleHubPoll();
+                    });
+                    hubConnection.onclose(() => {
+                        annapTrackDbgHub("Disconnected");
+                    });
+                    await new Promise((resolve, reject) => {
+                        const t = setTimeout(() => reject(new Error("SignalR start timeout")), hubStartMs);
+                        hubConnection
+                            .start()
+                            .then(() => {
+                                clearTimeout(t);
+                                resolve();
+                            })
+                            .catch((e) => {
+                                clearTimeout(t);
+                                reject(e);
+                            });
+                    });
+                    await hubConnection.invoke("JoinGuestOrder", orderId, trackToken);
+                    annapTrackDbgHub("Connected");
+                    __annapTrackInfo("[annap] track SignalR connected");
+                    if (window.AnnapGuestBootHarness) AnnapGuestBootHarness.row("signalr", "ok");
+                } catch (e) {
+                    __annapTrackWarn("[annap] track SignalR failed; using poll only", e);
+                    annapTrackDbgHub("Offline · poll");
+                    hubConnection = null;
+                    if (window.AnnapGuestBootHarness) AnnapGuestBootHarness.row("signalr", "fail");
+                }
+            } else {
+                annapTrackDbgHub(orderId && trackToken ? "N/A (no client)" : "—");
+                if (window.AnnapGuestBootHarness) AnnapGuestBootHarness.markSkipped("signalr");
+            }
+            await poll();
+            if (window.AnnapGuestBootHarness && typeof AnnapGuestBootHarness.markHydrationDone === "function")
+                AnnapGuestBootHarness.markHydrationDone();
+        }
+
+        __annapTrackLog("[annap] boot track step 1: script parsed");
+
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState === "visible") poll();
+        });
+        try {
+            const _vt = (sessionStorage.getItem("annap_venue_table_id") || "").trim();
+            GuestInteractionContract.setTrayOpener(function () {
+                window.location.href =
+                    _vt && GuestInteractionContract.isGuid(_vt)
+                        ? "/Menu/Index?vt=" + encodeURIComponent(_vt)
+                        : "/Menu/Index";
+            });
+        } catch (_trayVt) {
+            /* ignore */
+        }
+
+        document.addEventListener("luxury:i18n-changed", function () {
+            if (!lastTrackPayload || lastTrackPayload.isCancelled) return;
+            const step = Number(lastTrackPayload.step) || 1;
+            renderMilestones(step, !!lastTrackPayload.isComplete);
+            renderItems(lastTrackPayload.items);
+        });
+
+        function bootTrack() {
+            start();
+        }
+        if (window.LuxuryI18n && window.LuxuryI18n.ready) window.LuxuryI18n.ready.then(bootTrack).catch(bootTrack);
+        else bootTrack();
+    </script>
+}

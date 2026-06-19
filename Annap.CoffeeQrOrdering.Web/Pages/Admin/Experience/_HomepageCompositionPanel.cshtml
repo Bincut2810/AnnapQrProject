@@ -1,0 +1,147 @@
+@model Annap.CoffeeQrOrdering.Web.Pages.Admin.Experience.IHomepageCompositionHost
+@{
+    var count = HomepageExperienceSettingsAdmin.VisibleCount(Model.HomepageForm);
+    var layoutLabel = count switch
+    {
+        0 => "Tạm dừng sắp đặt",
+        1 => "Một lối · trung tâm",
+        2 => "Hai lối · đối xứng",
+        _ => "Ba lối · tam giác biên tập"
+    };
+}
+<section class="exp-homepage-panel"
+         id="homepage-composition"
+         aria-labelledby="exp-homepage-panel-title"
+         data-homepage-composition>
+    <div class="exp-homepage-panel__head">
+        <div>
+            <p class="text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]">Sảnh khách · điều khiển ngay</p>
+            <h2 class="exp-homepage-panel__title" id="exp-homepage-panel-title">Bố cục hành trình</h2>
+            <p class="exp-muted mt-2 text-sm max-w-xl">
+                Bạn đang dệt không khí sảnh — không phải bật tính năng. Khách chỉ thấy lối bạn để sáng; bố cục tự cân lại trên điện thoại.
+            </p>
+        </div>
+        <div class="exp-homepage-panel__status" aria-live="polite">
+            <span class="exp-homepage-panel__status-count" data-hp-status-count>@count</span>
+            <span class="exp-homepage-panel__status-label">/ 3 lối đang hiện</span>
+            <p class="exp-homepage-panel__status-layout" data-hp-status-layout>@layoutLabel</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.HomepageCompositionStatus))
+    {
+        <p class="mt-3 text-sm text-emerald-200/90" role="status">@Model.HomepageCompositionStatus</p>
+    }
+
+    <form method="post"
+          asp-page-handler="@Model.HomepageCompositionPostHandler"
+          class="exp-homepage-panel__body"
+          id="@Model.HomepageCompositionFormId"
+          data-homepage-preview-form>
+        <div class="exp-homepage-panel__grid">
+            <div class="exp-homepage-panel__controls">
+                <p class="text-[10px] font-medium tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]">Đèn hiện diện</p>
+                <div class="exp-mode-lamps mt-4" role="group" aria-label="Hiển thị lối vào sảnh">
+                    <label class="exp-mode-lamp">
+                        <input type="checkbox"
+                               class="exp-mode-lamp__input"
+                               asp-for="HomepageForm.IsGroupEnabled"
+                               data-homepage-flow="group" />
+                        <span class="exp-mode-lamp__bezel" aria-hidden="true">
+                            <span class="exp-mode-lamp__glow"></span>
+                            <span class="exp-mode-lamp__filament"></span>
+                        </span>
+                        <span class="exp-mode-lamp__copy">
+                            <span class="exp-mode-lamp__title">Đi nhóm</span>
+                            <span class="exp-mode-lamp__hint">Nghi thức bàn · chia khay nếm</span>
+                        </span>
+                    </label>
+
+                    <label class="exp-mode-lamp">
+                        <input type="checkbox"
+                               class="exp-mode-lamp__input"
+                               asp-for="HomepageForm.IsSoloEnabled"
+                               data-homepage-flow="sommelier" />
+                        <span class="exp-mode-lamp__bezel" aria-hidden="true">
+                            <span class="exp-mode-lamp__glow"></span>
+                            <span class="exp-mode-lamp__filament"></span>
+                        </span>
+                        <span class="exp-mode-lamp__copy">
+                            <span class="exp-mode-lamp__title">Đi một mình</span>
+                            <span class="exp-mode-lamp__hint">Barista dẫn ly · câu hỏi cảm giác</span>
+                        </span>
+                    </label>
+
+                    <label class="exp-mode-lamp">
+                        <input type="checkbox"
+                               class="exp-mode-lamp__input"
+                               asp-for="HomepageForm.IsSommelierEnabled"
+                               data-homepage-flow="discovery" />
+                        <span class="exp-mode-lamp__bezel" aria-hidden="true">
+                            <span class="exp-mode-lamp__glow"></span>
+                            <span class="exp-mode-lamp__filament"></span>
+                        </span>
+                        <span class="exp-mode-lamp__copy">
+                            <span class="exp-mode-lamp__title">Bất ngờ</span>
+                            <span class="exp-mode-lamp__hint">Sealed path · phong bì quán</span>
+                        </span>
+                    </label>
+                </div>
+
+                <p class="mt-4 text-sm text-amber-200/85 @(count == 0 ? "" : "hidden")"
+                   data-hp-zero-warning
+                   @(count == 0 ? null : "hidden")
+                   role="status">
+                    Không có lối nào đang bật — khách sẽ thấy thông báo đang được sắp đặt.
+                </p>
+
+                <div class="mt-6 flex flex-wrap items-center gap-3">
+                    <button type="submit" class="admin-btn admin-btn--solid text-xs tracking-wide">Lưu bố cục sảnh</button>
+                    @if (Model.HomepageCompositionShowDedicatedLink)
+                    {
+                        <a class="admin-btn admin-btn--ghost text-xs tracking-wide" asp-page="/Admin/Experience/Homepage/Index">Mở xưởng sảnh →</a>
+                    }
+                    <a class="admin-btn admin-btn--ghost text-xs tracking-wide" asp-page="/Index" target="_blank" rel="noopener">Xem sảnh khách ↗</a>
+                </div>
+            </div>
+
+            <div class="exp-homepage-panel__preview-wrap" aria-label="Xem trước bố cục sảnh">
+                <p class="text-[10px] font-medium tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]">Xem trước trực tiếp</p>
+                <div class="exp-hp-mini-preview exp-hp-mini-preview--@count"
+                     data-exp-hp-mini-preview
+                     data-hp-count="@count">
+                    <div class="exp-hp-mini-preview__device">
+                        <p class="exp-hp-mini-preview__kicker" data-hp-preview-kicker>
+                            @(count == 1 ? "Hành trình gợi ý hôm nay" : "106/1 · sảnh")
+                        </p>
+                        <div class="exp-hp-mini-preview__stack exp-hp-mini-preview__stack--@count" data-hp-preview-stack>
+                            @{
+                                var ix = 0;
+                                if (Model.HomepageForm.IsGroupEnabled)
+                                {
+                                    ix++;
+                                    <div class="exp-hp-mini-preview__card" data-hp-card="group"><span>@(ix < 10 ? $"0{ix}" : ix)</span><strong>Đi nhóm</strong></div>
+                                }
+                                if (Model.HomepageForm.IsSoloEnabled)
+                                {
+                                    ix++;
+                                    <div class="exp-hp-mini-preview__card" data-hp-card="sommelier"><span>@(ix < 10 ? $"0{ix}" : ix)</span><strong>Một mình</strong></div>
+                                }
+                                if (Model.HomepageForm.IsSommelierEnabled)
+                                {
+                                    ix++;
+                                    <div class="exp-hp-mini-preview__card" data-hp-card="discovery"><span>@(ix < 10 ? $"0{ix}" : ix)</span><strong>Bất ngờ</strong></div>
+                                }
+                            }
+                        </div>
+                        <p class="exp-hp-mini-preview__empty @(count == 0 ? "" : "hidden")"
+                           data-hp-preview-empty
+                           @(count == 0 ? null : "hidden")>
+                            Trải nghiệm đang được sắp đặt.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</section>

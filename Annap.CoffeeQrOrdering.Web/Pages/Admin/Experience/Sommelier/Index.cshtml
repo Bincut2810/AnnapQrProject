@@ -1,0 +1,316 @@
+@page "/admin/experience/guided"
+@model Annap.CoffeeQrOrdering.Web.Pages.Admin.Experience.Sommelier.IndexModel
+@{
+    ViewData["Title"] = "Trải nghiệm nếm thử";
+    ViewData["AdminNavSection"] = "experience-sommelier";
+    ViewData["ExpPreviewMode"] = "guided";
+    ViewData["ExpPreviewSeedJson"] = Model.ExperiencePreviewSeedJson;
+    ViewData["AdminReturnHref"] = Url.Content("~/admin");
+    ViewData["AdminReturnLabel"] = "← Quay lại";
+    const string saveFormId = "exp-somm-save";
+    var activeSetKey = Model.ActiveSetKey;
+    var isDefaultSet = activeSetKey == Annap.CoffeeQrOrdering.Web.GuestExperience.GuidedSommelierCatalog.QuestionSetId;
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-experience.css" asp-append-version="true" />
+    <style>
+        .somm-set-rail { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; padding:.6rem 0; border-bottom:1px solid rgba(255,255,255,.07); margin-bottom:1.5rem; }
+        .somm-set-tab { display:inline-flex; align-items:center; gap:.4rem; padding:.25rem .75rem; border-radius:999px; font-size:.68rem; font-weight:500; letter-spacing:.06em; text-decoration:none; border:1px solid rgba(255,255,255,.1); color:rgb(var(--muted)); transition:all .18s; }
+        .somm-set-tab:hover { color:rgb(var(--fg)); border-color:rgba(255,255,255,.22); }
+        .somm-set-tab--active { background:rgba(196,154,60,.12); border-color:rgba(196,154,60,.38); color:rgb(var(--accent)); }
+        .somm-set-tab__dot { width:.38rem; height:.38rem; border-radius:50%; background:currentColor; opacity:.6; }
+        .somm-q-card { background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.07); border-radius:1.25rem; padding:1.5rem 1.5rem 1.25rem; }
+        .somm-q-card + .somm-q-card { margin-top:1.25rem; }
+        .somm-q-prompt { font-size:1.05rem; font-weight:500; line-height:1.35; letter-spacing:-.01em; color:rgb(var(--fg)); width:100%; }
+        .somm-q-key { display:inline-flex; align-items:center; font-family:monospace; font-size:.65rem; padding:.15rem .45rem; border-radius:4px; background:rgba(255,255,255,.06); color:rgb(var(--muted-2)); letter-spacing:.04em; user-select:all; }
+        .somm-opt-card { background:rgba(0,0,0,.18); border:1px solid rgba(255,255,255,.06); border-radius:.875rem; padding:.875rem 1rem; }
+        .somm-opt-card + .somm-opt-card { margin-top:.5rem; }
+        .somm-drag { cursor:grab; color:rgb(var(--muted-2)); line-height:1; flex-shrink:0; font-size:1rem; padding-top:.1rem; }
+        .somm-drag:active { cursor:grabbing; }
+        .somm-toggle-wrap { display:flex; align-items:center; gap:.35rem; }
+        .somm-toggle-label { font-size:.64rem; text-transform:uppercase; letter-spacing:.08em; color:rgb(var(--muted-2)); }
+        .somm-affinity-pill { display:inline-flex; align-items:center; gap:.3rem; border:1px solid rgba(255,255,255,.09); background:rgba(255,255,255,.03); border-radius:999px; padding:.15rem .55rem; font-size:.66rem; color:rgb(var(--fg)); }
+        .somm-section-label { font-size:.62rem; text-transform:uppercase; letter-spacing:.1em; color:rgb(var(--muted-2)); font-weight:600; margin-bottom:.3rem; }
+        .somm-compact-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(8rem,1fr)); gap:.5rem; }
+    </style>
+}
+
+<partial name="Admin/_AdminEditorialReturn" />
+
+<div class="exp-cms admin-page-head">
+    <p class="exp-kicker">Trải nghiệm khách</p>
+    <h1 class="exp-title">Nếm thử có hướng dẫn</h1>
+    <p class="exp-muted">Mỗi câu hỏi dẫn khách đến một ly phù hợp. Chỉnh sửa ngôn ngữ, thứ tự và câu trả lời tại đây. Scoring keys không thay đổi.</p>
+</div>
+
+@* Campaign / set rail *@
+<div class="somm-set-rail">
+    @foreach (var s in Model.AvailableSets)
+    {
+        var isActive = s.SetKey == activeSetKey;
+        <a href="?set=@Uri.EscapeDataString(s.SetKey)"
+           class="somm-set-tab @(isActive ? "somm-set-tab--active" : "")"
+           title="@s.QuestionCount câu hỏi">
+            @if (isActive)
+            {
+                <span class="somm-set-tab__dot"></span>
+            }
+            <span>@s.SetKey</span>
+            <span style="opacity:.5">(@s.QuestionCount)</span>
+        </a>
+    }
+    <form method="post" asp-page-handler="CreateCampaign" class="inline-flex items-center gap-1.5 ml-auto">
+        @Html.AntiForgeryToken()
+        <input class="exp-input h-7 text-xs w-36" name="campaignName" placeholder="tên chiến dịch" />
+        <button type="submit" class="admin-btn admin-btn--ghost text-xs h-7">+ Chiến dịch mới</button>
+    </form>
+</div>
+
+@* Hidden bulk-save form *@
+<form id="@saveFormId" method="post" asp-page-handler="Save" class="hidden" aria-hidden="true">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="SetKey" value="@activeSetKey" />
+</form>
+
+<div class="exp-cms exp-cms__grid exp-cms__grid--split mt-2" data-exp-preview="guided">
+    <div>
+        <form method="post" asp-page-handler="AddQuestion" class="mb-5">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="setKey" value="@activeSetKey" />
+            <button type="submit" class="admin-btn admin-btn--ghost text-xs">+ Thêm câu hỏi</button>
+        </form>
+
+        <ul id="q-sort-list" class="list-none p-0 m-0" aria-label="Câu hỏi hướng dẫn">
+            @for (var qi = 0; qi < Model.QuestionsForm.Count; qi++)
+            {
+                var qRow = Model.QuestionsForm[qi];
+                <li class="somm-q-card" data-q-card>
+                    <input type="hidden" asp-for="QuestionsForm[qi].Id" form="@saveFormId" />
+                    <input type="hidden" asp-for="QuestionsForm[qi].SortOrder" form="@saveFormId" class="somm-q-sort-input" />
+
+                    <div class="flex items-start gap-3 mb-4">
+                        <span class="somm-drag mt-1.5" title="Kéo để sắp xếp câu hỏi" aria-hidden="true">⠿</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex flex-wrap items-center gap-2 mb-2">
+                                <span class="somm-q-key" title="Internal key — không thể chỉnh sửa">@qRow.ExternalKey</span>
+                                <label class="somm-toggle-wrap cursor-pointer">
+                                    <input type="checkbox" asp-for="QuestionsForm[qi].IsEnabled" form="@saveFormId" class="h-3.5 w-3.5 rounded accent-[rgb(var(--accent))]" />
+                                    <span class="somm-toggle-label">Hiện</span>
+                                </label>
+                                <label class="somm-toggle-wrap cursor-pointer">
+                                    <input type="checkbox" asp-for="QuestionsForm[qi].IsOptional" form="@saveFormId" class="h-3.5 w-3.5 rounded accent-[rgb(var(--accent))]" />
+                                    <span class="somm-toggle-label">Tùy chọn</span>
+                                </label>
+                            </div>
+                            <input class="somm-q-prompt exp-input bg-transparent border-0 border-b border-white/10 focus:border-white/30 rounded-none px-0 pb-1"
+                                   asp-for="QuestionsForm[qi].Prompt"
+                                   form="@saveFormId"
+                                   placeholder="Câu hỏi cho khách…" />
+                            <input class="exp-input mt-2 text-xs w-full opacity-60"
+                                   asp-for="QuestionsForm[qi].Description"
+                                   form="@saveFormId"
+                                   placeholder="Ghi chú nội bộ (tùy chọn)" />
+                        </div>
+                    </div>
+
+                    <div class="pl-7">
+                        <p class="somm-section-label">Câu trả lời</p>
+                        <ul class="somm-opt-sort list-none p-0 m-0" aria-label="Câu trả lời">
+                            @for (var oi = 0; oi < qRow.Options.Count; oi++)
+                            {
+                                var oRow = qRow.Options[oi];
+                                <li class="somm-opt-card" data-opt-card>
+                                    <input type="hidden" asp-for="QuestionsForm[qi].Options[oi].Id" form="@saveFormId" />
+                                    <input type="hidden" asp-for="QuestionsForm[qi].Options[oi].QuestionId" form="@saveFormId" />
+                                    <input type="hidden" asp-for="QuestionsForm[qi].Options[oi].SortOrder" form="@saveFormId" class="somm-o-sort-input" />
+
+                                    <div class="flex items-start gap-2">
+                                        <span class="somm-drag text-sm mt-1" aria-hidden="true">⠿</span>
+                                        <div class="flex-1 min-w-0 space-y-2.5">
+                                            <div class="flex flex-wrap items-center gap-2">
+                                                <span class="somm-q-key text-[.6rem]">@oRow.ExternalKey</span>
+                                                <label class="somm-toggle-wrap cursor-pointer">
+                                                    <input type="checkbox" asp-for="QuestionsForm[qi].Options[oi].IsEnabled" form="@saveFormId" class="h-3 w-3 rounded accent-[rgb(var(--accent))]" />
+                                                    <span class="somm-toggle-label">Hiện</span>
+                                                </label>
+                                            </div>
+                                            <div>
+                                                <p class="somm-section-label">Nhãn hiển thị cho khách</p>
+                                                <input class="exp-input w-full text-sm font-medium"
+                                                       asp-for="QuestionsForm[qi].Options[oi].Label"
+                                                       form="@saveFormId"
+                                                       placeholder="Nhãn câu trả lời…" />
+                                            </div>
+                                            <div>
+                                                <p class="somm-section-label">Dòng cảm xúc <span class="normal-case font-normal opacity-60">(sau khi chọn)</span></p>
+                                                <input class="exp-input w-full text-xs"
+                                                       asp-for="QuestionsForm[qi].Options[oi].Subline"
+                                                       form="@saveFormId"
+                                                       placeholder="toward something gentle and held…" />
+                                            </div>
+                                            <div>
+                                                <p class="somm-section-label">Lời phản hồi sommelier <span class="normal-case font-normal opacity-60">(hiển thị cho khách)</span></p>
+                                                <textarea class="exp-input w-full text-xs min-h-[3.5rem]"
+                                                          asp-for="QuestionsForm[qi].Options[oi].Description"
+                                                          form="@saveFormId"
+                                                          placeholder="Một ly tỏ ra dần theo buổi tối…"></textarea>
+                                            </div>
+                                            <div class="somm-compact-row">
+                                                <div>
+                                                    <p class="somm-section-label">Flavor mood</p>
+                                                    <select class="exp-select w-full text-xs" asp-for="QuestionsForm[qi].Options[oi].MoodKey" form="@saveFormId">
+                                                        <option value="">— none —</option>
+                                                        <option value="bright">bright</option>
+                                                        <option value="slow">slow</option>
+                                                        <option value="floral">floral</option>
+                                                        <option value="adventurous">adventurous</option>
+                                                        <option value="focus">focus</option>
+                                                        <option value="calm">calm</option>
+                                                        <option value="social">social</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <p class="somm-section-label">Adjustment signal</p>
+                                                    <select class="exp-select w-full text-xs" asp-for="QuestionsForm[qi].Options[oi].RefinementKey" form="@saveFormId">
+                                                        <option value="">— none —</option>
+                                                        <option value="less_sweet">less sweet</option>
+                                                        <option value="softer">softer</option>
+                                                        <option value="brighter">brighter</option>
+                                                        <option value="more_adventurous">more adventurous</option>
+                                                        <option value="low_caffeine">low caffeine</option>
+                                                        <option value="warmer">warmer</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <p class="somm-section-label">Emphasis</p>
+                                                    <input class="exp-input w-full" type="number" step="0.05" min="0.25" max="8"
+                                                           asp-for="QuestionsForm[qi].Options[oi].WeightMultiplier"
+                                                           form="@saveFormId" />
+                                                </div>
+                                            </div>
+                                            @if (oRow.AffinityRows.Count > 0)
+                                            {
+                                                <div>
+                                                    <p class="somm-section-label mb-1.5">Ái ngữ ly</p>
+                                                    <div class="flex flex-wrap gap-1.5">
+                                                        @foreach (var aff in oRow.AffinityRows)
+                                                        {
+                                                            <form method="post" asp-page-handler="RemoveAffinity" class="inline m-0">
+                                                                @Html.AntiForgeryToken()
+                                                                <input type="hidden" name="affinityId" value="@aff.Id" />
+                                                                <input type="hidden" name="setKey" value="@activeSetKey" />
+                                                                <span class="somm-affinity-pill">
+                                                                    <span class="text-[rgb(var(--muted))]">@aff.MenuItemName</span>
+                                                                    <span class="font-mono opacity-60">@aff.Weight.ToString("0.###")</span>
+                                                                    <button type="submit" class="text-[rgb(var(--muted-2))] hover:text-[rgb(var(--fg))] leading-none" title="Xóa">×</button>
+                                                                </span>
+                                                            </form>
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                            <form method="post" asp-page-handler="AddAffinity" class="flex flex-wrap items-end gap-2 pt-2 border-t border-white/[0.05]">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="optionId" value="@oRow.Id" />
+                                                <input type="hidden" name="setKey" value="@activeSetKey" />
+                                                <div class="flex-1 min-w-[8rem]">
+                                                    <p class="somm-section-label">Liên kết ly</p>
+                                                    <select class="exp-select w-full text-xs" name="menuItemId" required>
+                                                        <option value="">Chọn…</option>
+                                                        @foreach (var m in Model.MenuPicks)
+                                                        {
+                                                            <option value="@m.Id">@m.Name</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="w-20">
+                                                    <p class="somm-section-label">Trọng số</p>
+                                                    <input class="exp-input w-full" name="weight" type="number" step="0.01" value="0.7" />
+                                                </div>
+                                                <button type="submit" class="admin-btn admin-btn--ghost text-xs self-end">Liên kết</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        </ul>
+                        <form method="post" asp-page-handler="AddOption" class="mt-3 flex flex-wrap items-end gap-2 border-t border-white/[0.05] pt-3">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="questionId" value="@qRow.Id" />
+                            <input type="hidden" name="setKey" value="@activeSetKey" />
+                            <div class="flex-1 min-w-[10rem]">
+                                <p class="somm-section-label">Câu trả lời mới</p>
+                                <input class="exp-input w-full text-sm" name="label" placeholder="VD: Điều gì đó thật yên tĩnh" />
+                            </div>
+                            <button type="submit" class="admin-btn admin-btn--ghost text-xs self-end">Thêm</button>
+                        </form>
+                    </div>
+                </li>
+            }
+        </ul>
+
+        <div class="exp-actions mt-8 flex items-center gap-4">
+            <button type="submit" class="admin-btn admin-btn--solid" form="@saveFormId">Lưu bộ câu hỏi</button>
+            @if (!isDefaultSet)
+            {
+                <span class="text-xs text-[rgb(var(--muted))]">Đang chỉnh: <code class="font-mono">@activeSetKey</code></span>
+            }
+        </div>
+    </div>
+
+    <partial name="_ExperienceLivePreview" />
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" crossorigin="anonymous"></script>
+    <script src="~/js/admin-experience-preview.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            if (typeof Sortable === "undefined") return;
+
+            function reindexAll() {
+                var qList = document.getElementById("q-sort-list");
+                if (!qList) return;
+                qList.querySelectorAll("[data-q-card]").forEach(function (qCard, qi) {
+                    qCard.querySelectorAll("[name^='QuestionsForm[']").forEach(function (inp) {
+                        inp.name = inp.name.replace(/QuestionsForm\[\d+\]/, "QuestionsForm[" + qi + "]");
+                    });
+                    var qs = qCard.querySelector(".somm-q-sort-input");
+                    if (qs) qs.value = String(qi);
+
+                    var optList = qCard.querySelector(".somm-opt-sort");
+                    if (!optList) return;
+                    optList.querySelectorAll("[data-opt-card]").forEach(function (optCard, oi) {
+                        optCard.querySelectorAll("input,select,textarea").forEach(function (inp) {
+                            if (!inp.name || inp.name.indexOf(".Options[") === -1) return;
+                            inp.name = inp.name.replace(/\.Options\[\d+\]/, ".Options[" + oi + "]");
+                        });
+                        var os = optCard.querySelector(".somm-o-sort-input");
+                        if (os) os.value = String(oi);
+                    });
+                });
+            }
+
+            var qList = document.getElementById("q-sort-list");
+            if (qList) {
+                Sortable.create(qList, {
+                    animation: 160,
+                    handle: ".somm-drag[title]",
+                    ghostClass: "opacity-40",
+                    onEnd: reindexAll
+                });
+            }
+
+            document.querySelectorAll(".somm-opt-sort").forEach(function (ul) {
+                Sortable.create(ul, {
+                    animation: 140,
+                    handle: ".somm-drag:not([title])",
+                    ghostClass: "opacity-40",
+                    onEnd: reindexAll
+                });
+            });
+
+            reindexAll();
+        })();
+    </script>
+}

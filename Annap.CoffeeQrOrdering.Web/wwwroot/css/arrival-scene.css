@@ -1,0 +1,399 @@
+/**
+ * Scene 01 — QR Arrival. Ceremonial sealed letter.
+ * Transform + opacity + clip-path only; GPU-friendly.
+ * Loaded only with seated Index + _ArrivalScene.
+ */
+
+.annap-arrival-scene {
+    --aas-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --aas-ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
+    --aas-ease-release: cubic-bezier(0.7, 0, 0.84, 0);
+    --aas-ink: rgb(42, 32, 20);
+    --aas-parchment: rgb(238, 224, 202);
+    --aas-parchment-deep: rgb(222, 206, 180);
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+        env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+    box-sizing: border-box;
+    pointer-events: none;
+    background: rgb(14, 11, 8);
+    min-height: 100%;
+    min-height: -webkit-fill-available;
+    min-height: var(--vv-h, 100svh);
+    contain: layout paint;
+}
+
+/* === Canvas: fades to home on dismiss === */
+
+.annap-arrival-scene__canvas {
+    position: relative;
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 100%;
+    min-height: 100%;
+    min-height: var(--vv-h, 100svh);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    transform: translateZ(0);
+    opacity: 1;
+    transition: opacity 900ms var(--aas-ease-release);
+}
+
+.annap-arrival-scene--choreo-dismiss .annap-arrival-scene__canvas {
+    opacity: 0;
+}
+
+/* === Warm desk atmosphere layer === */
+
+.aas-desk {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        180deg,
+        rgb(218, 200, 172) 0%,
+        rgb(232, 216, 192) 38%,
+        rgb(242, 226, 200) 65%,
+        rgb(234, 216, 188) 100%
+    );
+    opacity: 0;
+    transition: opacity 1.55s var(--aas-ease-settle);
+    pointer-events: none;
+    will-change: opacity;
+}
+
+.annap-arrival-scene--choreo-desk .aas-desk {
+    opacity: 1;
+}
+
+/* === Stage: centers envelope + label === */
+
+.aas-stage {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.45rem;
+    padding: 0 1.25rem;
+}
+
+/* === Envelope wrap: entry drift === */
+
+.aas-envelope-wrap {
+    transform: translate3d(0, -12%, 0) scale(0.97);
+    opacity: 0;
+    filter: blur(5px);
+    transition: transform 0s, opacity 0s, filter 0s;
+    will-change: transform, opacity, filter;
+}
+
+.annap-arrival-scene--choreo-arrive .aas-envelope-wrap {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+    filter: blur(0);
+    transition:
+        transform 1.22s var(--aas-ease-settle),
+        opacity 0.95s var(--aas-ease),
+        filter 0.88s var(--aas-ease);
+}
+
+/* === Envelope shell === */
+
+.aas-envelope {
+    position: relative;
+    width: min(78vw, 16.5rem);
+    aspect-ratio: 5 / 3.4;
+    perspective: 540px;
+}
+
+.aas-env__body {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(162deg, var(--aas-parchment) 0%, var(--aas-parchment-deep) 100%);
+    border: 1px solid rgba(42, 32, 20, 0.22);
+    border-radius: 1px;
+    box-shadow:
+        0 10px 38px rgba(42, 32, 20, 0.2),
+        0 3px 10px rgba(42, 32, 20, 0.12),
+        inset 0 1px 0 rgba(255, 248, 236, 0.55);
+}
+
+/* === Inner cavity (holds the letter) === */
+
+.aas-env__cavity {
+    position: absolute;
+    inset: 24% 10% 14%;
+    overflow: hidden;
+    background: linear-gradient(
+        168deg,
+        rgba(252, 244, 228, 0.52),
+        rgba(238, 222, 196, 0.28)
+    );
+    border-radius: 1px;
+}
+
+.aas-env__cavity::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+        ellipse 90% 65% at 50% 85%,
+        rgba(200, 158, 90, 0.18),
+        transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0s;
+    pointer-events: none;
+}
+
+.annap-arrival-scene--choreo-light .aas-env__cavity::after {
+    opacity: 1;
+    transition: opacity 1.05s var(--aas-ease-settle);
+}
+
+/* === Letter === */
+
+.aas-letter {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.48rem;
+    padding: 0.55rem 0.7rem;
+    transform: translate3d(0, 58%, 0);
+    opacity: 0;
+    transition: transform 0s, opacity 0s;
+    will-change: transform, opacity;
+}
+
+.annap-arrival-scene--choreo-letter .aas-letter {
+    transform: translate3d(0, 0, 0);
+    opacity: 1;
+    transition:
+        transform 1.05s var(--aas-ease-settle),
+        opacity 0.82s var(--aas-ease);
+}
+
+.aas-letter__line {
+    margin: 0;
+    padding: 0;
+    font-family: "Playfair Display", ui-serif, Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: clamp(0.58rem, 2.1vw, 0.72rem);
+    line-height: 1.52;
+    text-align: center;
+    color: var(--aas-ink);
+    max-width: 24ch;
+    opacity: 0;
+    transition: opacity 0s;
+}
+
+.annap-arrival-scene--choreo-text .aas-letter__line {
+    opacity: 1;
+    transition: opacity 0.92s var(--aas-ease);
+}
+
+.aas-letter__mark {
+    margin: 0;
+    padding: 0;
+    font-family: "Playfair Display", ui-serif, Georgia, "Times New Roman", serif;
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(0.55rem, 1.8vw, 0.68rem);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: rgba(42, 32, 20, 0.5);
+    opacity: 0;
+    transition: opacity 0s;
+}
+
+.annap-arrival-scene--choreo-mark .aas-letter__mark {
+    opacity: 1;
+    transition: opacity 0.88s var(--aas-ease);
+}
+
+/* === Envelope flap (sealing triangle) === */
+
+.aas-env__flap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 52%;
+    clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+    background: linear-gradient(
+        176deg,
+        rgb(240, 226, 204) 0%,
+        rgb(222, 206, 178) 100%
+    );
+    border-bottom: 1px solid rgba(42, 32, 20, 0.13);
+    transform-origin: 50% 0%;
+    opacity: 1;
+    transition: clip-path 0s, opacity 0s;
+    will-change: clip-path, opacity;
+    pointer-events: none;
+}
+
+.annap-arrival-scene--choreo-open .aas-env__flap {
+    clip-path: polygon(-3% 0%, 103% 0%, 50% 2.5%);
+    opacity: 0.42;
+    transition:
+        clip-path 1.12s var(--aas-ease-settle),
+        opacity 1.02s var(--aas-ease);
+}
+
+/* === Wax seal === */
+
+.aas-env__seal {
+    position: absolute;
+    left: 50%;
+    top: 46%;
+    width: 1.6rem;
+    height: 1.6rem;
+    margin: -0.8rem 0 0 -0.8rem;
+    border-radius: 9999px;
+    background: radial-gradient(
+        circle at 36% 32%,
+        rgba(196, 152, 92, 0.65),
+        rgba(164, 114, 52, 0.4) 55%,
+        transparent 82%
+    );
+    border: 1px solid rgba(148, 104, 48, 0.4);
+    box-shadow: 0 2px 7px rgba(42, 32, 20, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transform: scale(1) translateZ(0);
+    transition: opacity 0s, transform 0s;
+    pointer-events: none;
+}
+
+.aas-env__seal-glyph {
+    font-size: 0.5rem;
+    color: rgba(42, 32, 20, 0.52);
+    line-height: 1;
+    user-select: none;
+}
+
+.annap-arrival-scene--choreo-open .aas-env__seal {
+    opacity: 0;
+    transform: scale(0.8) translateZ(0);
+    transition:
+        opacity 0.78s var(--aas-ease),
+        transform 0.78s var(--aas-ease);
+}
+
+/* === Table label below envelope === */
+
+.aas-table-label {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 0.62rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(42, 32, 20, 0.4);
+    opacity: 0;
+    transition: opacity 0s;
+    min-height: 1em;
+}
+
+.annap-arrival-scene--choreo-text .aas-table-label {
+    opacity: 1;
+    transition: opacity 1.12s var(--aas-ease);
+}
+
+/* === Done state === */
+
+.annap-arrival-scene--done {
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transition: visibility 0s linear 0.65s, opacity 0.4s ease-out;
+}
+
+/* After unlock, scene is visual-only during dismiss — must not steal landing taps */
+html.annap-arrival-scene-unlock #annap-arrival-scene,
+html.annap-arrival-scene-unlock .annap-arrival-scene {
+    pointer-events: none;
+}
+
+/* === Suppress site chrome during arrival === */
+
+html.annap-arrival-scene-active .guest-header,
+html.annap-arrival-scene-active .annap-root-surface > footer {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+        opacity 380ms ease-out,
+        visibility 0s linear 380ms;
+}
+
+/* guest-main stays interactive — arrival is visual-only (pointer-events: none on scene) */
+
+.annap-arrival-scene--choreo-dismiss {
+    pointer-events: none;
+}
+
+html.annap-arrival-scene--arrival-overflow {
+    overflow: hidden;
+}
+
+/* === Reduced motion: instant settle === */
+
+@media (prefers-reduced-motion: reduce) {
+    .aas-envelope-wrap,
+    .aas-letter,
+    .aas-letter__line,
+    .aas-letter__mark,
+    .aas-env__flap,
+    .aas-env__seal,
+    .aas-env__cavity::after,
+    .aas-table-label {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    .annap-arrival-scene--reduced .aas-desk { opacity: 1; }
+    .annap-arrival-scene--reduced .aas-envelope-wrap { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+    .annap-arrival-scene--reduced .aas-letter { opacity: 1; transform: translate3d(0, 0, 0); }
+    .annap-arrival-scene--reduced .aas-letter__line { opacity: 1; }
+    .annap-arrival-scene--reduced .aas-letter__mark { opacity: 1; }
+    .annap-arrival-scene--reduced .aas-env__flap { clip-path: polygon(-3% 0%, 103% 0%, 50% 2.5%); opacity: 0.42; }
+    .annap-arrival-scene--reduced .aas-env__seal { opacity: 0; transform: scale(0.8) translateZ(0); }
+    .annap-arrival-scene--reduced .aas-table-label { opacity: 1; }
+}
+
+html.annap-guest-no-motion .aas-envelope-wrap,
+html.annap-guest-no-motion .aas-letter,
+html.annap-guest-no-motion .aas-letter__line,
+html.annap-guest-no-motion .aas-letter__mark,
+html.annap-guest-no-motion .aas-env__flap,
+html.annap-guest-no-motion .aas-env__seal,
+html.annap-guest-no-motion .aas-env__cavity::after,
+html.annap-guest-no-motion .aas-table-label {
+    animation: none !important;
+    transition: none !important;
+}
+
+html.annap-guest-no-motion .annap-arrival-scene--reduced .aas-desk { opacity: 1; }
+html.annap-guest-no-motion .annap-arrival-scene--reduced .aas-envelope-wrap { opacity: 1; transform: translate3d(0, 0, 0) scale(1); filter: blur(0); }
+html.annap-guest-no-motion .annap-arrival-scene--reduced .aas-letter { opacity: 1; transform: translate3d(0, 0, 0); }
+html.annap-guest-no-motion .annap-arrival-scene--reduced .aas-letter__line { opacity: 1; }
+html.annap-guest-no-motion .annap-arrival-scene--reduced .aas-letter__mark { opacity: 1; }
+html.annap-guest-no-motion .annap-arrival-scene--reduced .aas-env__flap { clip-path: polygon(-3% 0%, 103% 0%, 50% 2.5%); opacity: 0.42; }
+html.annap-guest-no-motion .annap-arrival-scene--reduced .aas-env__seal { opacity: 0; transform: scale(0.8) translateZ(0); }
+html.annap-guest-no-motion .annap-arrival-scene--reduced .aas-table-label { opacity: 1; }

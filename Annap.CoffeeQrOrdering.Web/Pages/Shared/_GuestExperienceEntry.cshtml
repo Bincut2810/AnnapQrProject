@@ -1,0 +1,362 @@
+@model Annap.CoffeeQrOrdering.Web.Pages.IndexModel
+@using System.Text.Json
+@{
+    var vt = Model.VenueTableId;
+    var sigN = Model.SignatureDrinks.Count;
+    var sigForJson = Model.SignatureDrinks.Select(d => new
+    {
+        id = d.Id,
+        name = d.Name,
+        subtitle = d.Subtitle ?? "",
+        tasting = d.TastingLine ?? "",
+        price = d.Price,
+        imageUrl = d.CardImageUrl,
+        detailHref = vt is Guid v ? $"/menu/drink/{d.Id}?vt={v:D}" : $"/menu/drink/{d.Id}"
+    });
+    var sigJson = JsonSerializer.Serialize(sigForJson, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+}
+<link rel="stylesheet" href="~/css/guest-experience.css" asp-append-version="true" />
+<link rel="stylesheet" href="~/css/guest-discovery-duck.css" asp-append-version="true" />
+
+<div id="guest-experience-root"
+     class="ge-root@(Model.CalmArrivalAnimations ? " ge-root--calm" : "")"
+     data-vt="@(vt?.ToString("D") ?? "")"
+     data-table-label="@(Model.TableGuestLabel ?? "")">
+    <div id="ge-landing" class="ge-landing ge-landing--ritual" aria-live="polite">
+        <div class="ge-ritual-atmosphere" aria-hidden="true">
+            <div class="ge-ritual-atmosphere__veil"></div>
+            <div class="ge-ritual-atmosphere__glow"></div>
+        </div>
+
+        <div class="ge-ritual-hero">
+            <div class="ge-ritual-stage ge-ritual-stage--ritual-first">
+                <div class="ge-annap-lockup ge-ritual-lockup" aria-hidden="true">
+                    <svg class="ge-annap-lockup__mark" viewBox="0 0 215 157" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                        <path class="ge-annap-lockup__mountain" d="M98 18 L38 123 C34 130 42 136 49 130 L83 99 C88 95 93 99 91 106 L85 128 C83 137 94 141 100 133 L126 98 C134 88 145 91 145 103 L144 129 C144 138 156 142 162 134 L190 96 L171 58 L143 66 L126 36 Z"/>
+                        <path class="ge-annap-lockup__cream" d="M41 124 C61 104 68 95 75 95 C82 95 78 105 74 115 C91 109 101 91 112 86 C121 82 122 91 119 102 C139 81 151 73 171 78" />
+                        <path class="ge-annap-lockup__sun" d="M133 56 C150 39 180 48 191 72 C171 76 150 85 128 104 C127 84 124 65 133 56 Z"/>
+                        <text class="ge-annap-lockup__word ge-annap-lockup__word--green" x="37" y="144">an</text>
+                        <text class="ge-annap-lockup__word ge-annap-lockup__word--red" x="92" y="144">nap</text>
+                    </svg>
+                </div>
+                <p class="ge-kicker ge-ritual-table ge-ritual-table--quiet">@Model.TableGuestLabel</p>
+                <p id="ge-table-notice" class="ge-table-notice ge-table-notice--quiet" hidden aria-hidden="true"></p>
+                <p class="ge-ritual-script-kicker" data-i18n="ge.arrival.ritualKicker">Nghi thức Annapp</p>
+                <h1 class="ge-hero-title ge-ritual-title" data-i18n="ge.arrival.ritualTitle">Một căn phòng yên đang chờ vị giác của bạn.</h1>
+            </div>
+
+            <div id="ge-ritual-invitation" class="ge-ritual-invitation ge-ritual-hero__cta">
+                <div class="ge-ritual-invitation-card">
+                    <button type="button"
+                            id="ge-ritual-begin"
+                            class="ge-ritual-begin guest-hit"
+                            data-ge-flow="sommelier">
+                        <span class="ge-ritual-begin__label" data-i18n="ge.arrival.beginTasting">Bắt đầu nếm thử</span>
+                        <span class="ge-ritual-begin__sub" data-i18n="ge.arrival.beginTastingSub">Bước vào nghi thức Annapp</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="ge-homepage-curated-empty" class="ge-homepage-empty hidden" hidden role="status">
+            <p class="ge-homepage-empty__kicker" data-i18n="ge.arrival.curatedEmptyKicker">106/1 · curated pause</p>
+            <p class="ge-homepage-empty__title" data-i18n="ge.arrival.curatedEmptyTitle">Experience temporarily being curated.</p>
+            <p class="ge-homepage-empty__lead" data-i18n="ge.arrival.curatedEmptyLead">The atelier is adjusting tonight&apos;s arrival — your table is still recognized. Ask the bar when you are ready.</p>
+        </div>
+
+        <nav class="ge-ritual-secondary ge-ritual-secondary--menu" id="ge-ritual-secondary" aria-label="Lối phụ">
+            <div class="ge-ritual-secondary__links">
+                @if (vt is Guid ritualMenuVt)
+                {
+                    <a class="ge-ritual-secondary__link ge-ritual-secondary__link--menu guest-hit"
+                       id="ge-ritual-menu"
+                       asp-page="/Menu/Index"
+                       asp-route-vt="@ritualMenuVt"
+                       data-i18n="ge.arrival.secondaryMenu">Xem thực đơn</a>
+                }
+                <button type="button"
+                        class="ge-ritual-secondary__link ge-ritual-secondary__link--alt guest-hit"
+                        data-ge-flow="group"
+                        data-ritual-secondary="group"
+                        data-i18n="ge.arrival.secondaryGroup"
+                        hidden
+                        aria-hidden="true">Đặt theo nhóm</button>
+                <button type="button"
+                        class="ge-ritual-secondary__link ge-ritual-secondary__link--alt guest-hit"
+                        data-ge-flow="discovery"
+                        data-ritual-secondary="discovery"
+                        data-i18n="ge.arrival.secondaryDiscovery"
+                        hidden
+                        aria-hidden="true">Bất ngờ có niêm phong</button>
+                <button type="button"
+                        class="ge-ritual-secondary__link ge-ritual-secondary__link--alt guest-hit"
+                        data-ge-flow="sommelier"
+                        data-ritual-secondary="sommelier"
+                        data-i18n="ge.arrival.secondarySommelier"
+                        hidden
+                        aria-hidden="true">Trò chuyện với Annapp</button>
+            </div>
+        </nav>
+
+    </div>
+
+    <div id="ge-panel-group" class="ge-panel hidden" hidden>
+        <div class="ge-panel-head">
+            <button type="button" class="ge-back guest-hit" data-ge-back="1" data-i18n-aria="ge.group.backAria" aria-label="Back to arrival">←</button>
+            <p class="ge-panel-kicker" data-i18n="ge.group.kicker">Group experience</p>
+        </div>
+
+        <div id="ge-group-setup" class="ge-group-setup">
+            <p id="ge-group-prompt" class="ge-panel-title"></p>
+            <p id="ge-group-lead" class="ge-group-lead"></p>
+            <div class="ge-group-count-row" role="group" aria-labelledby="ge-group-prompt">
+                <div id="ge-group-count-grid" class="ge-count-grid" aria-describedby="ge-group-lead"></div>
+            </div>
+            <button type="button"
+                    id="ge-group-count-continue"
+                    class="ge-btn-solid ge-btn-solid--disabled ge-group-count-continue guest-hit"
+                    disabled
+                    aria-disabled="true"
+                    data-i18n="ge.group.seatGuests">
+                Seat the guests
+            </button>
+        </div>
+
+        <div id="ge-group-main" class="ge-group-main hidden" hidden>
+            <p id="ge-guest-tabs-intro" class="ge-muted ge-group-intro"></p>
+            <div id="ge-guest-rail" class="ge-guest-rail" role="tablist" data-i18n-aria="ge.group.guestTabsAria" aria-label="Guests at this table"></div>
+            <p id="ge-passing-hint" class="ge-passing-hint" aria-live="polite"></p>
+            <p id="ge-guest-done-hint" class="ge-muted ge-group-hint"></p>
+            <p class="ge-panel-title ge-group-strip-title" data-i18n="ge.group.signatureHeading">Signature cups for the table</p>
+        <div class="ge-sig-strip-wrap">
+            <div class="ge-sig-strip@(sigN > 0 ? " ge-sig-strip--count-" + Math.Min(sigN, 6) : "")" role="region" aria-label="Signature drinks" tabindex="0">
+                @foreach (var drink in Model.SignatureDrinks)
+                {
+                    var detailHref = vt is Guid vtid
+                        ? $"/menu/drink/{drink.Id}?vt={vtid:D}"
+                        : $"/menu/drink/{drink.Id}";
+                    <article class="ge-sig-card surface-paper">
+                        <div class="ge-sig-visual @(string.IsNullOrWhiteSpace(drink.CardImageUrl) ? "ge-sig-visual--no-poster" : "")">
+                            @if (!string.IsNullOrWhiteSpace(drink.CardImageUrl))
+                            {
+                                <img src="@drink.CardImageUrl"
+                                     alt=""
+                                     width="640"
+                                     height="480"
+                                     loading="eager"
+                                     decoding="async"
+                                     referrerpolicy="no-referrer" />
+                            }
+                            else
+                            {
+                                <div class="ge-sig-no-poster" aria-hidden="true">
+                                    <span>@(string.IsNullOrEmpty(drink.Name) ? "·" : drink.Name[0])</span>
+                                </div>
+                            }
+                        </div>
+                        <div class="ge-sig-body">
+                            <p class="ge-sig-name">@drink.Name</p>
+                            @if (!string.IsNullOrWhiteSpace(drink.Subtitle))
+                            {
+                                <p class="ge-sig-sub">@drink.Subtitle</p>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(drink.TastingLine))
+                            {
+                                <p class="ge-sig-taste">@drink.TastingLine</p>
+                            }
+                            <p class="ge-sig-price">@drink.Price.ToString("C")</p>
+                            <div class="ge-sig-actions">
+                                <button type="button" class="ge-btn-ghost guest-hit" data-ge-open-detail="@drink.Id.ToString("D")" data-i18n="ge.group.sigDetail">Detail</button>
+                                <button type="button" class="ge-btn-solid guest-hit" data-ge-add="@drink.Id" data-item-name="@drink.Name" data-i18n="ge.group.sigAddToTray">Send to my table</button>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        </div>
+        <div class="ge-panel-foot">
+            <a class="ge-link-full guest-hit" asp-page="/Menu/Index" asp-route-vt="@vt" data-i18n="ge.group.exploreMenu">Explore full menu</a>
+            <button type="button" id="ge-group-finish-review" class="ge-btn-ghost guest-hit mt-3 hidden w-full max-w-sm" hidden data-i18n="ge.group.reviewSummary">
+                Review table summary
+            </button>
+        </div>
+        </div>
+
+        <div id="ge-group-summary" class="ge-group-summary hidden" hidden>
+            <p id="ge-group-summary-kicker" class="ge-panel-kicker"></p>
+            <p id="ge-group-summary-title" class="ge-panel-title"></p>
+            <p id="ge-group-summary-lead" class="ge-group-lead"></p>
+            <div id="ge-group-summary-lines" class="ge-group-summary-lines"></div>
+            <p id="ge-group-summary-closing" class="ge-muted ge-group-closing"></p>
+            <button type="button" id="ge-group-summary-back" class="ge-btn-ghost guest-hit mt-4" data-i18n="ge.group.backToGuests">Back to guests</button>
+        </div>
+    </div>
+
+    <div id="ge-panel-sommelier" class="ge-panel ge-panel--sommelier hidden" hidden>
+        <div class="ge-panel-head ge-panel-head--quiet">
+            <button type="button" class="ge-back guest-hit" data-ge-back="1" data-i18n-aria="ge.group.backAria" aria-label="Back to arrival">←</button>
+            <p class="ge-panel-kicker" data-i18n="ge.sommelier.kicker">Hôm nay bạn muốn mood nào?</p>
+        </div>
+        <div id="ge-sommelier-step" class="ge-sommelier-step"></div>
+        <div id="ge-sommelier-results" class="ge-sommelier-results hidden" hidden></div>
+    </div>
+
+    <div id="ge-panel-discovery" class="ge-panel ge-panel--discovery hidden" hidden>
+        <div class="ge-panel-head">
+            <button type="button" class="ge-back guest-hit" data-ge-back="1" aria-label="Back to arrival">←</button>
+            <p class="ge-panel-kicker" data-i18n="ge.duckPost.panelKicker">Tonight&apos;s tasting</p>
+        </div>
+
+        <div class="ge-discovery-canvas">
+            <div id="ge-letter-desk" class="ge-letter-desk ge-duck-desk" aria-hidden="false">
+                <div class="ge-letter-desk__grain" aria-hidden="true"></div>
+                <div class="ge-letter-desk__edge" aria-hidden="true"></div>
+                <div class="ge-duck-desk-totem" aria-hidden="true">
+                    <svg viewBox="0 0 84 80" xmlns="http://www.w3.org/2000/svg">
+                        <ellipse cx="40" cy="72" rx="18" ry="3.5" fill="rgba(26,20,16,0.09)"/>
+                        <ellipse cx="39" cy="51" rx="24" ry="17" fill="#f5f0e8" stroke="#c8bfb2" stroke-width="1.1"/>
+                        <ellipse cx="35" cy="55" rx="13" ry="10" fill="#fffdf8" opacity="0.5"/>
+                        <path d="M23 46 Q12 38 6 43 Q11 52 24 50 Q31 48 34 44 Q28 41 23 46Z" fill="#7aaedb" stroke="#4880a8" stroke-width="1"/>
+                        <path d="M17 43 Q10 37 8 41 Q12 48 18 47Z" fill="#a0c8e8" opacity="0.35"/>
+                        <circle cx="58" cy="39" r="17" fill="#f5f0e8" stroke="#c8bfb2" stroke-width="1.1"/>
+                        <ellipse cx="54" cy="34" rx="10" ry="7.5" fill="rgba(255,252,248,0.4)"/>
+                        <path d="M45 31 Q47 21 58 20 Q70 20 72 28 Q70 33 58 33 Q46 33 45 31Z" fill="#5a8ec8" stroke="#2d5a8a" stroke-width="0.9"/>
+                        <ellipse cx="58" cy="31.5" rx="14" ry="3.2" fill="#3a68a0"/>
+                        <circle cx="58" cy="24" r="2" fill="#4878b8" stroke="#2d5a8a" stroke-width="0.6"/>
+                        <circle cx="65" cy="38" r="3.2" fill="#1a1208"/>
+                        <circle cx="66.2" cy="36.7" r="1.1" fill="rgba(255,255,255,0.65)"/>
+                        <path d="M61 33.5 Q65 32 69 33.5" fill="none" stroke="#2a2018" stroke-width="0.9" stroke-linecap="round" opacity="0.4"/>
+                        <path d="M72 39 L82 42 L72 46Z" fill="#d4a043" stroke="#9a6232" stroke-width="0.7"/>
+                        <line x1="72" y1="42.5" x2="80" y2="42.5" stroke="#9a6232" stroke-width="0.5" opacity="0.4"/>
+                        <rect x="28" y="54" width="19" height="13" rx="1.5" fill="#fdf9f4" stroke="rgba(62,48,38,0.26)" stroke-width="0.8"/>
+                        <path d="M28 54 L37.5 61 L47 54" fill="none" stroke="rgba(62,48,38,0.14)" stroke-width="0.6"/>
+                        <circle cx="37.5" cy="60.5" r="2.6" fill="rgba(154,98,50,0.3)" stroke="rgba(154,98,50,0.38)" stroke-width="0.5"/>
+                        <path d="M30 66 Q24 73 29 74 L38 69 L36 66Z" fill="#d4a043" stroke="#9a6232" stroke-width="0.8"/>
+                        <path d="M44 66 Q38 73 43 74 L52 69 L50 66Z" fill="#d4a043" stroke="#9a6232" stroke-width="0.8"/>
+                    </svg>
+                </div>
+                <p class="ge-letter-desk__kicker" id="ge-letter-desk-kicker"></p>
+                <p class="ge-letter-desk__title" id="ge-letter-desk-title"></p>
+                <p class="ge-letter-desk__subtitle" id="ge-letter-desk-subtitle"></p>
+                <p class="ge-letter-desk__hint" id="ge-letter-desk-hint"></p>
+                <div id="ge-evening-gesture" class="ge-evening-gesture">
+                    <div id="ge-evening-gesture-choices" class="ge-evening-gesture__choices" role="group"></div>
+                </div>
+                <div class="ge-duck-desk__meter ge-duck-desk__meter--retired" aria-hidden="true" hidden><span></span></div>
+                <button type="button"
+                        id="ge-duck-start"
+                        class="ge-duck-desk__cta ge-duck-desk__cta--retired guest-hit hidden"
+                        hidden
+                        data-ge-duck-start="1"
+                        tabindex="-1"
+                        aria-hidden="true">
+                    Let the house choose
+                </button>
+                <p class="ge-letter-desk__nudge ge-letter-desk__nudge--retired" id="ge-duck-desk-nudge" hidden aria-hidden="true"></p>
+            </div>
+
+        <div id="ge-discovery-stage" class="ge-discovery-stage">
+            <div id="ge-discovery-ambient" class="ge-discovery-ambient" aria-hidden="true"></div>
+            <div class="ge-discovery-vignette" aria-hidden="true"></div>
+            <div class="gdr-dim gdr-layer" aria-hidden="true"></div>
+
+            <div class="ge-duck-theater" aria-hidden="true">
+                <div class="ge-duck-theater__sky"></div>
+                <div class="ge-duck-theater__cloud ge-duck-theater__cloud--a" aria-hidden="true"></div>
+                <div class="ge-duck-theater__cloud ge-duck-theater__cloud--b" aria-hidden="true"></div>
+                <div class="ge-duck-theater__roof" aria-hidden="true"></div>
+                <div class="ge-duck-theater__track">
+                    <div class="ge-duck-svg-wrap">
+                        <div class="ge-duck-svg-inner">
+                            <svg viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <ellipse cx="57" cy="84" rx="29" ry="5" fill="rgba(26,20,16,0.07)"/>
+                                <ellipse cx="55" cy="64" rx="36" ry="24" fill="#f5f0e8" stroke="#c8bfb2" stroke-width="1.3"/>
+                                <ellipse cx="50" cy="68" rx="19" ry="14" fill="#fffdf8" opacity="0.55"/>
+                                <path class="duck-wing" d="M34 54 Q18 41 10 48 Q16 60 36 58 Q46 56 50 50 Q42 47 34 54Z" fill="#7aaedb" stroke="#4880a8" stroke-width="1.2"/>
+                                <path d="M26 50 Q17 42 13 47 Q18 54 28 53Z" fill="#a0c8e8" opacity="0.35"/>
+                                <circle cx="82" cy="49" r="22" fill="#f5f0e8" stroke="#c8bfb2" stroke-width="1.3"/>
+                                <ellipse cx="77" cy="43" rx="12" ry="9" fill="rgba(255,252,248,0.4)"/>
+                                <path d="M64 38 Q66 26 82 24 Q99 24 102 34 Q99 40 82 40 Q66 40 64 38Z" fill="#5a8ec8" stroke="#2d5a8a" stroke-width="1"/>
+                                <ellipse cx="82" cy="38.5" rx="20" ry="4" fill="#3a68a0"/>
+                                <circle cx="82" cy="30" r="2.2" fill="#4878b8" stroke="#2d5a8a" stroke-width="0.7"/>
+                                <circle cx="82" cy="30" r="0.9" fill="#7aaacf"/>
+                                <circle cx="92" cy="47" r="4.5" fill="#1a1208"/>
+                                <circle cx="93.5" cy="45.2" r="1.5" fill="rgba(255,255,255,0.65)"/>
+                                <circle cx="91.8" cy="48.8" r="0.7" fill="rgba(255,255,255,0.2)"/>
+                                <path d="M88 42 Q92 40.5 96 42" fill="none" stroke="#2a2018" stroke-width="1" stroke-linecap="round" opacity="0.4"/>
+                                <path d="M103 48 L119 52.5 L103 58.5Z" fill="#d4a043" stroke="#9a6232" stroke-width="0.9"/>
+                                <line x1="103" y1="53.5" x2="116" y2="53.5" stroke="#9a6232" stroke-width="0.6" opacity="0.4"/>
+                                <path d="M42 86 Q35 93 41 95 L52 90 L50 86Z" fill="#d4a043" stroke="#9a6232" stroke-width="0.9"/>
+                                <path d="M60 86 Q53 93 59 95 L70 90 L68 86Z" fill="#d4a043" stroke="#9a6232" stroke-width="0.9"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="ge-duck-parcel" aria-hidden="true">
+                        <div class="ge-duck-parcel__body">
+                            <div class="ge-duck-parcel__inner"></div>
+                            <div class="ge-duck-parcel__vfold-l"></div>
+                            <div class="ge-duck-parcel__vfold-r"></div>
+                            <div class="ge-duck-parcel__flap"></div>
+                            <div class="ge-duck-parcel__seal"></div>
+                        </div>
+                        <div class="ge-duck-parcel__beam"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gdr-letter-layer gdr-layer" aria-hidden="true">
+                <div class="gdr-letter-pack">
+                    <div class="gdr-envelope">
+                        <div class="gdr-envelope__sheet"></div>
+                        <div class="gdr-envelope__fold gdr-envelope__fold--bottom"></div>
+                        <div class="gdr-envelope__fold gdr-envelope__fold--top"></div>
+                        <div class="gdr-envelope__seal"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ge-discovery-atmosphere">
+                <p id="ge-discovery-line" class="ge-discovery-line" role="status"></p>
+                <p id="ge-discovery-cooldown" class="ge-discovery-cooldown hidden" hidden aria-live="polite"></p>
+            </div>
+            <div id="ge-discovery-card" class="ge-discovery-card ge-reveal-card hidden" hidden></div>
+
+            <div id="ge-duck-blocked" class="ge-duck-blocked hidden" hidden role="dialog" aria-modal="true" aria-labelledby="ge-duck-blocked-title">
+                <button type="button"
+                        class="ge-duck-blocked__scrim guest-hit"
+                        data-ge-duck-blocked-dismiss="1"
+                        data-i18n-aria="ge.duckPost.blockedDismissAria"
+                        aria-label="Close"></button>
+                <div class="ge-duck-blocked__sheet" id="ge-duck-blocked-sheet">
+                    <div class="ge-duck-blocked__duck" aria-hidden="true">
+                        <svg viewBox="0 0 48 44" xmlns="http://www.w3.org/2000/svg">
+                            <ellipse cx="24" cy="26" rx="14" ry="11" fill="#f7f4ef" stroke="#c9bfb0" stroke-width="0.9"/>
+                            <ellipse cx="18" cy="25.5" rx="7.5" ry="8.5" fill="#f0ebe3" opacity="0.85"/>
+                            <path d="M16 24 Q10 18.5 7.5 21 Q8.5 25.5 15 25.5" fill="#ebe4da" stroke="#c9bfb0" stroke-width="0.75"/>
+                            <circle cx="30" cy="21" r="1.8" fill="#2a2018"/>
+                            <path d="M27.5 18.8 Q30 17.5 32 18.8" fill="none" stroke="#2a2018" stroke-width="0.6" stroke-linecap="round"/>
+                            <path d="M34 22 L43 24.5 L34.5 27.5 Z" fill="#d4a043" stroke="#9a6232" stroke-width="0.55"/>
+                            <path d="M17 18 L28 16 L29 22 L16 23 Z" fill="#6b9bd1" stroke="#3d6a96" stroke-width="0.7" opacity="0.75"/>
+                            <rect x="17" y="32" width="13" height="9" rx="1.2" fill="#f4ebe0" stroke="rgba(62,48,38,0.22)" stroke-width="0.65"/>
+                            <path d="M17 32 L23.5 37 L30 32" fill="none" stroke="rgba(62,48,38,0.15)" stroke-width="0.55"/>
+                            <line x1="20.5" y1="35" x2="26.5" y2="40.5" stroke="rgba(42,32,26,0.28)" stroke-width="0.75"/>
+                            <line x1="26.5" y1="35" x2="20.5" y2="40.5" stroke="rgba(42,32,26,0.28)" stroke-width="0.75"/>
+                        </svg>
+                    </div>
+                    <p id="ge-duck-blocked-title" class="ge-duck-blocked__title"></p>
+                    <p class="ge-duck-blocked__body"></p>
+                    <p class="ge-duck-blocked__owner" aria-live="polite"></p>
+                    <p class="ge-duck-blocked__hint" id="ge-duck-blocked-hint"></p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+</div>
+
+<script type="application/json" id="ge-guided-catalog-json">@Html.Raw(Model.GuidedSommelierCatalogJson)</script>
+<script type="application/json" id="ge-group-settings-json">@Html.Raw(Model.GroupExperienceJson)</script>
+<script type="application/json" id="ge-homepage-settings-json">@Html.Raw(Model.HomepageExperienceJson)</script>
+<script type="application/json" id="ge-letter-room-desk-json">@Html.Raw(Model.LetterRoomDeskJson)</script>
+<script type="application/json" id="ge-signature-json">@Html.Raw(sigJson)</script>

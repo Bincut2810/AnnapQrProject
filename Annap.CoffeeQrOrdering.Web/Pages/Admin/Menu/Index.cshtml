@@ -1,0 +1,113 @@
+@page "/admin/menu"
+@model IndexModel
+@{
+    ViewData["Title"] = "Thực đơn";
+    ViewData["AdminNavSection"] = "menu";
+    ViewData["AdminEyebrow"] = "Quản lý thực đơn";
+    ViewData["AdminReturnHref"] = Url.Content("~/admin");
+    ViewData["AdminReturnLabel"] = "← Quay lại";
+}
+
+<partial name="Admin/_AdminEditorialReturn" />
+<section class="menu-curation-list space-y-14 sm:space-y-20">
+    <header class="menu-curation-list__intro flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        <div class="max-w-2xl">
+            <p class="text-[10px] font-medium tracking-[0.32em] uppercase text-[rgb(var(--muted-2))]">Quản lý thực đơn</p>
+            <h1 class="mt-4 font-display text-3xl font-normal tracking-tight text-[rgb(var(--fg))] sm:text-4xl">
+                Danh sách đồ uống
+            </h1>
+            <p class="mt-5 text-base leading-relaxed text-[rgb(var(--muted))] sm:text-lg">
+                Mỗi thẻ là một ly trong quán — không phải kho. Mở một ly để chỉnh ngôn ngữ, hình ảnh và ánh sáng.
+            </p>
+        </div>
+        <div class="flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center">
+            <a asp-page="/Admin/Menu/Categories" class="admin-btn admin-btn--quiet guest-hit min-h-12 px-6 tracking-[0.12em]">
+                Thứ tự danh mục
+            </a>
+            <a asp-page="/Admin/Menu/Create" class="admin-btn admin-btn--primary guest-hit min-h-12 px-8 tracking-[0.14em]">
+                Thêm ly mới
+            </a>
+        </div>
+    </header>
+
+    @if (TempData["MenuCurationToast"] is string toast)
+    {
+        <div class="menu-curation-toast" role="status">@toast</div>
+    }
+
+    @if (Model.Groups.Count == 0)
+    {
+        <p class="max-w-xl text-sm text-[rgb(var(--muted))]">Chưa có danh mục nào trong cơ sở dữ liệu.</p>
+    }
+    @foreach (var group in Model.Groups)
+    {
+        <div class="menu-curation-list__chapter">
+            <div class="menu-curation-list__chapter-head">
+                <h2 class="font-display text-xl font-normal tracking-tight text-[rgb(var(--fg))] sm:text-2xl">@group.Name</h2>
+                <div class="menu-curation-list__hairline" aria-hidden="true"></div>
+            </div>
+            @if (group.Items.Count == 0)
+            {
+                <p class="py-8 text-sm text-[rgb(var(--muted-2))]">Chưa có ly nào trong danh mục này.</p>
+            }
+            else
+            {
+            <div class="menu-curation-card-grid">
+                @foreach (var cup in group.Items)
+                {
+                    <a asp-page="/Admin/Menu/Edit" asp-route-id="@cup.Id" class="menu-curation-line-card guest-hit">
+                        <div class="menu-curation-line-card__visual">
+                            @if (!string.IsNullOrWhiteSpace(cup.PreviewImageUrl))
+                            {
+                                <img src="@cup.PreviewImageUrl"
+                                     alt=""
+                                     width="640"
+                                     height="800"
+                                     loading="lazy"
+                                     decoding="async"
+                                     referrerpolicy="no-referrer" />
+                            }
+                            else
+                            {
+                                <div class="menu-curation-line-card__no-poster" aria-hidden="true">—</div>
+                            }
+                            <div class="menu-curation-line-card__veil" aria-hidden="true"></div>
+                        </div>
+                        <div class="menu-curation-line-card__body">
+                            <div class="flex flex-wrap items-center gap-2">
+                                @if (cup.IsSignature)
+                                {
+                                    <span class="admin-badge admin-badge--gold">Đặc trưng</span>
+                                }
+                                @if (cup.IsSeasonalHighlight)
+                                {
+                                    <span class="admin-badge admin-badge--sage">Theo mùa</span>
+                                }
+                                @if (cup.IsFeatured)
+                                {
+                                    <span class="admin-badge admin-badge--mist">Nổi bật</span>
+                                }
+                                @if (!cup.IsAvailable)
+                                {
+                                    <span class="admin-badge admin-badge--mist">Tạm ngưng</span>
+                                }
+                                @if (cup.IsArchived)
+                                {
+                                    <span class="admin-badge admin-badge--mist">Đã lưu trữ</span>
+                                }
+                            </div>
+                            <h3 class="mt-4 font-display text-xl font-normal tracking-tight text-[rgb(var(--fg))]">@cup.Name</h3>
+                            @if (!string.IsNullOrWhiteSpace(cup.Subtitle))
+                            {
+                                <p class="mt-2 text-sm leading-relaxed text-[rgb(var(--muted))]">@cup.Subtitle</p>
+                            }
+                            <p class="mt-6 font-display text-lg tabular-nums text-[rgb(var(--accent))]">@cup.Price.ToString("C")</p>
+                            <p class="mt-6 text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]">Chỉnh sửa →</p>
+                        </div>
+                    </a>
+                }
+            </div>
+            }
+        </div>
+    }
+</section>

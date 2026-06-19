@@ -1,0 +1,694 @@
+/* Mail-duck discovery motif — cinematic sky, envelope reveal, pairs with data-gdr-scene timing */
+
+.ge-duck-theater {
+    position: absolute;
+    inset: 0;
+    z-index: 7;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.ge-discovery-stage--duck .ge-duck-theater {
+    opacity: 1;
+}
+
+/* Hide legacy envelope art while duck is active */
+.ge-discovery-stage--duck .gdr-letter-layer {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    transition: opacity 0.25s ease, visibility 0.25s step-end;
+}
+
+/* —— Sky — warm paper afternoon, unified with hospitality world —— */
+.ge-duck-theater__sky {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #d8c8b0 0%, #e4d8c0 30%, #ead8c4 60%, #f0e4cc 80%, #d8c4a8 100%);
+    opacity: 0;
+    transition: opacity 1.2s ease, background 1.8s ease;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="dim"] .ge-duck-theater__sky,
+.ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-theater__sky {
+    opacity: 1;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-theater__sky {
+    opacity: 1;
+    background: linear-gradient(180deg, #cfc0a8 0%, #ded0b8 30%, #e8d8c4 55%, #f0e0cc 78%, #d4b898 100%);
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="reveal"] .ge-duck-theater__sky {
+    opacity: 1;
+    background: linear-gradient(180deg, #c8b89c 0%, #d8c8a8 30%, #e4d4b4 55%, #eedcc4 75%, #d4b890 100%);
+}
+
+/* —— Clouds —— */
+.ge-duck-theater__cloud {
+    position: absolute;
+    border-radius: 9999px;
+    background: rgba(255, 253, 250, 0.68);
+    filter: blur(9px);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+}
+
+.ge-duck-theater__cloud--a {
+    width: 5.5rem;
+    height: 2rem;
+    left: 6%;
+    top: 13%;
+    animation: geDuckCloudDrift 22s linear infinite;
+}
+
+.ge-duck-theater__cloud--b {
+    width: 3.2rem;
+    height: 1.2rem;
+    right: 12%;
+    top: 24%;
+    animation: geDuckCloudDrift 30s linear infinite reverse;
+    animation-delay: -8s;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="dim"] .ge-duck-theater__cloud,
+.ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-theater__cloud {
+    opacity: 1;
+}
+
+@keyframes geDuckCloudDrift {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(36px); }
+}
+
+/* —— Roof —— */
+.ge-duck-theater__roof {
+    position: absolute;
+    left: 8%;
+    right: 8%;
+    bottom: 18%;
+    height: 22%;
+    background: linear-gradient(180deg, rgba(58, 44, 34, 0.18), rgba(38, 28, 22, 0.34));
+    border-radius: 0.35rem 0.35rem 0 0;
+    transform: translateY(40%);
+    opacity: 0;
+    transition:
+        transform 1.35s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.95s ease;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-theater__roof,
+.ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-theater__roof,
+.ge-discovery-stage--duck[data-gdr-scene="reveal"] .ge-duck-theater__roof {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* —— Duck track & position —— */
+.ge-duck-theater__track {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 8%;
+}
+
+.ge-duck-svg-wrap {
+    position: relative;
+    width: min(44vw, 11rem);
+    transform: translate3d(-145%, -10%, 0) rotate(-6deg);
+    opacity: 0;
+    filter: drop-shadow(0 14px 22px rgba(26, 20, 16, 0.2));
+    transition:
+        transform 0s,
+        opacity 0s,
+        filter 0s;
+    will-change: transform, opacity;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="dim"] .ge-duck-svg-wrap {
+    opacity: 0.96;
+    transform: translate3d(-52%, -4%, 0) rotate(-2.5deg);
+    transition:
+        transform 1.5s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.7s ease;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-svg-wrap {
+    opacity: 1;
+    transform: translate3d(0, -1%, 0) rotate(0deg);
+    transition:
+        transform 1.6s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.5s ease;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-svg-wrap {
+    transform: translate3d(20%, -16%, 0) scale(0.9);
+    opacity: 0.82;
+    transition:
+        transform 1.5s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 1s ease;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="reveal"] .ge-duck-svg-wrap {
+    transform: translate3d(52%, -135%, 0) rotate(22deg) scale(0.65);
+    opacity: 0;
+    transition:
+        transform 1.8s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.9s ease 0.2s;
+}
+
+.ge-duck-svg-wrap svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+/* —— Inner sway wrapper (separate from position transitions) —— */
+.ge-duck-svg-inner {
+    display: block;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="dim"] .ge-duck-svg-inner,
+.ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-svg-inner {
+    animation: geDuckBodySway 1.3s ease-in-out infinite;
+}
+
+@keyframes geDuckBodySway {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    38% { transform: translateY(-5px) rotate(-0.8deg); }
+    72% { transform: translateY(-2px) rotate(0.5deg); }
+}
+
+/* —— Wing flap (targets the .duck-wing path inside SVG) —— */
+.ge-duck-svg-wrap .duck-wing {
+    transform-box: fill-box;
+    transform-origin: right center;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="dim"] .ge-duck-svg-wrap .duck-wing,
+.ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-svg-wrap .duck-wing {
+    animation: geDuckWingFlap 0.72s ease-in-out infinite;
+}
+
+@keyframes geDuckWingFlap {
+    0%, 100% { transform: rotate(0deg) scaleY(1); }
+    25% { transform: rotate(-14deg) scaleY(0.88); }
+    60% { transform: rotate(7deg) scaleY(1.06); }
+    80% { transform: rotate(-4deg) scaleY(0.96); }
+}
+
+/* —— Envelope / parcel —— */
+.ge-duck-parcel {
+    position: absolute;
+    left: 50%;
+    top: 44%;
+    width: 4.8rem;
+    height: 3.4rem;
+    margin-left: -2.4rem;
+    transform: translate3d(0, -230%, 0) rotate(-14deg) scale(0.6);
+    opacity: 0;
+    transform-origin: 50% 50%;
+}
+
+.ge-duck-parcel__body {
+    position: absolute;
+    inset: 0;
+    border-radius: 0.25rem;
+    background: linear-gradient(160deg, #f5eadc, #e0cfb8);
+    border: 1px solid rgba(62, 48, 38, 0.3);
+    box-shadow:
+        0 8px 20px rgba(26, 20, 16, 0.24),
+        0 2px 5px rgba(26, 20, 16, 0.12),
+        inset 0 1px 0 rgba(255, 252, 246, 0.4);
+    overflow: visible;
+    perspective: 300px;
+}
+
+/* Inner warm glow — visible when flap opens */
+.ge-duck-parcel__inner {
+    position: absolute;
+    inset: 0;
+    border-radius: 0.2rem;
+    background: radial-gradient(ellipse at 50% 55%, rgba(255, 242, 200, 0.98) 0%, rgba(248, 228, 168, 0.75) 45%, transparent 78%);
+    opacity: 0;
+    transition: opacity 0s;
+    z-index: 1;
+}
+
+/* V-fold crease lines */
+.ge-duck-parcel__vfold-l,
+.ge-duck-parcel__vfold-r {
+    position: absolute;
+    bottom: 0;
+    height: 60%;
+    width: 50%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.ge-duck-parcel__vfold-l {
+    left: 0;
+    border-top: 1px solid rgba(62, 48, 38, 0.1);
+    transform-origin: bottom left;
+    transform: skewY(-28deg);
+}
+
+.ge-duck-parcel__vfold-r {
+    right: 0;
+    border-top: 1px solid rgba(62, 48, 38, 0.1);
+    transform-origin: bottom right;
+    transform: skewY(28deg);
+}
+
+/* Envelope flap — triangular lid that rotates open */
+.ge-duck-parcel__flap {
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    top: -1px;
+    height: 52%;
+    background: linear-gradient(168deg, #ede0ca, #d8c8ae);
+    border: 1px solid rgba(62, 48, 38, 0.24);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: 50% 0%;
+    transform: rotateX(0deg);
+    transition: transform 0s;
+    backface-visibility: hidden;
+    z-index: 4;
+}
+
+/* Wax seal */
+.ge-duck-parcel__seal {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 1.3rem;
+    height: 1.3rem;
+    margin: -0.65rem 0 0 -0.65rem;
+    border-radius: 9999px;
+    background: radial-gradient(circle at 35% 30%, rgba(218, 128, 54, 0.95), rgba(178, 72, 22, 0.9));
+    border: 1.5px solid rgba(140, 52, 14, 0.55);
+    box-shadow:
+        0 2px 8px rgba(140, 52, 14, 0.45),
+        inset 0 1px 0 rgba(255, 200, 120, 0.3);
+    z-index: 5;
+    transition: opacity 0s, transform 0s;
+}
+
+/* seal inner engraving hint */
+.ge-duck-parcel__seal::after {
+    content: "";
+    position: absolute;
+    inset: 0.2rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 180, 80, 0.2);
+    background: radial-gradient(circle at 40% 35%, rgba(255, 200, 100, 0.15), transparent 65%);
+}
+
+/* Light beam — shoots up from envelope on reveal */
+.ge-duck-parcel__beam {
+    position: absolute;
+    left: 50%;
+    bottom: 50%;
+    width: 4.5rem;
+    height: 10rem;
+    margin-left: -2.25rem;
+    background: linear-gradient(
+        to top,
+        rgba(255, 244, 196, 0.92) 0%,
+        rgba(255, 248, 220, 0.6) 30%,
+        rgba(255, 252, 238, 0.2) 65%,
+        transparent 100%
+    );
+    clip-path: polygon(30% 100%, 70% 100%, 100% 0%, 0% 0%);
+    opacity: 0;
+    transform: scaleY(0);
+    transform-origin: 50% 100%;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(2px);
+    transition: transform 0s, opacity 0s;
+}
+
+/* — Letter scene: parcel falls — */
+.ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-parcel {
+    opacity: 1;
+    animation: geDuckParcelFall 1.32s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* — Open scene: landed, flap opens, seal cracks, inner glows — */
+.ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-parcel,
+.ge-discovery-stage--duck[data-gdr-scene="reveal"] .ge-duck-parcel {
+    animation: none;
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-parcel {
+    transition: transform 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-parcel__flap {
+    transform: rotateX(-172deg);
+    transition: transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.2s;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-parcel__seal {
+    animation: geDuckSealCrack 0.7s ease forwards;
+    animation-delay: 0.25s;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-parcel__inner {
+    opacity: 1;
+    transition: opacity 0.55s ease 0.45s;
+}
+
+/* — Reveal scene: beam rises, parcel fades — */
+.ge-discovery-stage--duck[data-gdr-scene="reveal"] .ge-duck-parcel {
+    opacity: 0;
+    transform: translate3d(0, 14%, 0) scale(0.93);
+    transition: opacity 0.8s ease 0.45s, transform 0.9s ease 0.45s;
+}
+
+.ge-discovery-stage--duck[data-gdr-scene="reveal"] .ge-duck-parcel__beam {
+    opacity: 1;
+    transform: scaleY(1);
+    transition:
+        transform 0.38s cubic-bezier(0.16, 1, 0.3, 1) 0.05s,
+        opacity 0.22s ease 0.05s;
+}
+
+/* —— Keyframes —— */
+
+@keyframes geDuckParcelFall {
+    0% {
+        transform: translate3d(0, -230%, 0) rotate(-14deg) scale(0.6);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    68% {
+        transform: translate3d(0, 10%, 0) rotate(3deg) scale(1.03);
+    }
+    84% {
+        transform: translate3d(0, -3%, 0) rotate(-1.5deg) scale(1);
+    }
+    93% {
+        transform: translate3d(0, 1.5%, 0) rotate(0.5deg) scale(1);
+    }
+    100% {
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes geDuckSealCrack {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+        box-shadow: 0 2px 8px rgba(140, 52, 14, 0.45);
+    }
+    28% {
+        transform: scale(1.35);
+        box-shadow: 0 4px 18px rgba(220, 130, 50, 0.85), 0 0 0 2px rgba(220, 160, 80, 0.2);
+    }
+    50% {
+        transform: scale(0.82);
+        opacity: 0.75;
+    }
+    75% {
+        transform: scale(1.1);
+        opacity: 0.38;
+    }
+    100% {
+        transform: scale(0.5);
+        opacity: 0;
+        box-shadow: none;
+    }
+}
+
+/* —— Desk: single CTA —— */
+.ge-duck-desk {
+    position: relative;
+}
+
+.ge-duck-desk__cta {
+    position: relative;
+    margin-top: 1.25rem;
+    width: 100%;
+    min-height: 3.1rem;
+    border-radius: 0.12rem;
+    border: 1px solid rgba(42, 32, 20, 0.82);
+    background: rgb(42, 32, 20);
+    color: rgba(253, 249, 244, 0.93);
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    box-shadow: 0 4px 16px rgba(42, 32, 20, 0.22);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ge-duck-desk__cta:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(42, 32, 20, 0.32);
+}
+
+@keyframes geDuckCtaPulse {
+    0%, 100% {
+        box-shadow: 0 4px 16px rgba(42, 32, 20, 0.22);
+    }
+    50% {
+        box-shadow:
+            0 4px 16px rgba(42, 32, 20, 0.22),
+            0 0 0 3px rgba(190, 165, 130, 0.3);
+    }
+}
+
+.ge-duck-desk__cta--pulse {
+    animation: geDuckCtaPulse 2.4s ease-in-out infinite;
+}
+
+.ge-duck-desk__meter {
+    margin-top: 1rem;
+    height: 0.2rem;
+    border-radius: 9999px;
+    background: rgba(26, 20, 16, 0.08);
+    overflow: hidden;
+    opacity: 0.55;
+}
+
+.ge-duck-desk__meter span {
+    display: block;
+    height: 100%;
+    width: 38%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, rgba(122, 151, 130, 0.45), rgba(199, 168, 122, 0.65));
+    animation: geDuckMeterShimmer 2.2s ease-in-out infinite;
+}
+
+@keyframes geDuckMeterShimmer {
+    0% { transform: translateX(-30%); }
+    100% { transform: translateX(220%); }
+}
+
+/* —— Reroll exhausted —— */
+.ge-duck-blocked {
+    position: absolute;
+    inset: 0;
+    z-index: 24;
+    pointer-events: auto;
+}
+
+.ge-duck-blocked__scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    background: rgba(14, 13, 11, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.ge-duck-blocked__sheet {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+    max-width: 22rem;
+    width: calc(100% - 2.5rem);
+    border-radius: 0;
+    padding: 1.35rem 1.25rem 1.25rem;
+    background: linear-gradient(165deg, #fdf9f4, #ebe0d4);
+    border: 1px solid rgba(62, 48, 38, 0.18);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22);
+    text-align: center;
+    touch-action: pan-y;
+    pointer-events: auto;
+}
+
+.ge-duck-blocked__title {
+    margin: 0;
+    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-size: 1.28rem;
+    font-weight: 500;
+    color: rgb(var(--fg));
+    line-height: 1.25;
+}
+
+.ge-duck-blocked__body {
+    margin: 0.65rem 0 0;
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: rgb(var(--muted));
+}
+
+.ge-duck-blocked__owner {
+    margin: 1rem 0 0;
+    padding: 0 0.15rem;
+    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-size: 1.02rem;
+    font-style: italic;
+    font-weight: 500;
+    line-height: 1.45;
+    color: rgb(var(--fg));
+}
+
+.ge-duck-blocked__hint {
+    margin: 1.1rem 0 0;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(var(--muted-2));
+    line-height: 1.5;
+}
+
+/* —— Reduced motion —— */
+@media (prefers-reduced-motion: reduce) {
+    .ge-duck-svg-wrap,
+    .ge-duck-svg-inner,
+    .ge-duck-parcel,
+    .ge-duck-parcel__body,
+    .ge-duck-parcel__flap,
+    .ge-duck-parcel__seal,
+    .ge-duck-parcel__inner,
+    .ge-duck-parcel__beam,
+    .ge-duck-theater__roof,
+    .ge-duck-theater__sky,
+    .ge-duck-theater__cloud {
+        transition: none !important;
+        animation: none !important;
+    }
+
+    .ge-discovery-stage--duck[data-gdr-scene="dim"] .ge-duck-svg-wrap,
+    .ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-svg-wrap,
+    .ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-svg-wrap,
+    .ge-discovery-stage--duck[data-gdr-scene="reveal"] .ge-duck-svg-wrap {
+        transform: translate3d(0, -1%, 0);
+        opacity: 1;
+    }
+
+    .ge-discovery-stage--duck[data-gdr-scene="letter"] .ge-duck-parcel,
+    .ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-parcel {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+
+    .ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-parcel__flap {
+        transform: rotateX(-172deg) !important;
+    }
+
+    .ge-discovery-stage--duck[data-gdr-scene="open"] .ge-duck-parcel__inner {
+        opacity: 1 !important;
+    }
+
+    .ge-duck-desk__cta--pulse,
+    .ge-duck-desk__meter span {
+        animation: none !important;
+    }
+}
+
+/* —— Arrival choice: duck badge —— */
+.ge-choice-duck-badge {
+    position: absolute;
+    right: 0.9rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.15rem;
+    pointer-events: none;
+    opacity: 0.72;
+    filter: drop-shadow(0 2px 5px rgba(26, 20, 16, 0.1));
+    transition:
+        opacity 0.3s ease,
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ge-choice-duck-badge svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.ge-choice--c:hover .ge-choice-duck-badge,
+.ge-choice--c:focus-visible .ge-choice-duck-badge {
+    opacity: 0.95;
+    transform: translateY(-62%);
+}
+
+/* —— Desk duck totem (greeter before ritual) —— */
+.ge-duck-desk-totem {
+    display: flex;
+    justify-content: center;
+    margin: 0.2rem auto 0.55rem;
+    width: min(52%, 5rem);
+    pointer-events: none;
+    filter:
+        drop-shadow(0 8px 22px rgba(26, 20, 16, 0.24))
+        drop-shadow(0 0 16px rgba(199, 168, 122, 0.14));
+    animation: geDuckTotemFloat 5s ease-in-out infinite;
+    transition: opacity 0.5s ease, transform 0.6s ease;
+}
+
+.ge-duck-desk-totem svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+@keyframes geDuckTotemFloat {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    38% { transform: translateY(-7px) rotate(0.7deg); }
+    72% { transform: translateY(-3px) rotate(-0.5deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ge-duck-desk-totem {
+        animation: none !important;
+    }
+}
+
+/* —— Blocked dialog duck —— */
+.ge-duck-blocked__duck {
+    display: flex;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+    width: min(50%, 3.65rem);
+    pointer-events: none;
+    filter: drop-shadow(0 3px 8px rgba(26, 20, 16, 0.12));
+}
+
+.ge-duck-blocked__duck svg {
+    display: block;
+    width: 100%;
+    height: auto;
+}

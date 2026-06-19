@@ -1,0 +1,124 @@
+@page "/admin/experience/signatures"
+@model Annap.CoffeeQrOrdering.Web.Pages.Admin.Experience.Signatures.IndexModel
+@using Annap.CoffeeQrOrdering.Web.Services
+@{
+    ViewData["Title"] = "Nhóm · đặc trưng";
+    ViewData["AdminNavSection"] = "experience-signatures";
+    ViewData["ExpPreviewMode"] = "signatures";
+    ViewData["ExpPreviewSeedJson"] = Model.ExperiencePreviewSeedJson;
+    ViewData["AdminReturnHref"] = Url.Content("~/admin");
+    ViewData["AdminReturnLabel"] = "← Quay lại";
+    const string saveFormId = "sig-save-form";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-experience.css" asp-append-version="true" />
+}
+
+<partial name="Admin/_AdminEditorialReturn" />
+<div class="exp-cms admin-page-head">
+    <p class="exp-kicker">Trải nghiệm khách</p>
+    <h1 class="exp-title">Thanh đặc trưng nhóm</h1>
+    <p class="exp-muted">Chọn ly, đặt thứ tự, đánh dấu tối đa bốn ly đang hoạt động cho lộ trình nhóm ngồi bàn. Kéo tay cầm để sắp xếp lại.</p>
+    @if (!string.IsNullOrEmpty(Model.SaveError))
+    {
+        <p class="mt-3 text-sm text-amber-200/90" role="alert">@Model.SaveError</p>
+    }
+</div>
+
+<form id="@saveFormId" method="post" class="hidden" aria-hidden="true">
+    @Html.AntiForgeryToken()
+</form>
+
+<div class="exp-cms exp-cms__grid exp-cms__grid--split mt-8" data-exp-preview="signatures">
+    <div>
+        <ul id="sig-sort-list" class="space-y-3" aria-label="Đồ uống đặc trưng">
+            @for (var i = 0; i < Model.SlotForms.Count; i++)
+            {
+                var pick = Model.MenuPicks.FirstOrDefault(m => m.Id == Model.SlotForms[i].MenuItemId);
+                var img = pick is null
+                    ? ""
+                    : MenuMediaResolver.ResolveCardImageUrl(null, null, pick.ImageUrl, null, pick.Name, pick.CategoryName);
+                <li class="sig-slot-li cursor-grab rounded-2xl border border-white/[0.08] bg-black/25 p-3 active:cursor-grabbing" data-sig-card>
+                    <div class="flex flex-wrap items-start gap-3">
+                        <span class="sig-drag mt-1 select-none text-[rgb(var(--muted-2))]" title="Kéo để sắp xếp lại" aria-hidden="true">⠿</span>
+                        <div class="h-16 w-14 shrink-0 overflow-hidden rounded-lg border border-white/10 bg-white/5">
+                            @if (pick is not null && !string.IsNullOrEmpty(img))
+                            {
+                                <img src="@img" alt="" class="h-full w-full object-cover" loading="lazy" />
+                            }
+                        </div>
+                        <div class="min-w-0 flex-1 space-y-2">
+                            <input type="hidden" asp-for="SlotForms[i].SlotId" form="@saveFormId" />
+                            <input type="hidden" asp-for="SlotForms[i].SortOrder" form="@saveFormId" class="sig-sort-input" />
+                            <label class="exp-muted text-[10px] uppercase tracking-wide">Ly</label>
+                            <select class="exp-select text-sm" asp-for="SlotForms[i].MenuItemId" form="@saveFormId">
+                                <option value="">—</option>
+                                @foreach (var m in Model.MenuPicks)
+                                {
+                                    <option value="@m.Id">@m.Name</option>
+                                }
+                            </select>
+                            <div class="flex flex-wrap gap-3 text-xs text-[rgb(var(--muted))]">
+                                <div>
+                                    <label class="text-[10px] uppercase tracking-wide text-[rgb(var(--muted-2))]">Trên thanh</label>
+                                    <select class="exp-select mt-0.5 min-w-[4.5rem] text-xs" asp-for="SlotForms[i].IsActive" form="@saveFormId">
+                                        <option value="true">Có</option>
+                                        <option value="false">Không</option>
+                                    </select>
+                                </div>
+                                <label class="flex items-center gap-2 pt-5">
+                                    <input type="checkbox" asp-for="SlotForms[i].IsSpotlight" form="@saveFormId" /> Nổi bật
+                                </label>
+                                <label class="flex items-center gap-2 pt-5">
+                                    <input type="checkbox" asp-for="SlotForms[i].SeasonalSpotlightEnabled" form="@saveFormId" /> Theo mùa
+                                </label>
+                            </div>
+                            <label class="exp-muted text-[10px] uppercase tracking-wide">Dòng phụ</label>
+                            <input class="exp-input text-sm" asp-for="SlotForms[i].EditorialKicker" form="@saveFormId" />
+                            <label class="exp-muted text-[10px] uppercase tracking-wide">Ghi chú hương vị</label>
+                            <textarea class="exp-textarea text-sm" asp-for="SlotForms[i].EditorialBody" form="@saveFormId" rows="2"></textarea>
+                            @if (pick is not null)
+                            {
+                                <p class="text-[11px] text-[rgb(var(--muted-2))] tabular-nums">@pick.Price.ToString("N2") · @pick.CategoryName</p>
+                            }
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+        <div class="exp-actions mt-6">
+            <button type="submit" class="admin-btn admin-btn--solid" form="@saveFormId">Lưu thanh đặc trưng</button>
+        </div>
+    </div>
+    <partial name="_ExperienceLivePreview" />
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js" crossorigin="anonymous"></script>
+    <script src="~/js/admin-experience-preview.js" asp-append-version="true"></script>
+    <script>
+        (function () {
+            var list = document.getElementById("sig-sort-list");
+            if (!list || typeof Sortable === "undefined") return;
+
+            function reindex() {
+                var cards = list.querySelectorAll("[data-sig-card]");
+                cards.forEach(function (card, idx) {
+                    card.querySelectorAll("[name^='SlotForms[']").forEach(function (inp) {
+                        inp.name = inp.name.replace(/SlotForms\[\d+\]/, "SlotForms[" + idx + "]");
+                    });
+                    var so = card.querySelector(".sig-sort-input");
+                    if (so) so.value = String(idx);
+                });
+            }
+
+            Sortable.create(list, {
+                animation: 160,
+                handle: ".sig-drag",
+                ghostClass: "opacity-50",
+                onEnd: reindex
+            });
+            reindex();
+        })();
+    </script>
+}

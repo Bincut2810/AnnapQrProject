@@ -1,0 +1,71 @@
+@page "/staff/orders"
+@model OrdersModel
+@{
+    Layout = "_StaffLayout";
+}
+
+<div class="staff-dash space-y-6">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <p class="text-[10px] font-medium tracking-[0.32em] uppercase text-[rgb(var(--muted-2))]">Hàng đợi trực tiếp</p>
+            <p class="mt-1 max-w-xl text-sm leading-relaxed text-[rgb(var(--muted))]">
+                Hai cột yên tĩnh: <span class="text-[rgb(var(--fg))]">Mới</span> (đang phục vụ) và <span class="text-[rgb(var(--fg))]">Hoàn thành</span>.
+                Nhấn <span class="text-[rgb(var(--fg))]">Hoàn thành</span> một lần để đóng phiếu — không cần kéo qua từng bước.
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <button type="button"
+                    id="staff-refresh-btn"
+                    class="staff-btn-ghost rounded-full px-5 py-2.5 text-xs font-medium tracking-wide text-[rgb(var(--fg))]">
+                Làm mới ngay
+            </button>
+            <label class="flex cursor-pointer items-center gap-2 rounded-full bg-white/[0.04] px-4 py-2.5 ring-1 ring-white/[0.08]">
+                <input id="staff-backup-poll" type="checkbox" class="h-4 w-4 rounded border-white/20 bg-transparent text-[rgb(var(--accent))] focus:ring-[rgb(var(--accent))]/40" />
+                <span class="text-xs text-[rgb(var(--muted))]">Dự phòng yên tĩnh <span class="text-[rgb(var(--fg))]">60s</span></span>
+            </label>
+            <div id="staff-sync-state" class="flex flex-col items-end gap-1 text-right sm:items-end">
+                <div class="flex items-center gap-2 text-[10px] tracking-[0.2em] uppercase text-[rgb(var(--muted-2))]">
+                    <span class="staff-pulse-dot staff-sync-dot h-2 w-2 rounded-full bg-[rgb(var(--accent-2))]" aria-hidden="true"></span>
+                    <span id="staff-last-sync">Đang kết nối…</span>
+                </div>
+                <p class="text-[10px] tracking-wide text-[rgb(var(--muted-2))]">Dữ liệu bảng <span id="staff-last-updated" class="text-[rgb(var(--muted))]">—</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="staff-error" class="hidden rounded-2xl border border-red-500/25 bg-red-500/10 px-4 py-3 text-sm text-red-200/90" role="alert"></div>
+
+    <div class="staff-board staff-board--dual grid gap-4 md:grid-cols-2 md:gap-6" data-staff-board>
+        <section class="staff-col flex min-h-0 flex-col rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.06]" data-staff-column="pending">
+            <header class="shrink-0 border-b border-white/[0.06] px-4 py-3 sm:px-5">
+                <h2 class="font-display text-lg tracking-tight text-[rgb(var(--fg))]">Mới</h2>
+                <p class="mt-0.5 text-[10px] tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]">Đang phục vụ</p>
+            </header>
+            <div class="staff-col-body min-h-[12rem] flex-1 space-y-3 overflow-y-auto p-3 sm:p-4" data-staff-drop="pending">
+                <div class="staff-col-skeleton is-visible" aria-hidden="true">
+                    <div class="staff-col-skeleton__line"></div>
+                    <div class="staff-col-skeleton__line staff-col-skeleton__line--short"></div>
+                    <div class="staff-col-skeleton__line"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="staff-col flex min-h-0 flex-col rounded-2xl bg-white/[0.02] ring-1 ring-amber-900/20" data-staff-column="served">
+            <header class="shrink-0 border-b border-white/[0.06] px-4 py-3 sm:px-5">
+                <h2 class="font-display text-lg tracking-tight text-[rgb(var(--muted))]">Hoàn thành</h2>
+                <p class="mt-0.5 text-[10px] tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]">Đã phục vụ · 3 giờ qua</p>
+            </header>
+            <div class="staff-col-body staff-col-body--dim min-h-[8rem] flex-1 space-y-3 overflow-y-auto p-3 sm:p-4" data-staff-drop="served">
+                <div class="staff-col-skeleton is-visible" aria-hidden="true">
+                    <div class="staff-col-skeleton__line"></div>
+                    <div class="staff-col-skeleton__line staff-col-skeleton__line--short"></div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/signalr/signalr.min.js" asp-append-version="true"></script>
+    <script src="~/js/staff-orders-board.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,290 @@
+﻿@page
+@model Annap.CoffeeQrOrdering.Web.Pages.Menu.IndexModel
+@using System.Globalization
+@using System.Text.Json
+@using Annap.CoffeeQrOrdering.Domain.Entities
+@using Annap.CoffeeQrOrdering.Web.Services
+@{
+    ViewData["Title"] = "Menu";
+    ViewData["IsSeatedPage"] = true;
+    string ChapterEditorialKey(string categoryName) => categoryName.Trim() switch
+    {
+        "Signature" => "menu.editorialSignature",
+        "Espresso" => "menu.editorialBlack",
+        "Coffee" => "menu.editorialBlack",
+        "Tea" => "menu.editorialTea",
+        "Smoothie" => "menu.editorialSpark",
+        "Juice" => "menu.editorialSpark",
+        "Cold Brew" => "menu.editorialBlack",
+        "Vietnamese Coffee" => "menu.editorialDefault",
+        "Bánh" => "menu.editorialDefault",
+        _ => "menu.editorialFallback"
+    };
+    string ChapterEditorialDefault(string categoryName) => categoryName.Trim() switch
+    {
+        "Signature" => "Những ly chúng tôi gọi tên to—vững chắc, tự tin, rõ ràng là của chúng tôi.",
+        "Espresso" => "Cấu trúc sáng, trong trẻo lặng lẽ—những ly đáng uống chậm.",
+        "Coffee" => "Cấu trúc sáng, trong trẻo lặng lẽ—những ly đáng uống chậm.",
+        "Tea" => "Lá trà và bình yên nghiền mịn—caffeine nhẹ nhàng, hậu vị sạch.",
+        "Smoothie" => "Nhẹ bổng, thơm thoảng, sảng khoái—khi bạn muốn căn phòng rộng hơn.",
+        "Juice" => "Nhẹ bổng, thơm thoảng, sảng khoái—khi bạn muốn căn phòng rộng hơn.",
+        "Cold Brew" => "Cấu trúc sáng, trong trẻo lặng lẽ—những ly đáng uống chậm.",
+        "Vietnamese Coffee" => "Tuyển chọn theo mùa—chọn thong thả; quầy bar theo nhịp của bạn.",
+        "Bánh" => "Tuyển chọn theo mùa—chọn thong thả; quầy bar theo nhịp của bạn.",
+        _ => "Tuyển chọn cho chương này của thực đơn—hỏi barista nếu hai ly cùng gọi như nhau."
+    };
+    var catList = Model.Categories.ToList();
+    var catalogJson = JsonSerializer.Serialize(
+        catList.SelectMany(c => c.Items).Select(i => new { id = i.Id, name = i.Name, price = i.Price }),
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    var guestCtxJson = JsonSerializer.Serialize(
+        new
+        {
+            seated = Model.HasSeatedTable,
+            venueTableId = Model.VenueTableId?.ToString("D"),
+            label = Model.TableGuestLabel
+        },
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+}
+
+<div class="menu-browse menu-browse--catalogue -mx-4 px-4 sm:mx-0 sm:px-0">
+
+    <noscript>
+        <div class="mb-6 rounded-2xl border border-[rgba(212,184,150,0.55)] bg-[rgba(253,249,244,0.92)] px-4 py-3 text-sm leading-relaxed text-[rgb(var(--muted))]">
+            Vui lòng bật JavaScript để trải nghiệm thực đơn Annapp. Hỏi quầy bar nếu bạn cần thực đơn giấy, hoặc bật JavaScript và
+            <a class="underline underline-offset-4 text-[rgb(var(--accent))]" href="/Menu/Index@(Model.VenueTableId is Guid vNs ? $"?vt={vNs:D}" : "")">tải lại trang</a>.
+        </div>
+    </noscript>
+
+    <header class="max-w-3xl pb-[max(0.5rem,1vh)]">
+        <nav class="mb-[max(0.5rem,1.5vh)]"
+             data-i18n-aria="menu.backHomeAria"
+             aria-label="Quay lại màn hình chọn một trong ba lối">
+            <a asp-page="/Index"
+               data-guest-vt-link="1"
+               class="guest-hit inline-flex min-h-11 items-center text-xs font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted))] transition hover:text-[rgb(var(--fg))] active:opacity-80"
+               data-i18n="menu.backHome">
+                ← Chọn lại
+            </a>
+        </nav>
+        <p class="font-display text-sm tracking-[0.35em] uppercase text-[rgb(var(--muted-2))]" data-i18n="menu.browseEyebrow">ANNAP</p>
+        <h1 class="font-display mt-[max(1rem,2.8vh)] text-[2.35rem] leading-[1.05] font-medium tracking-tight text-[rgb(var(--fg))] sm:text-5xl" data-i18n="menu.browseTitle">
+            Lựa chọn của quán
+        </h1>
+        <p class="mt-[max(1.25rem,3.5vh)] max-w-xl text-base leading-[1.7] text-[rgb(var(--muted))] sm:text-lg" data-i18n="menu.browseIntro">
+            Mỗi ly được chọn lọc cho không gian này — cuộn chậm thôi; quầy bar đọc nhịp của bạn.
+        </p>
+    </header>
+
+    @* Category bar *@
+    <div class="menu-cat-rail-wrapper">
+    @if (catList.Count > 0)
+    {
+        <nav class="menu-cat-editorial-bar -mx-4 mt-[max(2.5rem,6vh)] sm:mx-0"
+             data-i18n-aria="menu.categoriesNavAria"
+             aria-label="Danh mục thực đơn">
+            <div class="menu-cat-editorial-rail" id="menu-cat-rail-inner">
+                @foreach (var cat in catList)
+                {
+                    <button type="button"
+                            data-cat-nav="@cat.Id"
+                            class="menu-editorial-chip">
+                        @cat.Name
+                    </button>
+                }
+            </div>
+        </nav>
+    }
+    </div>
+
+    @{
+        var cardIndex = 0;
+        var catIndex = 0;
+    }
+    @foreach (var category in catList)
+    {
+        if (catIndex > 0)
+        {
+            <div class="letter-chapter-break" aria-hidden="true">
+                <span class="letter-chapter-break__glyph">—</span>
+            </div>
+        }
+        catIndex++;
+
+        var catItems = category.Items.ToList();
+        var heroItem = catItems.FirstOrDefault(i => i.IsSignature)
+            ?? catItems.FirstOrDefault(i => i.IsFeatured)
+            ?? catItems.FirstOrDefault();
+        var supportingItems = heroItem is null
+            ? []
+            : catItems.Where(i => i.Id != heroItem.Id).ToList();
+
+        <section id="menu-cat-@category.Id"
+                 data-cat-section="@category.Id"
+                 class="menu-cat-section menu-chapter scroll-mt-40 sm:scroll-mt-44">
+
+            @{
+                var chapterEditorialKey = ChapterEditorialKey(category.Name);
+            }
+            <header class="menu-chapter-head">
+                <div class="menu-chapter-head__lead">
+                    <span class="menu-chapter__index" aria-hidden="true">@catIndex.ToString("00")</span>
+                    <h2 class="menu-cat-heading">@category.Name</h2>
+                    <p class="menu-chapter__rest" data-i18n="@chapterEditorialKey">@ChapterEditorialDefault(category.Name)</p>
+                </div>
+            </header>
+
+            <div class="menu-chapter-compose">
+                @if (heroItem is not null)
+                {
+                    cardIndex++;
+                    <div class="menu-chapter-hero">
+                        <partial name="Shared/_MenuEditorialDrinkCard"
+                                 model="(heroItem, category.Name, true, cardIndex, 0)" />
+                    </div>
+                }
+
+                @if (supportingItems.Count > 0)
+                {
+                    <div class="menu-chapter-support@(supportingItems.Count is >= 2 and <= 3 ? " menu-chapter-support--compact" : "")">
+                        @for (var si = 0; si < supportingItems.Count; si++)
+                        {
+                            var item = supportingItems[si];
+                            cardIndex++;
+                            var delayMs = Math.Min(si * 45, 180);
+                            <partial name="Shared/_MenuEditorialDrinkCard"
+                                     model="(item, category.Name, false, cardIndex, delayMs)" />
+                        }
+                    </div>
+                }
+            </div>
+
+            <div class="menu-chapter-silence" aria-hidden="true"></div>
+        </section>
+    }
+</div>
+
+<script type="application/json" id="menu-catalog-json">@Html.Raw(catalogJson)</script>
+<script type="application/json" id="menu-guest-context">@Html.Raw(guestCtxJson)</script>
+
+<partial name="Shared/_OrderTrayDock" />
+
+@section Scripts {
+    <script>
+        if (window.AnnapGuestBootHarness) {
+            AnnapGuestBootHarness.row("menu", "ok");
+            AnnapGuestBootHarness.row("mood", "skip");
+            AnnapGuestBootHarness.row("signalr", "skip");
+        }
+    </script>
+    <script src="~/js/annap-runtime-report.js" asp-append-version="true"></script>
+    <script src="~/js/drink-detail-renderer.js" asp-append-version="true"></script>
+    <script src="~/js/drink-detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/order-tray-dock.js" asp-append-version="true"></script>
+    <script>
+        if (typeof window.annapStartOrderTrayDock === "function") window.annapStartOrderTrayDock();
+        /* Auto-open overlay when redirected from a direct drink URL */
+        (function () {
+            try {
+                var params = new URLSearchParams(window.location.search);
+                var drinkId = params.get("openDrink");
+                if (!drinkId) return;
+                params.delete("openDrink");
+                var qs = params.toString();
+                history.replaceState(null, "", window.location.pathname + (qs ? "?" + qs : ""));
+                window.setTimeout(function () {
+                    if (typeof window.openDrinkDetail === "function") void window.openDrinkDetail(drinkId);
+                }, 80);
+            } catch (_od) {}
+        }());
+    </script>
+    <script src="~/js/menu-browse-cards.js" asp-append-version="true"></script>
+    <script>
+    /* â”€â”€ Menu browse enhancements â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+       1. Card reveal â€” IntersectionObserver batched stagger.
+       2. Category chip rail â€” centre active chip in scrollable rail.
+    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+    (function () {
+        "use strict";
+
+        var isCorrespond = document.documentElement.classList.contains("annap-correspond-ui");
+        var prefersReduced = typeof window.matchMedia === "function" &&
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        /* 1 â€” Card reveal via IntersectionObserver */
+        var revealAll = function () {
+            document.querySelectorAll(".menu-card-reveal").forEach(function (el) {
+                el.style.setProperty("--reveal-delay", "0ms");
+                el.classList.add("is-visible");
+            });
+        };
+
+        var coarsePointer = typeof window.matchMedia === "function" &&
+            window.matchMedia("(hover: none)").matches;
+
+        if (isCorrespond || prefersReduced || coarsePointer || typeof IntersectionObserver === "undefined") {
+            revealAll();
+        } else {
+            var pending = [];
+            var rafId = 0;
+
+            function flushBatch() {
+                rafId = 0;
+                if (!pending.length) return;
+                var batch = pending.splice(0);
+                batch.forEach(function (el, i) {
+                    el.style.setProperty("--reveal-delay", (i * 55) + "ms");
+                    el.classList.add("is-visible");
+                    cardObserver.unobserve(el);
+                });
+            }
+
+            var cardObserver = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting && !entry.target.classList.contains("is-visible")) {
+                        pending.push(entry.target);
+                    }
+                });
+                if (pending.length && !rafId) {
+                    rafId = window.requestAnimationFrame(flushBatch);
+                }
+            }, { threshold: 0.04, rootMargin: "0px 0px -3% 0px" });
+
+            document.querySelectorAll(".menu-card-reveal").forEach(function (el) {
+                cardObserver.observe(el);
+            });
+
+            /* Fallback: reveal any stragglers after 2 s */
+            window.setTimeout(function () {
+                document.querySelectorAll(".menu-card-reveal:not(.is-visible)").forEach(function (el) {
+                    el.style.setProperty("--reveal-delay", "0ms");
+                    el.classList.add("is-visible");
+                });
+            }, 2000);
+        }
+
+        /* 2 â€” Category chip rail: scroll active chip into centre on click */
+        var catRail = document.getElementById("menu-cat-rail-inner");
+        if (catRail) {
+            document.querySelectorAll("[data-cat-nav]").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    window.requestAnimationFrame(function () {
+                        var railRect = catRail.getBoundingClientRect();
+                        var btnRect  = btn.getBoundingClientRect();
+                        if (btnRect.left < railRect.left || btnRect.right > railRect.right) {
+                            var scrollTarget = catRail.scrollLeft +
+                                (btnRect.left - railRect.left) -
+                                (railRect.width / 2 - btn.offsetWidth / 2);
+                            if (typeof window.annapEditorialScrollH === "function") {
+                                window.annapEditorialScrollH(catRail, scrollTarget, 360);
+                            } else {
+                                catRail.scrollTo({ left: scrollTarget, behavior: "smooth" });
+                            }
+                        }
+                    });
+                });
+            });
+        }
+    })();
+    </script>
+}

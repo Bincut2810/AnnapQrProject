@@ -1,0 +1,80 @@
+@page "/admin/experience/group"
+@model Annap.CoffeeQrOrdering.Web.Pages.Admin.Experience.Group.IndexModel
+@{
+    ViewData["Title"] = "Nhóm · tiếp đón";
+    ViewData["AdminNavSection"] = "experience-group";
+    ViewData["AdminReturnHref"] = Url.Content("~/admin");
+    ViewData["AdminReturnLabel"] = "← Quay lại";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-experience.css" asp-append-version="true" />
+}
+
+<partial name="Admin/_AdminEditorialReturn" />
+<div class="exp-cms admin-page-head">
+    <p class="exp-kicker">Trải nghiệm khách</p>
+    <h1 class="exp-title">Tiếp đón nhóm</h1>
+    <p class="exp-muted">Nội dung và giới hạn cho lộ trình nhóm ngồi bàn: số khách, thẻ theo người và tóm tắt bàn.</p>
+</div>
+
+<form method="post" class="exp-cms mt-8 max-w-3xl space-y-6">
+    <div class="exp-card space-y-4">
+        <h2 class="font-display text-xl font-normal text-[rgb(var(--fg))]">Đón khách</h2>
+        <div>
+            <label class="exp-muted text-xs tracking-wide">Dòng tóm tắt (chữ hoa nhỏ)</label>
+            <input class="exp-input mt-1 w-full" asp-for="Form.ArrivalKicker" maxlength="240" />
+        </div>
+    </div>
+
+    <div class="exp-card space-y-4">
+        <h2 class="font-display text-xl font-normal text-[rgb(var(--fg))]">Bước chọn số khách</h2>
+        <div>
+            <label class="exp-muted text-xs tracking-wide">Lời nhắc</label>
+            <input class="exp-input mt-1 w-full" asp-for="Form.GuestCountPrompt" maxlength="400" />
+        </div>
+        <div>
+            <label class="exp-muted text-xs tracking-wide">Dòng phụ hỗ trợ</label>
+            <textarea class="exp-textarea mt-1 w-full" asp-for="Form.GuestCountLead" rows="3" maxlength="800"></textarea>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+                <label class="exp-muted text-xs tracking-wide">Số khách tối thiểu</label>
+                <input class="exp-input mt-1 w-full" type="number" min="1" max="12" asp-for="Form.MinGuests" />
+            </div>
+            <div>
+                <label class="exp-muted text-xs tracking-wide">Số khách tối đa</label>
+                <input class="exp-input mt-1 w-full" type="number" min="1" max="20" asp-for="Form.MaxGuests" />
+            </div>
+        </div>
+    </div>
+
+    <div class="exp-card space-y-4">
+        <h2 class="font-display text-xl font-normal text-[rgb(var(--fg))]">Nhịp theo từng người</h2>
+        <div>
+            <label class="exp-muted text-xs tracking-wide">Giới thiệu dưới tab khách</label>
+            <textarea class="exp-textarea mt-1 w-full" asp-for="Form.GuestTabsIntro" rows="2" maxlength="800"></textarea>
+        </div>
+        <div>
+            <label class=”exp-muted text-xs tracking-wide”>Gợi ý “Đã chọn xong”</label>
+            <textarea class="exp-textarea mt-1 w-full" asp-for="Form.GuestDoneHint" rows="2" maxlength="800"></textarea>
+        </div>
+    </div>
+
+    <div class="exp-card space-y-4">
+        <h2 class="font-display text-xl font-normal text-[rgb(var(--fg))]">Tóm tắt bàn</h2>
+        <div>
+            <label class="exp-muted text-xs tracking-wide">Tiêu đề</label>
+            <input class="exp-input mt-1 w-full" asp-for="Form.SummaryHeadline" maxlength="400" />
+        </div>
+        <div>
+            <label class="exp-muted text-xs tracking-wide">Đoạn dẫn</label>
+            <textarea class="exp-textarea mt-1 w-full" asp-for="Form.SummaryLead" rows="3" maxlength="1200"></textarea>
+        </div>
+        <div>
+            <label class="exp-muted text-xs tracking-wide">Câu kết tiếp đón</label>
+            <textarea class="exp-textarea mt-1 w-full" asp-for="Form.HospitalityClosing" rows="2" maxlength="1200"></textarea>
+        </div>
+    </div>
+
+    <button type="submit" class="admin-btn admin-btn--solid text-xs tracking-wide">Lưu lộ trình nhóm</button>
+</form>

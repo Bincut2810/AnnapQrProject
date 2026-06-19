@@ -1,0 +1,101 @@
+@page "/admin/demo/qr"
+@model Annap.CoffeeQrOrdering.Web.Pages.Admin.Demo.QrModel
+@{
+    ViewData["Title"] = "Mã QR bàn";
+    ViewData["AdminNavSection"] = "demo-qr";
+    ViewData["AdminEyebrow"] = "Demo sàn";
+    ViewData["AdminReturnHref"] = Url.Content("~/admin");
+    ViewData["AdminReturnLabel"] = "← Quay lại";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-demo-qr.css" asp-append-version="true" />
+}
+
+<partial name="Admin/_AdminEditorialReturn" />
+<div class="demo-qr-page">
+    <header class="demo-qr-hero demo-qr-no-print">
+        <p class="demo-qr-eyebrow">Annap Coffee Atelier</p>
+        <h1 class="demo-qr-title">Thẻ QR bàn</h1>
+        <p class="demo-qr-lead">
+            Các bàn demo — quét bằng điện thoại cùng mạng WiFi. Mã tương ứng với bàn đã seed sẵn.
+        </p>
+        @if (Model.ShowLocalhostLanBanner)
+        {
+            <aside class="demo-qr-localhost-banner" role="note">
+                <p class="demo-qr-localhost-banner__title">Phát triển · demo điện thoại</p>
+                <p class="demo-qr-localhost-banner__text">
+                    Bạn đang mở trang trên <strong>localhost</strong>. Điện thoại phải dùng địa chỉ LAN WiFi để mã QR và phiên khách hoạt động đúng:
+                </p>
+                <p class="demo-qr-localhost-banner__url">
+                    <a href="@Model.PhoneDemoWiFiBaseUrl">@Model.PhoneDemoWiFiBaseUrl</a>
+                </p>
+            </aside>
+        }
+        <p class="demo-qr-base">
+            <span class="demo-qr-base__label">Địa chỉ mạng công khai</span>
+            <code class="demo-qr-base__url">@Model.PublicBaseUrl</code>
+        </p>
+        <button type="button" class="demo-qr-btn demo-qr-btn--gold" id="demo-qr-print-all">
+            In tất cả thẻ QR
+        </button>
+    </header>
+
+    <section class="demo-qr-flow demo-qr-no-print" aria-label="Luồng demo">
+        <h2 class="demo-qr-flow__title">Luồng demo</h2>
+        <div class="demo-qr-flow__cols">
+            <div class="demo-qr-flow__col">
+                <h3 class="demo-qr-flow__h">Khách</h3>
+                <ol class="demo-qr-flow__list">
+                    <li>Quét mã QR</li>
+                    <li>Chọn đồ uống</li>
+                    <li>Đặt hàng</li>
+                </ol>
+            </div>
+            <div class="demo-qr-flow__col">
+                <h3 class="demo-qr-flow__h">Nhân viên</h3>
+                <ol class="demo-qr-flow__list">
+                    <li>Mở <a class="demo-qr-inline" href="/staff/orders">/staff/orders</a></li>
+                    <li>Nhận đơn hàng trực tiếp (SignalR)</li>
+                    <li>Chuyển giai đoạn pha chế</li>
+                </ol>
+            </div>
+        </div>
+        <p class="demo-qr-flow__note">
+            Mỗi mã QR mã hóa một đường dẫn <code>/table/…</code> riêng biệt để giỏ hàng và phiên của khách gắn với bàn đó. Dùng địa chỉ WiFi trên điện thoại để SignalR và cookie hoạt động đúng host.
+        </p>
+    </section>
+
+    <div class="demo-qr-grid">
+        @foreach (var row in Model.Rows)
+        {
+            <article class="demo-qr-card" data-table="@row.TableCode" id="demo-qr-card-@row.TableCode">
+                <div class="demo-qr-card__inner">
+                    <header class="demo-qr-card__head">
+                        <p class="demo-qr-card__eyebrow">Bàn</p>
+                        <h2 class="demo-qr-card__code">@row.TableCode</h2>
+                    </header>
+                    <div class="demo-qr-card__qr">
+                        <img src="@row.QrDataUri"
+                             alt="Mã QR dẫn đến @row.GuestUrl"
+                             width="320"
+                             height="320"
+                             loading="lazy"
+                             decoding="async" />
+                    </div>
+                    <p class="demo-qr-card__url">
+                        <code class="demo-qr-card__urltext" id="demo-qr-url-@row.TableCode">@row.GuestUrl</code>
+                    </p>
+                    <div class="demo-qr-actions demo-qr-no-print">
+                        <a class="demo-qr-btn" href="@row.GuestUrl" target="_blank" rel="noopener">Mở</a>
+                        <button type="button" class="demo-qr-btn demo-qr-btn--quiet" data-copy="@row.GuestUrl">Sao chép link</button>
+                        <button type="button" class="demo-qr-btn demo-qr-btn--quiet" data-print-card="@row.TableCode">In mã QR</button>
+                    </div>
+                </div>
+            </article>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-demo-qr.js" asp-append-version="true"></script>
+}

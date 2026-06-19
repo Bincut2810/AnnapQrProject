@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+
+**/bin/
+**/obj/
+**/node_modules/
+_build_out*/
+.vs/
+.idea/
+*.user

@@ -1,0 +1,26 @@
+@{
+    var mode = ViewData["ExpPreviewMode"] as string ?? "hub";
+    var seedJson = ViewData["ExpPreviewSeedJson"] as string ?? "{}";
+}
+<aside class="exp-preview-rail exp-cms__rail" aria-label="Live guest preview">
+    <button type="button"
+            class="exp-preview__fab lg:hidden"
+            id="exp-preview-fab"
+            aria-expanded="false"
+            aria-controls="exp-preview-sheet">
+        Live preview
+    </button>
+    <div class="exp-preview__sheet" id="exp-preview-sheet">
+        <div class="exp-preview__sheet-head lg:hidden">
+            <p class="text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]">Guest device</p>
+            <button type="button" class="exp-preview__close" id="exp-preview-close" aria-label="Close preview">×</button>
+        </div>
+        <div class="exp-phone exp-preview-phone" data-exp-phone>
+            <div id="exp-live-preview"
+                 class="exp-phone__inner exp-live-preview"
+                 data-exp-preview-root
+                 data-exp-preview-mode="@mode"></div>
+        </div>
+    </div>
+</aside>
+<script type="application/json" id="exp-preview-seed">@Html.Raw(seedJson)</script>

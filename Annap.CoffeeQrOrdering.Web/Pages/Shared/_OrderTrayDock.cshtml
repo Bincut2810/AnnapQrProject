@@ -1,0 +1,148 @@
+@* Shared table order dock — Menu + seated Home. Requires #menu-catalog-json + #menu-guest-context (or window.__ANNAP_TRAY_GUEST_CTX) before scripts. *@
+<div id="order-tray-backdrop"
+     class="order-tray-backdrop order-tray-backdrop-layer pointer-events-none fixed inset-0 z-[55] hidden opacity-0 sm:rounded-none"
+     aria-hidden="true"></div>
+
+<div id="order-tray-root"
+     class="order-tray-root order-tray-root--dock pointer-events-none fixed inset-x-0 bottom-0 z-[60] sm:left-auto sm:right-6 sm:w-[min(23.5rem,calc(100vw-2rem))]">
+    <div class="order-tray-shell pointer-events-none relative z-[60] mx-auto max-w-lg px-3 pb-[max(0.75rem,calc(env(safe-area-inset-bottom)+var(--keyboard-inset,0px)))] sm:px-0">
+        <div class="relative flex flex-col items-stretch">
+            <div id="order-tray-sheet"
+                 class="order-tray-sheet surface-paper order-tray-sheet--closed pointer-events-none absolute bottom-full left-0 right-0 mb-2 flex max-h-[min(72dvh,680px)] flex-col overflow-hidden rounded-sm ring-1 ring-[rgba(212,184,150,0.45)]">
+                <div class="postal-airmail-edge postal-airmail-edge--top shrink-0" aria-hidden="true"></div>
+
+                <div class="annap-tray-header relative flex shrink-0 items-center gap-3 border-b border-[rgba(212,184,150,0.3)] px-4 py-2.5 sm:px-5">
+                    <div class="order-tray-handle pointer-events-none absolute left-1/2 top-1.5 h-0.5 w-7 -translate-x-1/2 rounded-full bg-[rgba(26,20,16,0.1)]" aria-hidden="true"></div>
+
+                    <div class="order-tray-header__stamp" aria-hidden="true">A</div>
+                    <div class="min-w-0 flex-1 pt-1">
+                        <p class="text-[0.9375rem] font-medium leading-snug tracking-tight text-[rgb(var(--fg))]" data-i18n="menuTray.sheetTitle">Khay của bạn</p>
+                        <p id="trayCountLine"
+                           class="mt-0.5 text-[11px] leading-relaxed text-[rgb(var(--muted))]" data-i18n="menuTray.sheetSub">Chạm để xem và gửi order</p>
+                    </div>
+
+                    <div class="flex shrink-0 items-center gap-1">
+                        <button type="button"
+                                id="order-tray-clear"
+                                class="guest-hit inline-flex min-h-9 items-center rounded-full px-2.5 py-1 text-[9px] font-medium tracking-[0.22em] uppercase text-[rgb(var(--muted))] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]"
+                                data-i18n="menuTray.clear">
+                            Xóa lựa chọn
+                        </button>
+                        <button type="button"
+                                id="annap-tray-close"
+                                class="guest-hit inline-flex h-9 w-9 items-center justify-center rounded-full text-[rgb(var(--muted))] transition hover:bg-[rgba(26,20,16,0.06)] hover:text-[rgb(var(--fg))] active:scale-[0.97]"
+                                data-i18n-aria="cart.close"
+                                aria-label="Đóng">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-4 w-4">
+                                <path d="M6 9l6 6 6-6" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="order-tray-lines-wrap" class="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 pt-2.5 sm:px-4">
+                    <div id="cart" class="order-tray-lines pb-1 text-sm"></div>
+                </div>
+
+                <div class="postal-airmail-edge postal-airmail-edge--bottom shrink-0" aria-hidden="true"></div>
+                <div class="shrink-0 px-4 pb-4 pt-3 sm:px-5">
+                    <div class="flex items-baseline justify-between gap-4 border-t border-[rgba(212,184,150,0.35)] pt-3">
+                        <span class="text-[10px] font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted-2))]"
+                              data-i18n="menuTray.subtotal">Tạm tính</span>
+                        <p id="order-tray-subtotal"
+                           class="text-lg font-semibold tabular-nums tracking-tight text-[rgb(var(--fg))]">0đ</p>
+                    </div>
+
+                    <div id="menu-table-identity"
+                         class="mt-3 hidden rounded-sm border border-[rgba(212,184,150,0.45)] bg-[rgba(253,249,244,0.65)] px-3 py-2">
+                        <p id="menu-table-primary"
+                           class="font-display text-base tracking-tight text-[rgb(var(--fg))]"></p>
+                        <p class="mt-1 text-xs leading-relaxed text-[rgb(var(--muted))]"
+                           data-i18n="cart.seatedHint">Chỗ ngồi của bạn đã được ghi nhận tại 106/1 Nguyễn Thị Minh Khai.</p>
+                    </div>
+                    <div id="menu-table-need-qr"
+                         class="mt-3 rounded-sm border border-[rgba(212,184,150,0.5)] bg-[rgba(253,249,244,0.55)] px-3 py-2 text-sm leading-relaxed text-[rgb(var(--muted))]"
+                         data-i18n="cart.needQr">
+                        Vui lòng quét QR trên bàn để bắt đầu.
+                    </div>
+
+                    <input type="hidden" id="menuVenueTableId" value="" autocomplete="off" />
+
+                    <button type="button"
+                            id="menuSubmitBtn"
+                            class="btn-ink order-tray-submit mt-3 min-h-[2.75rem] w-full justify-center py-3 font-normal tracking-wide disabled:opacity-45"
+                            disabled
+                            onclick="if (typeof window.__annapMenuSubmitOrder === 'function') window.__annapMenuSubmitOrder();"
+                            data-i18n="menuTray.requestPreparation">
+                        Gửi order xuống quầy
+                    </button>
+
+                    <div id="orderResult"
+                         class="mt-3 min-h-[1.25rem] text-center text-xs text-[rgb(var(--muted))]"></div>
+                </div>
+            </div>
+
+            <button type="button"
+                    id="order-tray-chip"
+                    class="order-tray-chip pointer-events-auto surface-glass guest-hit relative z-[1] grid min-h-[2.65rem] w-full grid-cols-[2.15rem_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2.5 py-2 text-left ring-1 ring-[rgba(212,184,150,0.38)] transition-[box-shadow] duration-200 ease-out active:scale-[0.995] sm:min-h-0 sm:duration-300 sm:ease-[cubic-bezier(0.22,1,0.36,1)]"
+                    aria-expanded="false"
+                    aria-controls="order-tray-sheet"
+                    data-i18n-aria="menuTray.ariaChip">
+                <span id="order-tray-chip-impact" aria-hidden="true"></span>
+                <span id="order-tray-chip-stack" class="order-tray-chip__stack" aria-hidden="true">
+                    <span class="order-tray-chip__empty-line"></span>
+                </span>
+                <div class="order-tray-chip__copy min-w-0">
+                    <p class="order-tray-chip__kicker text-[9px] font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted-2))]" data-i18n="menuTray.chipKicker">Khay</p>
+                    <p id="order-tray-chip-title"
+                       class="mt-0.5 truncate text-[0.8125rem] font-medium leading-snug text-[rgb(var(--fg))]" data-i18n="menuTray.chipEmpty">Khay đang chờ</p>
+                    <p id="order-tray-chip-sub"
+                       class="mt-0.5 truncate text-[11px] leading-relaxed text-[rgb(var(--muted))]" data-i18n="menuTray.chipSubEmpty">Chọn một ly để bắt đầu.</p>
+                    <p id="order-tray-chip-guest"
+                       class="mt-1 hidden truncate text-[10px] font-medium tracking-[0.18em] uppercase text-[rgb(var(--accent))]/80"></p>
+                </div>
+                <span class="order-tray-chip__side">
+                    <span id="order-tray-chip-total" class="order-tray-chip__total">0đ</span>
+                    <span class="order-tray-chevron flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[rgba(253,249,244,0.95)] ring-1 ring-[rgba(212,184,150,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                      aria-hidden="true">
+                        <svg class="h-3.5 w-3.5 text-[rgb(var(--muted))]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M6 9l6 6 6-6" />
+                        </svg>
+                    </span>
+                </span>
+            </button>
+        </div>
+    </div>
+</div>
+
+@* Drink detail — JSON-driven overlay (dd-* via DrinkDetailModal + DrinkDetailRenderer). *@
+<div id="drink-detail-modal"
+     class="drink-detail-modal fixed inset-0 z-[350] hidden"
+     role="dialog"
+     aria-modal="true"
+     aria-hidden="true">
+    <div id="drink-detail-backdrop" role="presentation"></div>
+    <div id="drink-detail-panel">
+        <header class="drink-detail-action-bar"
+                data-i18n-aria="menu.detailActionsAria"
+                aria-label="Thao tác thẻ hương vị">
+            <button type="button"
+                    id="drink-detail-close"
+                    class="drink-detail-close drink-detail-action-bar__back drink-modal-close drink-poster-back"
+                    data-i18n-aria="cart.close"
+                    aria-label="Đóng">
+                <span class="drink-detail-action-bar__glyph" aria-hidden="true">←</span>
+                <span data-i18n="menu.back">Quay lại</span>
+            </button>
+            <button type="button"
+                    id="drink-detail-add-top"
+                    class="drink-detail-add-top drink-detail-action-bar__add menu-add-btn"
+                    hidden
+                    disabled
+                    data-i18n="menu.prepareForTable">
+                <span class="drink-detail-add-top__label">Pha cho bàn tôi</span>
+            </button>
+        </header>
+        <div id="drink-detail-mount"></div>
+    </div>
+</div>

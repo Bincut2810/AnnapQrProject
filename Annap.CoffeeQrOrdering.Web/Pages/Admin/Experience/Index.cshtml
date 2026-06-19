@@ -1,0 +1,150 @@
+@page "/admin/experience"
+@model Annap.CoffeeQrOrdering.Web.Pages.Admin.Experience.IndexModel
+@{
+    ViewData["Title"] = "Trải nghiệm khách";
+    ViewData["AdminNavSection"] = "experience-hub";
+    ViewData["ExpPreviewMode"] = "hub";
+    ViewData["ExpPreviewSeedJson"] = Model.ExperiencePreviewSeedJson;
+    ViewData["AdminReturnHref"] = Url.Content("~/admin");
+    ViewData["AdminReturnLabel"] = "← Quay lại";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-experience.css" asp-append-version="true" />
+}
+
+<partial name="Admin/_AdminEditorialReturn" />
+<div class="exp-cms admin-page-head">
+    <p class="exp-kicker">Xưởng trải nghiệm</p>
+    <h1 class="exp-title">Hành trình khách</h1>
+    <p class="exp-muted">Trung tâm điều hành trải nghiệm khách: chỉnh đặc trưng, nếm thử có hướng dẫn và khám phá — rồi xuất bản khi quán sẵn sàng. Nội dung bạn chỉnh ở đây (câu hỏi, mảnh, nghi thức) chảy trực tiếp vào trải nghiệm điện thoại; hãy lưu từng trang xưởng trước khi tạo bản lưu để lưu trữ đúng với sàn.</p>
+    @if (!string.IsNullOrEmpty(Model.PublishMessage))
+    {
+        <p class="mt-3 text-sm text-emerald-200/90" role="status">@Model.PublishMessage</p>
+    }
+    @if (!string.IsNullOrEmpty(Model.PublishError))
+    {
+        <p class="mt-3 text-sm text-amber-200/90" role="alert">@Model.PublishError</p>
+    }
+</div>
+
+<partial name="Experience/_HomepageCompositionPanel" model="Model" />
+
+<section class="exp-cms mt-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5" aria-label="Tình trạng trải nghiệm">
+    <p class="text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]">Tổng quan quán</p>
+    <dl class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div>
+            <dt class="text-xs text-[rgb(var(--muted))]">Đồ uống đặc trưng đang hoạt động</dt>
+            <dd class="mt-1 font-display text-2xl font-normal text-[rgb(var(--fg))]">@Model.ActiveSignatureSlots</dd>
+        </div>
+        <div>
+            <dt class="text-xs text-[rgb(var(--muted))]">Câu hỏi nếm thử đang chạy</dt>
+            <dd class="mt-1 font-display text-2xl font-normal text-[rgb(var(--fg))]">@Model.GuidedQuestionsEnabled</dd>
+        </div>
+        <div>
+            <dt class="text-xs text-[rgb(var(--muted))]">Ly đủ điều kiện khám phá</dt>
+            <dd class="mt-1 font-display text-2xl font-normal text-[rgb(var(--fg))]">@Model.DiscoveryEligibleDrinks</dd>
+        </div>
+        <div>
+            <dt class="text-xs text-[rgb(var(--muted))]">Độ phủ trải nghiệm</dt>
+            <dd class="mt-1 font-display text-2xl font-normal text-[rgb(var(--fg))]">@Model.ExperienceCoveragePercent%</dd>
+            <p class="mt-1 text-[10px] text-[rgb(var(--muted-2))]">Cân bằng giữa ray, nếm thử và hồ bơi — không phải bảng điểm.</p>
+        </div>
+        <div>
+            <dt class="text-xs text-[rgb(var(--muted))]">Lối vào sảnh đang hiện</dt>
+            <dd class="mt-1 font-display text-2xl font-normal text-[rgb(var(--fg))]">@Model.HomepageModesVisible / 3</dd>
+            <p class="mt-1 text-[10px] text-[rgb(var(--muted-2))]">Điều khiển ngay ở thẻ bố cục phía trên.</p>
+        </div>
+        <div>
+            <dt class="text-xs text-[rgb(var(--muted))]">Lần chỉnh gần nhất</dt>
+            <dd class="mt-1 text-sm text-[rgb(var(--fg))]">
+                @(Model.LastExperienceEditUtc is { } u ? u.ToLocalTime().ToString("MMM d, HH:mm") : "—")
+            </dd>
+        </div>
+    </dl>
+</section>
+
+<section class="exp-cms mt-6 rounded-2xl border border-white/[0.08] bg-black/20 p-5" aria-label="Xuất bản trải nghiệm">
+    <p class="text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]">Lưu trữ quán</p>
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+        <form method="post" asp-page-handler="SaveDraft" class="m-0">
+            <input type="text" name="houseNote" maxlength="200" class="exp-input mb-2 max-w-xs text-xs" placeholder="Ghi chú tùy chọn (chỉ nhóm thấy)" />
+            <div>
+                <button type="submit" class="admin-btn admin-btn--ghost text-xs tracking-wide">Lưu nháp</button>
+            </div>
+        </form>
+        <form method="post" asp-page-handler="PublishExperience" class="m-0">
+            <button type="submit" class="admin-btn admin-btn--solid text-xs tracking-wide">Xuất bản trải nghiệm</button>
+        </form>
+    </div>
+    <p class="exp-muted mt-3 text-xs">
+        @if (Model.LastPublishedUtc is { } pub)
+        {
+            <span>Hành trình khách đã cập nhật @Model.LastPublishedRelative (@pub.ToLocalTime().ToString("MMM d, HH:mm")).</span>
+        }
+        else
+        {
+            <span>Chưa có hành trình nào được xuất bản — xuất bản khi ba đường dẫn cảm thấy đúng.</span>
+        }
+    </p>
+    @if (Model.PublishedSnapshots.Count > 0)
+    {
+        <div class="mt-4 border-t border-white/[0.06] pt-4">
+            <p class="text-[10px] uppercase tracking-wide text-[rgb(var(--muted-2))]">Khôi phục thời điểm đã xuất bản</p>
+            <div class="mt-2 flex flex-wrap gap-2">
+                @foreach (var s in Model.PublishedSnapshots)
+                {
+                    <form method="post" asp-page-handler="RestoreExperience" class="m-0 inline">
+                        <input type="hidden" name="snapshotId" value="@s.Id" />
+                        <button type="submit" class="admin-btn admin-btn--ghost text-[11px]">@s.CreatedAtUtc.ToLocalTime().ToString("MMM d HH:mm")</button>
+                    </form>
+                }
+            </div>
+        </div>
+    }
+</section>
+
+<section class="exp-cms mt-6 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-5" aria-label="Cài đặt sẵn trải nghiệm">
+    <p class="text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]">Cài đặt sẵn</p>
+    <p class="exp-muted mt-2 text-sm">Điều chỉnh nhẹ về tông khám phá — mở các xưởng khác để chỉnh đặc trưng và lộ trình nếm thử.</p>
+    <div class="mt-4 flex flex-wrap gap-2">
+        <form method="post" asp-page-handler="ApplyPreset" class="m-0"><input type="hidden" name="presetId" value="morning-calm" /><button type="submit" class="admin-btn admin-btn--ghost text-xs">Buổi sáng bình yên</button></form>
+        <form method="post" asp-page-handler="ApplyPreset" class="m-0"><input type="hidden" name="presetId" value="signature-night" /><button type="submit" class="admin-btn admin-btn--ghost text-xs">Đêm đặc trưng</button></form>
+        <form method="post" asp-page-handler="ApplyPreset" class="m-0"><input type="hidden" name="presetId" value="bright-fruit-season" /><button type="submit" class="admin-btn admin-btn--ghost text-xs">Mùa trái cây tươi sáng</button></form>
+        <form method="post" asp-page-handler="ApplyPreset" class="m-0"><input type="hidden" name="presetId" value="slow-espresso-ritual" /><button type="submit" class="admin-btn admin-btn--ghost text-xs">Nghi thức espresso chậm</button></form>
+    </div>
+</section>
+
+<div class="exp-cms exp-cms__grid exp-cms__grid--split mt-10" data-exp-preview="hub" data-exp-preview-host>
+    <div class="space-y-5">
+        <a class="exp-card group block transition hover:border-white/15" asp-page="/Admin/Experience/Signatures/Index">
+            <p class="exp-slot__label">1 · Trải nghiệm nhóm</p>
+            <h2 class="mt-2 font-display text-xl font-normal text-[rgb(var(--fg))]">Thanh đặc trưng</h2>
+            <p class="exp-muted mt-2 text-sm">Tối đa bốn ly đang hoạt động, sắp xếp thứ tự, ghi chú nổi bật và theo mùa.</p>
+            <p class="mt-4 text-xs tracking-wide text-[rgb(var(--muted-2))] group-hover:text-[rgb(var(--muted))]">Mở xưởng →</p>
+        </a>
+        <a class="exp-card group block transition hover:border-white/15" asp-page="/Admin/Experience/Group/Index">
+            <p class="exp-slot__label">1b · Tiếp đón nhóm</p>
+            <h2 class="mt-2 font-display text-xl font-normal text-[rgb(var(--fg))]">Số khách &amp; nội dung</h2>
+            <p class="exp-muted mt-2 text-sm">Lời nhắc, giới hạn, nhịp độ theo người và tóm tắt bàn.</p>
+            <p class="mt-4 text-xs tracking-wide text-[rgb(var(--muted-2))] group-hover:text-[rgb(var(--muted))]">Mở xưởng →</p>
+        </a>
+        <a class="exp-card group block transition hover:border-white/15" asp-page="/Admin/Experience/Sommelier/Index">
+            <p class="exp-slot__label">2 · Nếm thử có hướng dẫn</p>
+            <h2 class="mt-2 font-display text-xl font-normal text-[rgb(var(--fg))]">Lộ trình nếm thử</h2>
+            <p class="exp-muted mt-2 text-sm">Câu hỏi, câu trả lời, ái ngữ và hệ số trọng số.</p>
+            <p class="mt-4 text-xs tracking-wide text-[rgb(var(--muted-2))] group-hover:text-[rgb(var(--muted))]">Mở xưởng →</p>
+        </a>
+        <a class="exp-card group block transition hover:border-white/15" asp-page="/Admin/Experience/Discovery/Index">
+            <p class="exp-slot__label">3 · Nghi thức khám phá</p>
+            <h2 class="mt-2 font-display text-xl font-normal text-[rgb(var(--fg))]">Phong bì &amp; hồ bơi</h2>
+            <p class="exp-muted mt-2 text-sm">Trọng số, điều kiện, nội dung và cảm giác khám phá táo bạo đến đâu.</p>
+            <p class="mt-4 text-xs tracking-wide text-[rgb(var(--muted-2))] group-hover:text-[rgb(var(--muted))]">Mở xưởng →</p>
+        </a>
+    </div>
+    <partial name="_ExperienceLivePreview" />
+</div>
+
+@section Scripts {
+    <script src="~/js/admin-homepage-composition.js" asp-append-version="true"></script>
+    <script src="~/js/admin-experience-preview.js" asp-append-version="true"></script>
+}

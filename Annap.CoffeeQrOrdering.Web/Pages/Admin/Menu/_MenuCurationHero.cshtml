@@ -1,0 +1,19 @@
+@model MenuCurationHeroVm
+
+<header class="menu-curation-hero">
+    <div class="menu-curation-hero__rail">
+        @if (!string.IsNullOrEmpty(Model.BackPage))
+        {
+            <a class="menu-curation-hero__back guest-hit" asp-page="@Model.BackPage">
+                <span aria-hidden="true">←</span>
+                <span>@(Model.BackLabel ?? "Quay lại")</span>
+            </a>
+        }
+        <p class="menu-curation-hero__kicker">@Model.Kicker</p>
+        <h1 class="menu-curation-hero__title">@Model.Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Model.Lede))
+        {
+            <p class="menu-curation-hero__lede">@Model.Lede</p>
+        }
+    </div>
+</header>
