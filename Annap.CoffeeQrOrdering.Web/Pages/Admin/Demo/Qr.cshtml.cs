@@ -15,6 +15,9 @@ public sealed class QrModel(
 {
     public string PublicBaseUrl { get; private set; } = "";
 
+    public AppUrlResolution QrResolution { get; private set; } =
+        new(AppUrlResolutionSource.Unresolved, "", null, null, null, []);
+
     /// <summary>When true, show Development-only hint to open QR page via LAN URL (phones cannot use localhost).</summary>
     public bool ShowLocalhostLanBanner { get; private set; }
 
@@ -26,7 +29,8 @@ public sealed class QrModel(
     public void OnGet()
     {
         var http = httpContextAccessor.HttpContext;
-        var baseUrl = appUrlService.GetBaseUrl(http).TrimEnd('/');
+        QrResolution = appUrlService.DescribeResolution(http);
+        var baseUrl = QrResolution.ResolvedBaseUrl.TrimEnd('/');
         PublicBaseUrl = baseUrl;
 
         var port = 8080;

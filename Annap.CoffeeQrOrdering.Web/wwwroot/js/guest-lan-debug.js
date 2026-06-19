@@ -43,22 +43,24 @@
     function render() {
         var root = el();
         if (!root) return;
-        var o = "";
+        var origin = "—";
+        var publicBase = "—";
         try {
-            o = location.origin;
+            origin = location.origin;
             var r = window.__annapRuntime || {};
-            if (r.apiBase || r.baseUrl) o = String(r.apiBase || r.baseUrl);
+            if (r.publicBaseUrl) publicBase = String(r.publicBaseUrl);
         } catch (e) {
-            o = "—";
+            origin = "—";
         }
         root.innerHTML =
             "<strong>LAN debug</strong><br>" +
             "Origin: <code>" +
-            escapeHtml(o) +
+            escapeHtml(origin) +
             "</code><br>" +
-            "API base: <code>" +
-            escapeHtml(o) +
-            "</code> <small>(relative <code>/api/…</code>)</small><br>" +
+            "Public URL (QR): <code>" +
+            escapeHtml(publicBase) +
+            "</code><br>" +
+            "API: <code>relative /api/…</code><br>" +
             "Menu: <span data-dm>" +
             escapeHtml(state.menu) +
             "</span><br>" +

@@ -17,7 +17,8 @@ public sealed class GoLiveVerificationService(
     IWebHostEnvironment environment,
     IOptions<SommelierOpenAiOptions> sommelierOptions,
     HealthCheckService healthCheckService,
-    IHttpClientFactory httpClientFactory)
+    IHttpClientFactory httpClientFactory,
+    IAppUrlService appUrlService)
 {
     private static readonly string[] CoffeeFamilyCategories =
         BeverageFamilyGrounding.AllowedCategoryNames(BeverageFamilyGrounding.Coffee).ToArray();
@@ -93,9 +94,9 @@ public sealed class GoLiveVerificationService(
         var warnings = new List<string>();
         if (openAiWarning is not null)
             warnings.Add(openAiWarning);
-        var renderAppUrlWarning = BuildRenderAppUrlWarning();
-        if (renderAppUrlWarning is not null)
-            warnings.Add(renderAppUrlWarning);
+        var renderAppUrlWarning = BuildQrPublicUrlWarnings();
+        if (renderAppUrlWarning.Count > 0)
+            warnings.AddRange(renderAppUrlWarning);
         PrintSummary(gates, ready, warnings);
 
         return ready ? 0 : 1;
@@ -546,14 +547,26 @@ public sealed class GoLiveVerificationService(
             : $"{trimmed}/health";
     }
 
-    private string? BuildRenderAppUrlWarning()
+    private IReadOnlyList<string> BuildQrPublicUrlWarnings()
     {
-        if (!InfrastructureEnvironment.IsRenderDeployment)
-            return null;
-        if (!string.IsNullOrWhiteSpace(configuration["AppUrl:PublicBaseUrl"]))
-            return null;
+        var messages = new List<string>();
+        var resolution = appUrlService.DescribeResolution(null);
 
-        return "WARN: Running on Render without AppUrl__PublicBaseUrl configured.";
+        foreach (var warning in resolution.Warnings)
+            messages.Add($"QR public URL: WARN — {warning}");
+
+        if (InfrastructureEnvironment.IsRenderDeployment
+            && string.IsNullOrWhiteSpace(resolution.ConfiguredPublicBaseUrl)
+            && string.IsNullOrWhiteSpace(resolution.DatabaseOverride)
+            && resolution.Source == AppUrlResolutionSource.RequestHost)
+        {
+            messages.Add(
+                "QR public URL: INFO — Using request-host fallback (override and AppUrl__PublicBaseUrl empty). "
+                + $"Sample: {resolution.SampleTableQrUrl("T01")}. "
+                + "Set AppUrl__PublicBaseUrl=https://<your-service>.onrender.com for explicit QR hostname.");
+        }
+
+        return messages;
     }
 
     private string? BuildOpenAiWarning()

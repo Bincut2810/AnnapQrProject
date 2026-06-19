@@ -2,13 +2,11 @@
 @inject Annap.CoffeeQrOrdering.Web.Services.IAppUrlService AppUrlService
 @using System.Text.Json
 @{
-    var b = AppUrlService.GetBaseUrl();
-    var hub = string.IsNullOrEmpty(b) ? "" : AppUrlService.BuildAbsoluteUrl("/hubs/orders");
+    // PublicBaseUrl is for QR codes and external links only — never for in-app API or SignalR routing.
+    var publicBase = AppUrlService.GetBaseUrl();
     var dict = new Dictionary<string, string?>
     {
-        ["baseUrl"] = string.IsNullOrEmpty(b) ? null : b,
-        ["apiBase"] = string.IsNullOrEmpty(b) ? null : b,
-        ["signalRBase"] = string.IsNullOrEmpty(hub) ? null : hub
+        ["publicBaseUrl"] = string.IsNullOrEmpty(publicBase) ? null : publicBase
     };
     var runtimeJson = JsonSerializer.Serialize(dict);
 }

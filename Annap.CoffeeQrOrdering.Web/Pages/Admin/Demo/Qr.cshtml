@@ -32,9 +32,23 @@
             </aside>
         }
         <p class="demo-qr-base">
-            <span class="demo-qr-base__label">Địa chỉ mạng công khai</span>
+            <span class="demo-qr-base__label">Địa chỉ mạng công khai (QR)</span>
             <code class="demo-qr-base__url">@Model.PublicBaseUrl</code>
         </p>
+        <p class="demo-qr-base demo-qr-base--meta">
+            <span class="demo-qr-base__label">Nguồn hostname QR</span>
+            <code class="demo-qr-base__url">@Model.QrResolution.SourceLabel</code>
+            <span class="demo-qr-base__hint">Ví dụ T01: <code>@Model.QrResolution.SampleTableQrUrl("T01")</code></span>
+        </p>
+        @if (Model.QrResolution.Warnings.Count > 0)
+        {
+            <aside class="demo-qr-warning-banner" role="alert">
+                @foreach (var warning in Model.QrResolution.Warnings)
+                {
+                    <p>@warning</p>
+                }
+            </aside>
+        }
         <button type="button" class="demo-qr-btn demo-qr-btn--gold" id="demo-qr-print-all">
             In tất cả thẻ QR
         </button>

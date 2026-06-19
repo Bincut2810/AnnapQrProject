@@ -107,21 +107,32 @@ public static class StartupDiagnosticsExtensions
         var dbDiag = DatabaseStartupDiagnostics.SummaryForBanner();
         var applyMigrations = config.GetValue("Database:ApplyMigrationsOnStartup", false);
         var listening = app.Urls.Count > 0 ? string.Join(", ", app.Urls) : "(ASPNETCORE_URLS)";
-        var publicBaseUrl = config["AppUrl:PublicBaseUrl"]?.Trim() ?? "";
         var renderDetected = InfrastructureEnvironment.IsRenderDeployment;
         var databaseSource = InfrastructureEnvironment.DatabaseConnectionSource;
+        var qrReport = QrPublicUrlStartupDiagnostics.Build(app);
+        var qr = qrReport.Resolution;
 
-        if (string.IsNullOrWhiteSpace(publicBaseUrl))
+        if (qr.Warnings.Count > 0)
         {
-            log.LogWarning(
-                "AppUrl__PublicBaseUrl is not configured. Generated QR links may be incorrect.");
+            foreach (var warning in qr.Warnings)
+                log.LogWarning("QR public URL: {Warning}", warning);
+        }
+        else if (string.IsNullOrWhiteSpace(qr.ConfiguredPublicBaseUrl)
+                 && string.IsNullOrWhiteSpace(qr.DatabaseOverride)
+                 && qr.Source == AppUrlResolutionSource.RequestHost)
+        {
+            log.LogInformation(
+                "QR public URL uses request-host fallback (override and AppUrl__PublicBaseUrl are empty). Sample: {SampleQrUrl}",
+                qrReport.EffectiveSampleQrUrl);
         }
 
         log.LogInformation(
-            "Production startup summary: environment={Environment}; render={Render}; publicBaseUrl={PublicBaseUrl}; databaseSource={DatabaseSource}; listening={Listening}; database target={DbTarget}; applyMigrationsOnStartup={ApplyMigrations}; bootstrap={Bootstrap}",
+            "Production startup summary: environment={Environment}; render={Render}; qrSource={QrSource}; qrHostname={QrHostname}; qrSample={QrSample}; databaseSource={DatabaseSource}; listening={Listening}; database target={DbTarget}; applyMigrationsOnStartup={ApplyMigrations}; bootstrap={Bootstrap}",
             app.Environment.EnvironmentName,
             renderDetected,
-            string.IsNullOrWhiteSpace(publicBaseUrl) ? "(not configured)" : publicBaseUrl,
+            qr.SourceLabel,
+            qr.ResolvedHostname,
+            qrReport.EffectiveSampleQrUrl,
             databaseSource,
             listening,
             dbTarget,
@@ -132,7 +143,7 @@ public static class StartupDiagnosticsExtensions
         Console.WriteLine("ANNAP PRODUCTION STARTUP");
         Console.WriteLine($"  Environment:       {app.Environment.EnvironmentName}");
         Console.WriteLine($"  Render deployment: {(renderDetected ? "yes" : "no")}");
-        Console.WriteLine($"  Public base URL:   {(string.IsNullOrWhiteSpace(publicBaseUrl) ? "(not configured)" : publicBaseUrl)}");
+        QrPublicUrlStartupDiagnostics.PrintToConsole(qrReport);
         Console.WriteLine($"  Database source:   {databaseSource}");
         Console.WriteLine($"  Listening:         {listening}");
         Console.WriteLine($"  Database:          {dbTarget}");

@@ -55,6 +55,32 @@
   word-break: break-all;
 }
 
+.demo-qr-base__hint {
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: rgb(var(--muted));
+}
+
+.demo-qr-base__hint code {
+  color: rgb(var(--fg));
+  word-break: break-all;
+}
+
+.demo-qr-warning-banner {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.1);
+  color: rgb(254, 243, 199);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.demo-qr-warning-banner p + p {
+  margin-top: 0.5rem;
+}
+
 .demo-qr-btn {
   display: inline-flex;
   align-items: center;
