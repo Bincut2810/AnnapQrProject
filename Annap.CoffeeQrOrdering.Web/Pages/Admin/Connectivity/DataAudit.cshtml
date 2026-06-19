@@ -49,6 +49,13 @@
             <span class="data-audit-level-badge @LevelClass(r.OverallLevel)">@LevelLabel(r.OverallLevel)</span>
             Production data audit
         </h2>
+        <dl class="mt-4 grid gap-2 text-sm md:grid-cols-2 lg:grid-cols-3">
+            <div><dt class="text-[rgb(var(--muted))]">Total categories</dt><dd class="font-mono">@r.Diagnostics.TotalCategories</dd></div>
+            <div><dt class="text-[rgb(var(--muted))]">Total menu items</dt><dd class="font-mono">@r.Diagnostics.TotalMenuItems</dd></div>
+            <div><dt class="text-[rgb(var(--muted))]">Bakery category count</dt><dd class="font-mono">@r.Diagnostics.BakeryCategoryCount</dd></div>
+            <div><dt class="text-[rgb(var(--muted))]">Bakery item count</dt><dd class="font-mono">@r.Diagnostics.BakeryItemCount</dd></div>
+            <div><dt class="text-[rgb(var(--muted))]">Poster files found</dt><dd class="font-mono">@r.Diagnostics.PosterFileCount</dd></div>
+        </dl>
         <ul class="mt-4 space-y-2 text-sm">
             @foreach (var finding in r.Findings)
             {

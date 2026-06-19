@@ -13,27 +13,74 @@ public sealed class ProductionDataAuditService(
     IWebHostEnvironment environment,
     IMenuInventoryGate inventoryGate)
 {
+    private const string BakeryCategoryName = "Bánh";
+    private const string BakeryCategoryNameAscii = "Banh";
+
     public async Task<ProductionDataAuditReport> BuildAsync(CancellationToken cancellationToken = default)
     {
+        var findings = new List<DataAuditFinding>();
         var dbTarget = DatabaseStartupHelper.ResolveConnectionTarget(configuration);
         var appUrlPublic = configuration["AppUrl:PublicBaseUrl"]?.Trim();
         if (string.IsNullOrEmpty(appUrlPublic))
             appUrlPublic = null;
 
-        var dbOverride = await db.AppNetworkSettings.AsNoTracking()
-            .Where(x => x.Id == AppNetworkSettings.SingletonId)
-            .Select(x => x.PublicBaseUrlOverride)
-            .FirstOrDefaultAsync(cancellationToken)
-            .ConfigureAwait(false);
-        var publicBaseUrlOverride = string.IsNullOrWhiteSpace(dbOverride) ? null : dbOverride.Trim();
+        string? publicBaseUrlOverride = null;
+        await SafeSectionAsync(
+            "Environment",
+            findings,
+            async () =>
+            {
+                var dbOverride = await db.AppNetworkSettings.AsNoTracking()
+                    .Where(x => x.Id == AppNetworkSettings.SingletonId)
+                    .Select(x => x.PublicBaseUrlOverride)
+                    .FirstOrDefaultAsync(cancellationToken)
+                    .ConfigureAwait(false);
+                publicBaseUrlOverride = string.IsNullOrWhiteSpace(dbOverride) ? null : dbOverride.Trim();
+            }).ConfigureAwait(false);
 
-        var categories = await BuildCategoryRowsAsync(cancellationToken).ConfigureAwait(false);
-        var bakery = await BuildBakeryAuditAsync(cancellationToken).ConfigureAwait(false);
-        var specialty = await BuildSpecialtyAuditAsync(cancellationToken).ConfigureAwait(false);
-        var media = BuildMediaAudit();
-        var pairing = await BuildPairingSampleAsync(cancellationToken).ConfigureAwait(false);
+        var categories = await SafeSectionAsync(
+            "Category inventory",
+            findings,
+            () => BuildCategoryRowsAsync(cancellationToken),
+            Array.Empty<DataAuditCategoryRow>()).ConfigureAwait(false);
 
-        var findings = new List<DataAuditFinding>();
+        var bakery = await SafeSectionAsync(
+            "Bakery audit",
+            findings,
+            () => BuildBakeryAuditAsync(cancellationToken),
+            (false, null, 0, Array.Empty<string>())).ConfigureAwait(false);
+
+        var specialty = await SafeSectionAsync(
+            "Specialty audit",
+            findings,
+            () => BuildSpecialtyAuditAsync(cancellationToken),
+            (0, Array.Empty<DataAuditSpecialtyRow>())).ConfigureAwait(false);
+
+        var media = await SafeSectionAsync(
+            "Media audit",
+            findings,
+            () => BuildMediaAuditAsync(cancellationToken),
+            (Array.Empty<DataAuditMediaRow>(), 0, 0, 0)).ConfigureAwait(false);
+
+        var pairing = await SafeSectionAsync(
+            "Pairing audit",
+            findings,
+            () => BuildPairingSampleAsync(cancellationToken),
+            (DataAuditPairingSample?)null).ConfigureAwait(false);
+
+        var totalMenuItems = await SafeSectionAsync(
+            "Menu item count",
+            findings,
+            () => db.MenuItems.AsNoTracking().CountAsync(cancellationToken),
+            0).ConfigureAwait(false);
+
+        var diagnostics = new DataAuditDiagnostics(
+            categories.Count,
+            totalMenuItems,
+            bakery.CategoryExists ? 1 : 0,
+            bakery.ItemCount,
+            media.PosterFileCount);
+
         AppendCategoryFindings(categories, findings);
         AppendBakeryFindings(bakery, findings);
         AppendSpecialtyFindings(specialty.PoolCount, specialty.Rows, findings);
@@ -50,6 +97,7 @@ public sealed class ProductionDataAuditService(
             findings.Add(new DataAuditFinding(DataAuditLevel.Pass, "All audited checks passed."));
 
         return new ProductionDataAuditReport(
+            diagnostics,
             categories,
             bakery.CategoryExists,
             bakery.CategoryName,
@@ -68,6 +116,50 @@ public sealed class ProductionDataAuditService(
             InfrastructureEnvironment.IsRenderDeployment,
             overall,
             findings);
+    }
+
+    private static async Task SafeSectionAsync(
+        string sectionName,
+        List<DataAuditFinding> findings,
+        Func<Task> action)
+    {
+        try
+        {
+            await action().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            findings.Add(new DataAuditFinding(
+                DataAuditLevel.Warn,
+                $"{sectionName} audit failed: {Condense(ex.Message)}"));
+        }
+    }
+
+    private static async Task<T> SafeSectionAsync<T>(
+        string sectionName,
+        List<DataAuditFinding> findings,
+        Func<Task<T>> action,
+        T fallback)
+    {
+        try
+        {
+            return await action().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            findings.Add(new DataAuditFinding(
+                DataAuditLevel.Warn,
+                $"{sectionName} audit failed: {Condense(ex.Message)}"));
+            return fallback;
+        }
+    }
+
+    private static string Condense(string message)
+    {
+        var t = (message ?? "").Trim();
+        if (t.Length <= 180)
+            return t;
+        return t[..177] + "...";
     }
 
     private async Task<IReadOnlyList<DataAuditCategoryRow>> BuildCategoryRowsAsync(CancellationToken cancellationToken)
@@ -100,7 +192,7 @@ public sealed class ProductionDataAuditService(
         CancellationToken cancellationToken)
     {
         var bakeryCategory = await db.MenuCategories.AsNoTracking()
-            .Where(c => c.Name == BakeryPairingService.BakeryCategoryName || c.Name == "Banh")
+            .Where(c => c.Name == BakeryCategoryName || c.Name == BakeryCategoryNameAscii)
             .Select(c => c.Name)
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -109,10 +201,9 @@ public sealed class ProductionDataAuditService(
             return (false, null, 0, Array.Empty<string>());
 
         var items = await db.MenuItems.AsNoTracking()
-            .Include(i => i.Category)
             .Where(i =>
                 i.Category != null
-                && (i.Category.Name == BakeryPairingService.BakeryCategoryName || i.Category.Name == "Banh"))
+                && (i.Category.Name == BakeryCategoryName || i.Category.Name == BakeryCategoryNameAscii))
             .OrderBy(i => i.Name)
             .Select(i => i.Name)
             .ToListAsync(cancellationToken)
@@ -126,9 +217,10 @@ public sealed class ProductionDataAuditService(
     {
         var blocked = await inventoryGate.GetStockBlockedMenuItemIdsAsync(cancellationToken).ConfigureAwait(false);
         var raw = await db.MenuItems.AsNoTracking()
-            .Where(m => m.IsAvailable && !m.IsArchived && !blocked.Contains(m.Id))
+            .Where(m => m.IsAvailable && !m.IsArchived)
             .Select(m => new
             {
+                m.Id,
                 m.Name,
                 m.ItemType,
                 m.IngredientBreakdown,
@@ -141,6 +233,7 @@ public sealed class ProductionDataAuditService(
 
         const string familyKey = BeverageFamilyGrounding.Coffee;
         var filtered = raw
+            .Where(m => !blocked.Contains(m.Id))
             .Where(m => BeverageFamilyGrounding.Matches(
                 familyKey,
                 m.CategoryName,
@@ -154,10 +247,8 @@ public sealed class ProductionDataAuditService(
         if (signatureOnly.Count > 0)
             filtered = signatureOnly;
 
-        var specialtyRows = await db.MenuItems.AsNoTracking()
-            .Include(m => m.Category)
-            .Where(m => m.CatalogKey != null && AnnapSpecialtyCoffeeCatalog.ProtectedCatalogKeys.Contains(m.CatalogKey))
-            .OrderBy(m => m.CatalogKey)
+        var specialtyCandidates = await db.MenuItems.AsNoTracking()
+            .Where(m => m.CatalogKey != null)
             .Select(m => new DataAuditSpecialtyRow(
                 m.CatalogKey!,
                 m.Name,
@@ -167,19 +258,27 @@ public sealed class ProductionDataAuditService(
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        var specialtyRows = specialtyCandidates
+            .Where(m => AnnapSpecialtyCoffeeCatalog.IsProtectedCatalogKey(m.CatalogKey))
+            .OrderBy(m => m.CatalogKey, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
         return (filtered.Count, specialtyRows);
     }
 
-    private (IReadOnlyList<DataAuditMediaRow> Rows, int MissingImagePaths, int MissingPosterPaths) BuildMediaAudit()
+    private async Task<(IReadOnlyList<DataAuditMediaRow> Rows, int MissingImagePaths, int MissingPosterPaths, int PosterFileCount)> BuildMediaAuditAsync(
+        CancellationToken cancellationToken)
     {
-        var items = db.MenuItems.AsNoTracking()
+        var items = await db.MenuItems.AsNoTracking()
             .OrderBy(i => i.Name)
             .Select(i => new { i.Name, i.ImageUrl, i.DetailPosterImagePath })
-            .ToList();
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
 
         var rows = new List<DataAuditMediaRow>();
         var missingImages = 0;
         var missingPosters = 0;
+        var posterFilesFound = 0;
 
         foreach (var item in items)
         {
@@ -190,6 +289,8 @@ public sealed class ProductionDataAuditService(
                 missingImages++;
             if (posterExists == false)
                 missingPosters++;
+            if (posterExists == true)
+                posterFilesFound++;
 
             rows.Add(new DataAuditMediaRow(
                 item.Name,
@@ -200,37 +301,39 @@ public sealed class ProductionDataAuditService(
                 imageExists == false || posterExists == false));
         }
 
-        return (rows, missingImages, missingPosters);
+        return (rows, missingImages, missingPosters, posterFilesFound);
     }
 
     private async Task<DataAuditPairingSample?> BuildPairingSampleAsync(CancellationToken cancellationToken)
     {
         var blocked = await inventoryGate.GetStockBlockedMenuItemIdsAsync(cancellationToken).ConfigureAwait(false);
 
-        var bakeryPoolCount = await db.MenuItems.AsNoTracking()
-            .Include(i => i.Category)
-            .CountAsync(i =>
+        var bakeryCandidates = await db.MenuItems.AsNoTracking()
+            .Where(i =>
                 i.Category != null
-                && (i.Category.Name == BakeryPairingService.BakeryCategoryName || i.Category.Name == "Banh")
+                && (i.Category.Name == BakeryCategoryName || i.Category.Name == BakeryCategoryNameAscii)
                 && i.IsAvailable
-                && !i.IsArchived
-                && !blocked.Contains(i.Id),
-                cancellationToken)
+                && !i.IsArchived)
+            .Select(i => i.Id)
+            .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var sampleDrink = await db.MenuItems.AsNoTracking()
-            .Include(i => i.Category)
+        var bakeryPoolCount = bakeryCandidates.Count(id => !blocked.Contains(id));
+
+        var drinkCandidates = await db.MenuItems.AsNoTracking()
             .Where(i =>
                 i.IsAvailable
                 && !i.IsArchived
                 && i.Category != null
-                && !BakeryPairingService.IsBakeryCategory(i.Category.Name))
+                && i.Category.Name != BakeryCategoryName
+                && i.Category.Name != BakeryCategoryNameAscii)
             .OrderBy(i => i.Category!.SortOrder)
             .ThenBy(i => i.Name)
             .Select(i => new { i.Id, i.Name, CategoryName = i.Category!.Name })
-            .FirstOrDefaultAsync(cancellationToken)
+            .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
+        var sampleDrink = drinkCandidates.FirstOrDefault(d => !blocked.Contains(d.Id));
         if (sampleDrink is null)
             return null;
 

@@ -38,7 +38,15 @@ public sealed record DataAuditPairingSample(
     int PairingsReturned,
     IReadOnlyList<string> PairingNames);
 
+public sealed record DataAuditDiagnostics(
+    int TotalCategories,
+    int TotalMenuItems,
+    int BakeryCategoryCount,
+    int BakeryItemCount,
+    int PosterFileCount);
+
 public sealed record ProductionDataAuditReport(
+    DataAuditDiagnostics Diagnostics,
     IReadOnlyList<DataAuditCategoryRow> Categories,
     bool BakeryCategoryExists,
     string? BakeryCategoryName,
@@ -56,4 +64,30 @@ public sealed record ProductionDataAuditReport(
     string? PublicBaseUrlOverride,
     bool RenderDeploymentDetected,
     DataAuditLevel OverallLevel,
-    IReadOnlyList<DataAuditFinding> Findings);
+    IReadOnlyList<DataAuditFinding> Findings)
+{
+    public static ProductionDataAuditReport Failed(
+        string message,
+        string databaseHost = "(unknown)",
+        string databaseName = "(unknown)") =>
+        new(
+            new DataAuditDiagnostics(0, 0, 0, 0, 0),
+            Array.Empty<DataAuditCategoryRow>(),
+            false,
+            null,
+            0,
+            Array.Empty<string>(),
+            0,
+            Array.Empty<DataAuditSpecialtyRow>(),
+            Array.Empty<DataAuditMediaRow>(),
+            0,
+            0,
+            null,
+            databaseHost,
+            databaseName,
+            null,
+            null,
+            InfrastructureEnvironment.IsRenderDeployment,
+            DataAuditLevel.Fail,
+            [new DataAuditFinding(DataAuditLevel.Fail, message)]);
+}
