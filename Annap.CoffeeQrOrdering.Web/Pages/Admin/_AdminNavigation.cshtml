@@ -104,6 +104,12 @@
                 </a>
             </li>
             <li>
+                <a class="admin-nav-link @(section == "system-data-audit" ? "is-active" : null)" asp-page="/Admin/Connectivity/DataAudit">
+                    <span class="admin-nav-link__glyph" aria-hidden="true">◫</span>
+                    <span>Kiểm tra dữ liệu</span>
+                </a>
+            </li>
+            <li>
                 <a class="admin-nav-link @(section == "demo-qr" ? "is-active" : null)" asp-page="/Admin/Demo/Qr">
                     <span class="admin-nav-link__glyph" aria-hidden="true">▣</span>
                     <span>Mã QR bàn</span>

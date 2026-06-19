@@ -37,6 +37,7 @@ public static class DependencyInjectionExtensions
         builder.Services.AddSingleton<IPostConfigureOptions<AppUrlOptions>, AppUrlDevelopmentPostConfigure>();
         builder.Services.AddScoped<IAppUrlService, AppUrlService>();
         builder.Services.AddScoped<InfrastructureDiagnosticsService>();
+        builder.Services.AddScoped<ProductionDataAuditService>();
 
         builder.Services.Configure<StaffAuthOptions>(builder.Configuration.GetSection(StaffAuthOptions.SectionName));
         builder.Services.Configure<DiagnosticsOptions>(
