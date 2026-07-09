@@ -21,7 +21,7 @@
 
 .demo-qr-title {
   margin-top: 0.75rem;
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: clamp(1.85rem, 3.5vw, 2.5rem);
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -131,7 +131,7 @@
 
 .demo-qr-flow__title {
   margin: 0 0 1rem;
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1.25rem;
   font-weight: 400;
   color: rgb(var(--fg));
@@ -220,7 +220,7 @@
 
 .demo-qr-card__code {
   margin: 0.35rem 0 0;
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: 400;
   letter-spacing: 0.12em;

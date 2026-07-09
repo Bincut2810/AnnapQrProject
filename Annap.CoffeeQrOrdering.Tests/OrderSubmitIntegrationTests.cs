@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using Annap.CoffeeQrOrdering.Infrastructure.Persistence;
 using Annap.CoffeeQrOrdering.Tests.Infrastructure;
+using Annap.CoffeeQrOrdering.Web.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -32,6 +33,25 @@ public sealed class OrderSubmitIntegrationTests(AnnapPostgresWebApplicationFacto
         await using var scope = factory.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         Assert.Equal(0, await OrderTestSeedHelper.CountOrdersAsync(db));
+    }
+
+    [Fact]
+    public async Task Submit_with_idempotency_key_defaults_prepared_quantity_to_zero()
+    {
+        var fixture = await SeedFreshFixtureAsync();
+        const string idemKey = "integration-submit-prep-default-1";
+
+        var response = await PostOrderAsync(fixture, idemKey, quantity: 2);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var orderId = body.GetProperty("id").GetGuid();
+
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var item = await db.OrderItems.SingleAsync(i => i.OrderId == orderId);
+        Assert.Equal(0, item.PreparedQuantity);
+        Assert.Null(item.PreparedAtUtc);
+        Assert.Null(item.PreparedBy);
     }
 
     [Fact]
@@ -89,6 +109,33 @@ public sealed class OrderSubmitIntegrationTests(AnnapPostgresWebApplicationFacto
         var body = await response.Content.ReadFromJsonAsync<JsonElement>();
         Assert.True(body.TryGetProperty("error", out var error));
         Assert.Contains("menu", error.GetString(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Submit_too_many_line_items_returns_400()
+    {
+        var fixture = await SeedFreshFixtureAsync();
+        var items = Enumerable.Range(0, OrderSubmitLimits.MaxLineItems + 1)
+            .Select(_ => new { menuItemId = fixture.MenuItemId, quantity = 1 })
+            .ToArray();
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/orders")
+        {
+            Content = JsonContent.Create(new
+            {
+                venueTableId = fixture.VenueTableId,
+                idempotencyKey = "integration-too-many-lines-1",
+                items
+            })
+        };
+        request.Headers.TryAddWithoutValidation("Idempotency-Key", "integration-too-many-lines-1");
+
+        var response = await _client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<JsonElement>();
+        Assert.True(body.TryGetProperty("error", out var error));
+        Assert.Contains("20", error.GetString(), StringComparison.Ordinal);
     }
 
     private async Task<HttpResponseMessage> PostOrderAsync(

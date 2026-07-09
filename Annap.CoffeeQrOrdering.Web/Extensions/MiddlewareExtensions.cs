@@ -64,6 +64,14 @@ public static class MiddlewareExtensions
             await next();
         });
 
+        /* Rewrite legacy staff login URL to canonical /staff/login route. */
+        app.Use(async (ctx, next) =>
+        {
+            if (ctx.Request.Path.StartsWithSegments("/Staff/Login", StringComparison.OrdinalIgnoreCase, out var remainder))
+                ctx.Request.Path = new PathString("/staff/login").Add(remainder);
+            await next();
+        });
+
         app.UseRouting();
         app.UseRateLimiter();
         if (app.Environment.IsDevelopment())

@@ -3,7 +3,15 @@
 @using System.Text.Json
 @using Annap.CoffeeQrOrdering.Web.Services
 @{
-    ViewData["Title"] = Model.HasSeatedTable ? "Arrive" : "Order";
+    ViewData["Title"] = Model.HasSeatedTable ? "Arrive" : Model.QrScanInvalid || Model.TableHandoffInvalid ? "Table" : "Order";
+    if (Model.QrScanInvalid || Model.TableHandoffInvalid)
+    {
+        ViewData["SlimSeatedChrome"] = true;
+    }
+    else if (Model.HasSeatedTable)
+    {
+        ViewData["CompactGuestHeader"] = true;
+    }
     var cartCatalogJson = JsonSerializer.Serialize(
         Model.CartCatalog.Select(r => new { id = r.Id, name = r.Name, price = r.Price }),
         new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
@@ -17,7 +25,11 @@
         new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 }
 
-@if (Model.HasSeatedTable)
+@if (Model.QrScanInvalid || Model.TableHandoffInvalid)
+{
+    <partial name="Shared/_GuestTableContextNotice" model="Model" />
+}
+else if (Model.HasSeatedTable)
 {
     <partial name="Shared/_GuestExperienceEntry" model="Model" />
     <partial name="Shared/_ArrivalScene" />
@@ -892,10 +904,15 @@ else
                             Accept: "application/json",
                             "Idempotency-Key": homeOrderIdempotencyKey
                         },
-                        body: JSON.stringify({ venueTableId: vt, items, idempotencyKey: homeOrderIdempotencyKey })
+                        body: JSON.stringify({
+                            venueTableId: vt,
+                            items,
+                            idempotencyKey: homeOrderIdempotencyKey,
+                            paymentMethod: "CashOrCardAtCounter"
+                        })
                     });
                 } catch (_annap) {
-                    if (window.GuestOrderQueue) window.GuestOrderQueue.enqueue(vt, items, homeOrderIdempotencyKey);
+                    if (window.GuestOrderQueue) window.GuestOrderQueue.enqueue(vt, items, homeOrderIdempotencyKey, "CashOrCardAtCounter");
                     result.textContent =
                         LuxuryI18n.t("order.queuedSoft") ||
                         "The line softened for a moment — we will place this tray when the room is steady again.";
@@ -923,7 +940,7 @@ else
                         else if (er.includes("at least one") || er.includes("tray"))
                             msg = LuxuryI18n.t("order.minOne") || msg;
                     } else if (res.status >= 500 || res.status === 429) {
-                        if (window.GuestOrderQueue) window.GuestOrderQueue.enqueue(vt, items, homeOrderIdempotencyKey);
+                        if (window.GuestOrderQueue) window.GuestOrderQueue.enqueue(vt, items, homeOrderIdempotencyKey, "CashOrCardAtCounter");
                         msg =
                             LuxuryI18n.t("order.queuedSoft") ||
                             "The line softened for a moment — we will place this tray when the room is steady again.";
@@ -940,7 +957,9 @@ else
 
                 GuestInteractionContract.writeGuestOrderSession({
                     orderId: payload.id,
-                    token: payload.guestSessionToken
+                    token: payload.guestSessionToken,
+                    venueTableId: GuestInteractionContract.getVenueTableId(),
+                    status: "submittedPendingPayment"
                 });
 
                 const oid = escapeHtml(String(payload.id));
@@ -953,6 +972,7 @@ else
                 updateCartPills();
                 renderCart();
                 refreshActiveOrderBanner();
+                if (typeof window.__annapRefreshTraySummary === "function") window.__annapRefreshTraySummary();
                 if (btn) {
                     btn.textContent = prev;
                     btn.removeAttribute("disabled");
@@ -1874,6 +1894,7 @@ else
     <script src="~/js/annap-runtime-report.js" asp-append-version="true"></script>
     <script src="~/js/drink-detail-renderer.js" asp-append-version="true"></script>
     <script src="~/js/drink-detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/guest-bank-transfer.js" asp-append-version="true"></script>
     <script src="~/js/order-tray-dock.js" asp-append-version="true"></script>
     <script>
         if (typeof window.annapStartOrderTrayDock === "function") window.annapStartOrderTrayDock();

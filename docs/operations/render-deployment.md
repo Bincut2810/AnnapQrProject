@@ -56,6 +56,33 @@ If you prefer an explicit string, set `ConnectionStrings__DefaultConnection` ins
 | `Sommelier__ApiKey` | Legacy RAG sommelier only; **not required** for specialty demo |
 | `KiotViet__IsEnabled` | Default `false` — leave off for demo |
 | `GoLive__HealthUrl` | Full URL for `verify-go-live` health probe against live service |
+| `BankTransfer__Enabled` | `true` when VietQR bank transfer is configured |
+| `BankTransfer__Provider` | `VietQR` |
+| `BankTransfer__BankBin` | VietQR bank code (e.g. `970416` for ACB) |
+| `BankTransfer__BankName` | Display name (e.g. `ACB`) |
+| `BankTransfer__AccountNumber` | Business account number |
+| `BankTransfer__AccountName` | Account holder as registered with the bank |
+| `BankTransfer__DescriptionTemplate` | Transfer memo template — default `ANNAP {Reference}` |
+| `BankTransfer__QrImageUrlTemplate` | VietQR image URL template with `{bankBin}`, `{accountNumber}`, `{amount}`, `{memo}`, `{accountName}` |
+| `BankTransfer__Webhook__DevWebhookEnabled` | **`false` in production** — dev/mock webhook only |
+| `BankTransfer__Webhook__Secret` | Required when dev webhook is enabled outside Development |
+
+### Bank transfer QR and auto-confirmation
+
+- **Guest QR** requires real bank config (`BankTransfer__Enabled=true` plus bank BIN, account number, account name). Without it, the BankTransfer payment tile is disabled.
+- **Auto-confirm** requires a trusted provider webhook that sends transfer memo + exact amount. Phase 4A includes a **dev-only** endpoint `POST /api/webhooks/bank-transfer/dev` for local testing — not a production payment provider.
+- **Matching rules:** memo must match the order transfer reference (via `BankTransfer:DescriptionTemplate`, default `ANNAP {Reference}`) and amount must equal the locked order total exactly.
+- **Manual fallback:** staff can still click **Xác nhận thanh toán** when webhook does not match.
+
+Local dev webhook (Development only, or Production with secret):
+
+```bash
+curl -X POST http://localhost:8080/api/webhooks/bank-transfer/dev \
+  -H "Content-Type: application/json" \
+  -d '{"provider":"dev","transactionId":"dev-txn-001","amount":90000,"memo":"ANNAP AC6D9D13A"}'
+```
+
+Outside Development, set `BankTransfer__Webhook__Secret` and send header `X-Annap-Webhook-Secret`.
 
 ---
 
@@ -111,6 +138,20 @@ Run from the publish output directory.
    - `EF Core migrations applied successfully.`
    - `Specialty coffee bootstrap: 4 flagship coffees ensured.`
 5. Confirm `/health` returns Healthy in Render dashboard.
+
+### Order workflow migrations (staff order board + item preparation)
+
+Before deploying changes that include the payment workflow (`BillNumber`, `PaidAtUtc`, etc.) or barista preparation checklist (`PreparedQuantity`, `PreparedAtUtc`, `PreparedBy` on `order_items`), apply EF migrations **once**:
+
+```bash
+dotnet ef database update --project Annap.CoffeeQrOrdering.Infrastructure --startup-project Annap.CoffeeQrOrdering.Web
+```
+
+Or set `Database__ApplyMigrationsOnStartup=true` for the first deploy only, then set it back to `false`.
+
+If migrations are missing, startup logs a critical error in Production (fail-fast) and `/health` reports **Unhealthy** for `payment_workflow_schema`. Staff board API returns `503` with `database_migration_required` instead of a raw PostgreSQL error.
+
+6. Open `/staff/orders` after login and confirm the order board loads.
 6. Run go-live verification (below).
 7. Set `Database__ApplyMigrationsOnStartup=false` for subsequent deploys.
 8. Smoke test: table QR → specialty sommelier → cup moment → order submit.

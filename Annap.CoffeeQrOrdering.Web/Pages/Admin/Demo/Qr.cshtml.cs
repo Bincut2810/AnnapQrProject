@@ -1,8 +1,8 @@
+using Annap.CoffeeQrOrdering.Web.Internal;
 using Annap.CoffeeQrOrdering.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using QRCoder;
 
 namespace Annap.CoffeeQrOrdering.Web.Pages.Admin.Demo;
 
@@ -51,17 +51,8 @@ public sealed class QrModel(
         Rows = codes.Select(code =>
         {
             var url = $"{baseUrl}/table/{code}";
-            return new DemoTableQrRow(code, url, BuildQrDataUri(url));
+            return new DemoTableQrRow(code, url, QrCodeDataUriBuilder.FromText(url));
         }).ToList();
-    }
-
-    private static string BuildQrDataUri(string url)
-    {
-        using var gen = new QRCodeGenerator();
-        using var data = gen.CreateQrCode(url, QRCodeGenerator.ECCLevel.Q);
-        var png = new PngByteQRCode(data);
-        var bytes = png.GetGraphic(20);
-        return "data:image/png;base64," + Convert.ToBase64String(bytes);
     }
 }
 

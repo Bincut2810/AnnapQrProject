@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>&#x110;&#x103;ng nh&#x1EAD;p nh&#xE2;n vi&#xEA;n · Nhân viên</title>
+    <script>
+window.__ANNAP_DEV_MODE = true;
+window.__annapRuntime = {"publicBaseUrl":"http://192.168.1.101:8080"};
+if (typeof window.__annapRuntime !== "object" || window.__annapRuntime === null) { window.__annapRuntime = {}; }
+</script>
+<script src="/js/annap-runtime-api.js?v=4QWUajjE5CeLMj4OXcrCSTaB_Q-deC2fk5KEkBf_qoE"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/site.css?v=tP2nd2Uxam6mnmlVURM3o9DGiSeeZw8f3I_az7Bby4g" />
+    <link rel="stylesheet" href="/css/staff-board.css?v=f1R05nH_3TFnMnILD7DURbjLehGKkveqFl10lFSqGmo" />
+    <link rel="stylesheet" href="/Annap.CoffeeQrOrdering.Web.styles.css?v=8X8m5pZYVUVonc7Y4ggbVX2pVb68554rNej74YUBiZQ" />
+    
+    <link rel="stylesheet" href="/css/staff-correspondence.css?v=L_cqpM6L72oAGFjrWKu7NoCfbOUKqlxoVPAcPd1IxqA" />
+</head>
+<body class="staff-shell min-h-dvh antialiased font-sans font-light text-[rgb(var(--fg))]">
+    <header class="staff-topbar sticky top-0 z-40 border-b border-white/[0.06] bg-[rgb(var(--bg))]/95 backdrop-blur-md">
+        <div class="mx-auto flex max-w-[1800px] items-center justify-between gap-4 px-4 py-3 sm:px-6">
+            <div class="flex min-w-0 items-center gap-4">
+                <a class="shrink-0 text-[10px] font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted))] transition hover:text-[rgb(var(--fg))]" title="Trang khách" href="/">Atelier</a>
+                <div class="h-6 w-px bg-white/[0.08]" aria-hidden="true"></div>
+                <h1 class="truncate font-display text-lg tracking-tight text-[rgb(var(--fg))] sm:text-xl">&#x110;&#x103;ng nh&#x1EAD;p nh&#xE2;n vi&#xEA;n</h1>
+            </div>
+            <nav class="flex shrink-0 items-center gap-3 text-xs sm:gap-4">
+                    <a class="rounded-full px-3 py-2 tracking-wide text-[rgb(var(--muted))] ring-1 ring-white/[0.08] transition hover:bg-white/[0.05] hover:text-[rgb(var(--fg))] sm:px-4" href="/Staff/Login">Đăng nhập</a>
+                <a class="rounded-full px-3 py-2 tracking-wide text-[rgb(var(--muted))] ring-1 ring-white/[0.08] transition hover:bg-white/[0.05] hover:text-[rgb(var(--fg))] sm:px-4" href="/Menu">Thực đơn</a>
+            </nav>
+        </div>
+    </header>
+
+    <main role="main" class="mx-auto max-w-[1800px] px-4 py-5 sm:px-6 sm:py-7">
+        
+<div class="mx-auto max-w-md space-y-8 px-4 py-16">
+    <div class="text-center">
+        <p class="text-[10px] font-medium tracking-[0.32em] uppercase text-[rgb(var(--muted-2))]">Annap Coffee Atelier</p>
+        <h1 class="mt-4 font-display text-2xl tracking-tight text-[rgb(var(--fg))]">Sàn phục vụ</h1>
+        <p class="mt-3 text-sm leading-relaxed text-[rgb(var(--muted))]">Đăng nhập để mở hàng đợi đơn hàng.</p>
+    </div>
+
+
+    <form method="post" class="space-y-5 rounded-2xl border border-white/[0.08] bg-white/[0.02] p-7 ring-1 ring-white/[0.06]">
+        
+        <div>
+            <label class="block text-xs font-medium tracking-wide text-[rgb(var(--muted))]" for="UserName">Tên đăng nhập</label>
+            <input id="UserName" name="UserName" autocomplete="username" class="mt-2 w-full rounded-xl bg-white/5 px-4 py-3 text-sm text-[rgb(var(--fg))] ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white/15" type="text" data-val="true" data-val-required="The UserName field is required." value="" />
+        </div>
+        <div>
+            <label class="block text-xs font-medium tracking-wide text-[rgb(var(--muted))]" for="Password">Mật khẩu</label>
+            <input id="Password" name="Password" type="password" autocomplete="current-password" class="mt-2 w-full rounded-xl bg-white/5 px-4 py-3 text-sm text-[rgb(var(--fg))] ring-1 ring-white/10 focus:outline-none focus:ring-2 focus:ring-white/15" data-val="true" data-val-required="The Password field is required." />
+        </div>
+        <button type="submit" class="btn-ink w-full justify-center py-3 text-sm">Vào sàn</button>
+    <input name="__RequestVerificationToken" type="hidden" value="CfDJ8OawUaXexldEoLLjoWaRbSsgD_QaYjW-jRVUmY9PTrvZPYRvrzL1p-QuKk3tff-YxAeNMHdq1FvDnpA8DWc3mq_8ZsQwwnkbaXCHy6KIvDjOMEVzf-on9FlW1yzOisZNoTnZJX4A-VXxAXsl3RZrrdg" /></form>
+</div>
+
+    </main>
+
+    <script src="/js/site.js?v=J9eKMN0i-ZGYOU4NNVzhXyyJPgsnccwIe6icDUELKGM"></script>
+    
+</body>
+</html>

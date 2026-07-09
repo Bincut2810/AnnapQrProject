@@ -9,41 +9,20 @@ namespace Annap.CoffeeQrOrdering.Web;
 /// </summary>
 public static class ProductionStartupGuard
 {
-    private static readonly string[] WeakStaffPasswords =
-    [
-        "changeme",
-        "change-this-staff-password",
-        "password",
-        "password123",
-        "admin",
-        "admin123",
-        "123456",
-        "123456789012",
-        "staff",
-        "staffpassword",
-        "annap",
-        "annapcoffee",
-        "host",
-        "welcome",
-        "qwertyuiop12"
-    ];
-
     public static void Validate(IHostEnvironment env, IConfiguration configuration)
     {
         if (!env.IsProduction()) return;
 
-        var staff = configuration.GetSection(StaffAuthOptions.SectionName).Get<StaffAuthOptions>();
-        var pwd = staff?.Password?.Trim() ?? "";
-        if (pwd.Length < 12)
-            throw new InvalidOperationException(
-                "Production: StaffAuth:Password must be at least 12 characters. Set STAFF_PASSWORD or StaffAuth__Password via environment.");
+        var staff = configuration.GetSection(StaffAuthOptions.SectionName).Get<StaffAuthOptions>()
+            ?? new StaffAuthOptions();
 
-        foreach (var w in WeakStaffPasswords)
-        {
-            if (pwd.Equals(w, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException(
-                    "Production: StaffAuth:Password is a known weak value. Choose a unique café password.");
-        }
+        StaffAuthPasswordValidator.ValidateProductionPassword(nameof(StaffAuthOptions.Password), staff.Password);
+        StaffAuthPasswordValidator.ValidateProductionPassword(
+            nameof(StaffAuthOptions.CheckoutPassword),
+            staff.CheckoutPassword);
+        StaffAuthPasswordValidator.ValidateProductionPassword(
+            nameof(StaffAuthOptions.BaristaPassword),
+            staff.BaristaPassword);
 
         var conn = configuration.GetConnectionString("DefaultConnection");
         if (string.IsNullOrWhiteSpace(conn))

@@ -44,28 +44,28 @@
  */
 .annap-reg-display {
   font-family: var(--font-display);
-  font-weight: 300;
-  font-style: italic;
+  font-weight: 500;
+  font-style: normal;
   font-size: var(--text-display);
   line-height: var(--leading-display);
-  letter-spacing: var(--tracking-display);
+  letter-spacing: -0.02em;
   color: var(--ink-primary);
 }
 
 .annap-reg-narrative {
-  font-family: var(--font-narrative);
+  font-family: var(--font-ui);
   font-weight: 400;
   font-size: var(--text-narrative);
-  line-height: var(--leading-narrative);
-  letter-spacing: var(--tracking-narrative);
+  line-height: 1.55;
+  letter-spacing: 0;
   color: var(--ink-secondary);
   max-width: 32ch;
 }
 
 .annap-reg-functional {
-  font-family: var(--font-functional);
-  font-weight: 500;
-  font-size: var(--text-functional);
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 0.75rem;
   line-height: var(--leading-functional);
   letter-spacing: var(--tracking-functional);
   text-transform: uppercase;
@@ -73,8 +73,8 @@
 }
 
 .annap-reg-ghost {
-  font-family: var(--font-functional);
-  font-weight: 400;
+  font-family: var(--font-ui);
+  font-weight: 500;
   font-size: var(--text-ghost);
   line-height: var(--leading-functional);
   letter-spacing: var(--tracking-ghost);

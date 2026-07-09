@@ -9,9 +9,18 @@ namespace Annap.CoffeeQrOrdering.Web.Pages.Staff;
 [AllowAnonymous]
 public sealed class LogoutModel : PageModel
 {
-    public async Task<IActionResult> OnPostAsync()
+    public async Task<IActionResult> OnPostAsync(bool returnToLogin = false, string? returnUrl = null)
     {
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return RedirectToPage("/Staff/Login");
+
+        if (returnToLogin)
+        {
+            var login = "/staff/login";
+            var next = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : "/staff/orders";
+            login += "?returnUrl=" + Uri.EscapeDataString(next);
+            return Redirect(login);
+        }
+
+        return Redirect("/staff/login");
     }
 }

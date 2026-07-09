@@ -98,15 +98,15 @@ body.staff-shell .surface-glass {
   ring: none;
 }
 
-/* Column header border: was border-white/[0.06] */
-.staff-shell .staff-col > header {
+/* Column header border */
+.staff-shell .staff-col__head {
   border-bottom-color: rgba(139, 110, 72, 0.14) !important;
 }
 
-/* Empty state: was bg-white/[0.03] ring-white/[0.05] */
-.staff-shell .staff-col-empty {
-  background: rgba(26, 18, 9, 0.03) !important;
-  box-shadow: 0 0 0 1px rgba(139, 110, 72, 0.10) !important;
+/* Empty state note */
+.staff-shell .staff-col-empty--note {
+  background: rgba(255, 252, 247, 0.65) !important;
+  box-shadow: none !important;
 }
 
 /* Phase chip on card: was bg-white/[0.05] ring-white/[0.08] */
@@ -152,8 +152,8 @@ body.staff-shell .surface-glass {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .staff-shell .font-display {
-  font-family: "Cormorant Garamond", "DM Serif Display", ui-serif, Georgia, serif;
-  font-style: italic;
+  font-family: var(--font-ui);
+  font-style: normal;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -186,7 +186,7 @@
 .aas-letter__line {
     margin: 0;
     padding: 0;
-    font-family: "Playfair Display", ui-serif, Georgia, "Times New Roman", serif;
+    font-family: var(--font-ui);
     font-style: italic;
     font-weight: 400;
     font-size: clamp(0.58rem, 2.1vw, 0.72rem);
@@ -206,7 +206,7 @@
 .aas-letter__mark {
     margin: 0;
     padding: 0;
-    font-family: "Playfair Display", ui-serif, Georgia, "Times New Roman", serif;
+    font-family: var(--font-ui);
     font-style: italic;
     font-weight: 300;
     font-size: clamp(0.55rem, 1.8vw, 0.68rem);

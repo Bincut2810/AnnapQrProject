@@ -26,12 +26,12 @@ public static class GuidedSommelierCatalog
     [
         new(
             "q1",
-            "Tối nay đang trở thành kiểu buổi tối nào?",
+            "Hôm nay bạn muốn ly của mình mang cảm giác nào?",
             [
                 new GuidedOptionSeed(
                     "q1_light",
-                    "Nhẹ và không vội",
-                    "nhẹ nhàng",
+                    "Êm và nhẹ",
+                    "êm và nhẹ",
                     new DrinkSensoryProfile
                     {
                         Energy = "still",
@@ -41,7 +41,7 @@ public static class GuidedSommelierCatalog
                     MoodKey: "calm"),
                 new GuidedOptionSeed(
                     "q1_alert",
-                    "Tỉnh và hiện diện",
+                    "Tỉnh táo, rõ vị",
                     "tỉnh táo",
                     new DrinkSensoryProfile
                     {
@@ -52,8 +52,8 @@ public static class GuidedSommelierCatalog
                     MoodKey: "focus"),
                 new GuidedOptionSeed(
                     "q1_refresh",
-                    "Tươi và thoáng",
-                    "tươi mát",
+                    "Mát lành, dễ uống",
+                    "mát lành",
                     new DrinkSensoryProfile
                     {
                         Acidity = "lifted",
@@ -64,7 +64,7 @@ public static class GuidedSommelierCatalog
                     MoodKey: "bright"),
                 new GuidedOptionSeed(
                     "q1_curious",
-                    "Tò mò, muốn đi xa hơn",
+                    "Muốn thử điều mới",
                     "thích khám phá",
                     new DrinkSensoryProfile
                     {
@@ -76,11 +76,11 @@ public static class GuidedSommelierCatalog
             ]),
         new(
             "q2",
-            "Ly đầu tiên nên cảm thấy thế nào?",
+            "Bạn muốn ly này nghiêng về đâu?",
             [
                 new GuidedOptionSeed(
                     "q2_coffee",
-                    "Cà phê — ấm và có cấu trúc",
+                    "Cà phê",
                     "cà phê",
                     new DrinkSensoryProfile
                     {
@@ -94,7 +94,7 @@ public static class GuidedSommelierCatalog
                     CategoryIntentKey: "coffee"),
                 new GuidedOptionSeed(
                     "q2_tea",
-                    "Trà — êm và hương hoa",
+                    "Trà",
                     "trà",
                     new DrinkSensoryProfile
                     {
@@ -108,8 +108,8 @@ public static class GuidedSommelierCatalog
                     CategoryIntentKey: "tea"),
                 new GuidedOptionSeed(
                     "q2_fruit",
-                    "Một chút tươi, trái cây",
-                    "nước ép",
+                    "Trái cây",
+                    "trái cây",
                     new DrinkSensoryProfile
                     {
                         AromaFamily = "citrus",
@@ -136,7 +136,7 @@ public static class GuidedSommelierCatalog
                     CategoryIntentKey: BeverageFamilyGrounding.Juice),
                 new GuidedOptionSeed(
                     "q2_smoothie",
-                    "Sinh tố mềm",
+                    "Sinh tố",
                     "sinh tố",
                     new DrinkSensoryProfile
                     {
@@ -150,7 +150,7 @@ public static class GuidedSommelierCatalog
                     CategoryIntentKey: BeverageFamilyGrounding.Smoothie),
                 new GuidedOptionSeed(
                     "q2_matcha",
-                    "Matcha — xanh và yên",
+                    "Matcha",
                     "matcha",
                     new DrinkSensoryProfile
                     {
@@ -164,7 +164,7 @@ public static class GuidedSommelierCatalog
                     CategoryIntentKey: BeverageFamilyGrounding.Matcha),
                 new GuidedOptionSeed(
                     "q2_signature",
-                    "Ly signature của quán",
+                    "Signature của quán",
                     "signature",
                     new DrinkSensoryProfile
                     {
@@ -178,27 +178,27 @@ public static class GuidedSommelierCatalog
             ]),
         new(
             "q3",
-            "Mình giữ sáng, hay để dịu xuống?",
+            "Bạn thích vị sữa thế nào?",
             [
                 new GuidedOptionSeed(
+                    "q3_semisweet",
+                    "Có sữa, mềm vị",
+                    "có sữa",
+                    new DrinkSensoryProfile { Sweetness = "gentle", Body = "round" }),
+                new GuidedOptionSeed(
                     "q3_low",
-                    "Giữ sáng — ít ngọt",
-                    "ít ngọt",
+                    "Ít sữa thôi",
+                    "ít sữa",
                     new DrinkSensoryProfile { Sweetness = "restrained", Acidity = "balanced" }),
                 new GuidedOptionSeed(
                     "q3_medium",
-                    "Ở giữa, cân bằng",
-                    "ngọt vừa",
+                    "Không sữa",
+                    "không sữa",
                     new DrinkSensoryProfile { Sweetness = "rounded", Finish = "clean" }),
                 new GuidedOptionSeed(
-                    "q3_semisweet",
-                    "Dịu xuống, hơi ngọt",
-                    "hơi ngọt",
-                    new DrinkSensoryProfile { Sweetness = "gentle", Body = "round" }),
-                new GuidedOptionSeed(
                     "q3_sweet",
-                    "Đậm và ngọt hơn",
-                    "ngọt nhiều",
+                    "Gì cũng được",
+                    "tùy",
                     new DrinkSensoryProfile
                     {
                         Sweetness = "luscious",
@@ -209,29 +209,24 @@ public static class GuidedSommelierCatalog
             ]),
         new(
             "q4",
-            "Tối nay cần độ tỉnh đến đâu?",
+            "Hôm nay bạn muốn uống lạnh hay nóng?",
             [
                 new GuidedOptionSeed(
                     "q4_none",
-                    "Không cần — giữ mềm",
-                    "không caffeine",
-                    new DrinkSensoryProfile { CaffeineIntensity = 1, Energy = "still" }),
-                new GuidedOptionSeed(
-                    "q4_low",
-                    "Một chút tỉnh thôi",
-                    "caffeine nhẹ",
-                    new DrinkSensoryProfile { CaffeineIntensity = 2, Energy = "still" }),
-                new GuidedOptionSeed(
-                    "q4_medium",
-                    "Vừa đủ, rõ ràng",
-                    "caffeine vừa",
-                    new DrinkSensoryProfile { CaffeineIntensity = 3, Energy = "focused" },
-                    MoodKey: "focus"),
+                    "Lạnh",
+                    "lạnh",
+                    new DrinkSensoryProfile { CaffeineIntensity = 1, Energy = "still", TemperatureEmotion = "cooling" }),
                 new GuidedOptionSeed(
                     "q4_strong",
-                    "Mạnh như quán có thể",
-                    "caffeine mạnh",
-                    new DrinkSensoryProfile { CaffeineIntensity = 5, Energy = "intense" })
+                    "Nóng",
+                    "nóng",
+                    new DrinkSensoryProfile { CaffeineIntensity = 5, Energy = "intense", TemperatureEmotion = "warming" }),
+                new GuidedOptionSeed(
+                    "q4_medium",
+                    "Gì cũng được",
+                    "tùy",
+                    new DrinkSensoryProfile { CaffeineIntensity = 3, Energy = "focused", TemperatureEmotion = "temperate" },
+                    MoodKey: "focus")
             ])
     ];
 

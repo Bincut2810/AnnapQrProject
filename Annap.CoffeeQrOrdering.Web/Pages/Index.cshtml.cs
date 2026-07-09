@@ -2,7 +2,7 @@ using System.Text.Json;
 using Annap.CoffeeQrOrdering.Application.Abstractions;
 using Annap.CoffeeQrOrdering.Domain.Entities;
 using Annap.CoffeeQrOrdering.Infrastructure.Persistence.Configurations;
-using Annap.CoffeeQrOrdering.Web;
+using Annap.CoffeeQrOrdering.Web.Internal;
 using Annap.CoffeeQrOrdering.Web.GuestExperience;
 using Annap.CoffeeQrOrdering.Web.Services;
 using Microsoft.AspNetCore.Hosting;
@@ -57,6 +57,39 @@ public sealed class IndexModel(
 
     public bool HasSeatedTable => VenueTableId is not null;
 
+    /// <summary>Guest scanned <c>/table</c> or <c>/t</c> but no active table matched.</summary>
+    public bool QrScanInvalid { get; private set; }
+
+    /// <summary><c>?vt=</c> was supplied but did not resolve to an active table.</summary>
+    public bool TableHandoffInvalid { get; private set; }
+
+    public GuestTableContextState TableContextState =>
+        GuestTableContext.Resolve(HasSeatedTable, QrScanInvalid, TableHandoffInvalid);
+
+    /// <summary>
+    /// Lightweight QR arrival shell (Phase 1B). Off by default; ritual seated arrival is restored.
+    /// </summary>
+    public bool UseSlimQrArrival => guestOperational.Value.UseSlimQrArrival;
+
+    /// <summary>When true, render <c>_GuestArrivalSlim</c> instead of ritual entry (feature-flagged).</summary>
+    public bool ShowSlimArrival => UseSlimQrArrival && HasSeatedTable && MenuFirstArrival;
+
+    /// <summary>Homepage CMS: guided sommelier ritual on homepage arrival (not slim QR Lite).</summary>
+    public bool IsSommelierEnabled { get; private set; } = true;
+
+    /// <summary>Live guided catalog still exposes q1–q4 and all AI Lite option keys.</summary>
+    public bool IsSommelierLiteCompatible { get; private set; }
+
+    public string SommelierLiteBootJson { get; private set; } = "{}";
+
+    public string? SommelierLiteIncompatibleReason { get; private set; }
+
+    public SommelierLiteUiState SommelierLiteUiState =>
+        GuestSommelierLiteGating.Resolve(ShowSlimArrival, IsSommelierEnabled);
+
+    /// <summary>Secondary AI CTA — CMS sommelier enabled on seated slim arrival (not gated by Lite catalog compatibility).</summary>
+    public bool ShowSlimSommelier => GuestSommelierLiteGating.ShowCta(ShowSlimArrival, IsSommelierEnabled);
+
     public async Task OnGetAsync(Guid? vt, CancellationToken cancellationToken)
     {
         VenueTable? seated = null;
@@ -96,8 +129,31 @@ public sealed class IndexModel(
             PublicSlug = seated.PublicSlug;
             TableGuestLabel = string.IsNullOrWhiteSpace(seated.DisplayLabel) ? seated.DisplayCode : seated.DisplayLabel;
         }
+        else
+        {
+            var qrAttempted =
+                !string.IsNullOrWhiteSpace(httpContextAccessor.HttpContext?.Items["QrTableDisplayCode"] as string)
+                || !string.IsNullOrWhiteSpace(httpContextAccessor.HttpContext?.Items["QrPublicSlug"] as string)
+                || !string.IsNullOrWhiteSpace(publicSlug)
+                || !string.IsNullOrWhiteSpace(tableDisplayCode);
+            if (qrAttempted)
+                QrScanInvalid = true;
+            else if (vt is Guid)
+                TableHandoffInvalid = true;
+        }
+
+        await HomepageExperienceBootstrapper.EnsureDefaultsAsync(db, cancellationToken);
+        await HomepageExperienceBootstrapper.EnsureDevelopmentRitualFlagsAsync(db, env.IsDevelopment(), cancellationToken);
+        await ExperienceCatalogBootstrapper.EnsureGuidedAndDiscoveryAsync(db, cancellationToken);
+        await ExperienceCatalogBootstrapper.SyncGuidedDisplayCopyInDevelopmentAsync(db, env.IsDevelopment(), cancellationToken);
 
         var qSeeds = await GuidedSommelierExperienceCatalog.LoadQuestionSeedsAsync(db, cancellationToken);
+        var liteCompat = GuestSommelierLiteCompatibility.Assess(qSeeds);
+        IsSommelierLiteCompatible = liteCompat.IsCompatible;
+        SommelierLiteIncompatibleReason = liteCompat.ReasonCode;
+        SommelierLiteBootJson = JsonSerializer.Serialize(
+            liteCompat.ToClientDto(),
+            new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         GuidedSommelierCatalogJson = GuidedSommelierExperienceCatalog.ToClientJson(
             qSeeds,
             GuidedSommelierCatalog.QuestionSetId);
@@ -124,6 +180,7 @@ public sealed class IndexModel(
         var hid = HomepageExperienceSettingsConfiguration.SingletonId;
         var home = await db.HomepageExperienceSettings.AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == hid, cancellationToken);
+        IsSommelierEnabled = home?.IsSommelierEnabled ?? true;
         HomepageExperienceJson = JsonSerializer.Serialize(
             new
             {

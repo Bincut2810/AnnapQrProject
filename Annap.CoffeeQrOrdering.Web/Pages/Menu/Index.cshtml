@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model Annap.CoffeeQrOrdering.Web.Pages.Menu.IndexModel
 @using System.Globalization
 @using System.Text.Json
@@ -56,17 +56,41 @@
         </div>
     </noscript>
 
+    @if (!Model.HasSeatedTable)
+    {
+        <div class="menu-no-table-banner" role="status" data-i18n="order.needTableScan">
+            Vui lòng quét mã QR tại bàn để gọi món.
+        </div>
+    }
+    else if (Model.TableHandoffInvalid)
+    {
+        <div class="menu-no-table-banner" role="alert" data-i18n="order.needTableScan">
+            Vui lòng quét mã QR tại bàn để gọi món.
+        </div>
+    }
+
     <header class="max-w-3xl pb-[max(0.5rem,1vh)]">
-        <nav class="mb-[max(0.5rem,1.5vh)]"
-             data-i18n-aria="menu.backHomeAria"
-             aria-label="Quay lại màn hình chọn một trong ba lối">
-            <a asp-page="/Index"
-               data-guest-vt-link="1"
-               class="guest-hit inline-flex min-h-11 items-center text-xs font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted))] transition hover:text-[rgb(var(--fg))] active:opacity-80"
-               data-i18n="menu.backHome">
-                ← Chọn lại
-            </a>
-        </nav>
+        <div class="menu-seated-toolbar mb-[max(0.5rem,1.5vh)] flex flex-wrap items-center justify-between gap-3">
+            <nav data-i18n-aria="menu.backHomeAria"
+                 aria-label="Quay lại màn hình chọn một trong ba lối">
+                <a asp-page="/Index"
+                   data-guest-vt-link="1"
+                   class="guest-hit inline-flex min-h-11 items-center text-xs font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted))] transition hover:text-[rgb(var(--fg))] active:opacity-80"
+                   data-i18n="menu.backHome">
+                    ← Chọn lại
+                </a>
+            </nav>
+            <div class="guest-lang-register menu-seated-lang flex min-h-11 items-center gap-0 border border-[rgba(190,165,130,0.42)] bg-[rgba(253,249,244,0.4)] p-px" role="group" aria-label="Language">
+                <button type="button" data-lang-set="en" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]" data-i18n="langSwitcher.en">EN</button>
+                <button type="button" data-lang-set="vi" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]" data-i18n="langSwitcher.vi">VI</button>
+            </div>
+        </div>
+        @if (Model.HasSeatedTable && !string.IsNullOrWhiteSpace(Model.TableGuestLabel))
+        {
+            <p class="menu-seated-table mb-2 text-[10px] font-medium tracking-[0.24em] uppercase text-[rgb(var(--muted-2))]">
+                <span data-i18n="menu.tableLabel">Bàn</span> · @Model.TableGuestLabel
+            </p>
+        }
         <p class="font-display text-sm tracking-[0.35em] uppercase text-[rgb(var(--muted-2))]" data-i18n="menu.browseEyebrow">ANNAP</p>
         <h1 class="font-display mt-[max(1rem,2.8vh)] text-[2.35rem] leading-[1.05] font-medium tracking-tight text-[rgb(var(--fg))] sm:text-5xl" data-i18n="menu.browseTitle">
             Lựa chọn của quán
@@ -177,9 +201,9 @@
             AnnapGuestBootHarness.row("signalr", "skip");
         }
     </script>
-    <script src="~/js/annap-runtime-report.js" asp-append-version="true"></script>
     <script src="~/js/drink-detail-renderer.js" asp-append-version="true"></script>
     <script src="~/js/drink-detail-modal.js" asp-append-version="true"></script>
+    <script src="~/js/guest-bank-transfer.js" asp-append-version="true"></script>
     <script src="~/js/order-tray-dock.js" asp-append-version="true"></script>
     <script>
         if (typeof window.annapStartOrderTrayDock === "function") window.annapStartOrderTrayDock();

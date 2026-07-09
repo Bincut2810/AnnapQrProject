@@ -1,11 +1,18 @@
 (function () {
-    /** Two-column floor: inbox (all active) → served (completed). */
-    const STAFF_TWO_COLUMN = true;
-    const STAFF_FLOW = ["pending", "preparing", "finishing", "ready", "served"];
-    const PACING_COPY = {
-        steady: "Nhịp ổn định",
-        watch: "Đang chú ý",
-        brisk: "Bàn giao nhanh"
+    const BOARD_COLUMNS = ["submitted", "paid", "completed"];
+    const COLUMN_META = {
+        submitted: {
+            badge: "CHỜ TT",
+            empty: "Chưa có đơn chờ thanh toán"
+        },
+        paid: {
+            badge: "ĐÃ TT",
+            empty: "Chưa có đơn đang pha chế"
+        },
+        completed: {
+            badge: "XONG",
+            empty: "Chưa có đơn hoàn thành gần đây"
+        }
     };
 
     let hubConnection = null;
@@ -14,11 +21,94 @@
     let loadInFlight = false;
     let firstPaint = true;
     let previousIds = new Set();
+    let previousColumns = new Map();
     let elapsedTimer = null;
-    let staffIdentityName = null;
     let lastBoardPulseAt = null;
+    let boardPermissions = { canMarkPaid: false, canComplete: false, canPrepareItems: false, canManageBills: false };
+    let activeMobileTab = null;
+    let mobileTabInitialized = false;
+    let lastBoardData = null;
+    const expandedItemOrders = new Set();
+
+    const MOBILE_MAX = 767.98;
+    const MOBILE_ITEM_PREVIEW = 3;
 
     const el = (sel) => document.querySelector(sel);
+
+    function isMobileViewport() {
+        return window.matchMedia(`(max-width: ${MOBILE_MAX}px)`).matches;
+    }
+
+    function tabFromHash() {
+        const hash = (window.location.hash || "").replace(/^#/, "").toLowerCase();
+        if (hash === "pending") return "submitted";
+        if (hash === "preparing") return "paid";
+        if (hash === "completed") return "completed";
+        return null;
+    }
+
+    function hashForTab(tab) {
+        if (tab === "submitted") return "#pending";
+        if (tab === "paid") return "#preparing";
+        if (tab === "completed") return "#completed";
+        return "";
+    }
+
+    function resolveInitialMobileTab() {
+        return tabFromHash() || el(".staff-dash")?.getAttribute("data-staff-default-tab") || "submitted";
+    }
+
+    function setMobileTab(tab, opts) {
+        if (!BOARD_COLUMNS.includes(tab)) return;
+        activeMobileTab = tab;
+        mobileTabInitialized = true;
+        applyMobileTabVisibility();
+        if (!opts?.skipHash && isMobileViewport()) {
+            const h = hashForTab(tab);
+            if (h && window.history.replaceState) window.history.replaceState(null, "", h);
+        }
+    }
+
+    function applyMobileTabVisibility() {
+        const mobile = isMobileViewport();
+        document.body.classList.toggle("staff-board-mobile", mobile);
+        for (const col of BOARD_COLUMNS) {
+            const section = document.querySelector(`[data-staff-column="${col}"]`);
+            if (!section) continue;
+            if (mobile) {
+                const active = col === activeMobileTab;
+                section.classList.toggle("staff-col--active", active);
+                section.hidden = !active;
+            } else {
+                section.classList.add("staff-col--active");
+                section.hidden = false;
+            }
+        }
+        document.querySelectorAll("[data-staff-mobile-tab]").forEach((btn) => {
+            const on = btn.getAttribute("data-staff-mobile-tab") === activeMobileTab;
+            btn.classList.toggle("is-active", on);
+            btn.setAttribute("aria-selected", on ? "true" : "false");
+        });
+    }
+
+    function initMobileTabs() {
+        if (!mobileTabInitialized) setMobileTab(resolveInitialMobileTab(), { skipHash: !!tabFromHash() });
+        else applyMobileTabVisibility();
+    }
+
+    function wireMobileTabs() {
+        document.querySelectorAll("[data-staff-mobile-tab]").forEach((btn) => {
+            btn.addEventListener("click", () => setMobileTab(btn.getAttribute("data-staff-mobile-tab")));
+        });
+        window.addEventListener("hashchange", () => {
+            const fromHash = tabFromHash();
+            if (fromHash && isMobileViewport()) setMobileTab(fromHash, { skipHash: true });
+        });
+        window.addEventListener("resize", () => {
+            if (!mobileTabInitialized) initMobileTabs();
+            else applyMobileTabVisibility();
+        });
+    }
 
     function showError(msg) {
         const box = el("#staff-error");
@@ -48,6 +138,19 @@
         return `${Math.floor(s / 3600)}h`;
     }
 
+    function fmtWaitVi(iso) {
+        if (!iso) return "Chờ —";
+        const t = new Date(iso).getTime();
+        if (Number.isNaN(t)) return "Chờ —";
+        const mins = Math.max(0, Math.floor((Date.now() - t) / 60000));
+        if (mins < 1) return "Chờ <1 phút";
+        if (mins < 60) return `Chờ ${mins} phút`;
+        const hours = Math.floor(mins / 60);
+        if (hours < 24) return `Chờ ${hours} giờ`;
+        const days = Math.floor(hours / 24);
+        return `Cũ · ${days} ngày`;
+    }
+
     function escapeHtml(s) {
         return String(s)
             .replace(/&/g, "&amp;")
@@ -60,156 +163,317 @@
         return document.querySelector(`[data-staff-drop="${status}"]`);
     }
 
-    function isActiveStaffStatus(st) {
-        return st && st !== "served" && st !== "cancelled";
-    }
-
-    function nextStaff(st) {
-        if (STAFF_TWO_COLUMN) {
-            if (!isActiveStaffStatus(st)) return null;
-            return "served";
-        }
-        const i = STAFF_FLOW.indexOf(st);
-        if (i < 0 || i >= STAFF_FLOW.length - 1) return null;
-        return STAFF_FLOW[i + 1];
-    }
-
-    function prevStaff(st) {
-        if (STAFF_TWO_COLUMN) return null;
-        const i = STAFF_FLOW.indexOf(st);
-        if (i <= 0) return null;
-        return STAFF_FLOW[i - 1];
-    }
-
     function moneyFmt(v) {
-        return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(v);
+        return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(v);
     }
 
     function pacingClass(key) {
         return key === "watch" || key === "brisk" ? key : "steady";
     }
 
-    function ownershipChipsHtml(o) {
-        if (STAFF_TWO_COLUMN) return "";
-        const me = staffIdentityName;
-        if (!me || !o.id) return "";
-        const st = o.staffStatus;
-        const id = String(o.id);
+    function apiUrl(path) {
+        return typeof window.__annapApiUrl === "function" ? window.__annapApiUrl(path) : path;
+    }
+
+    function columnMeta(column) {
+        return COLUMN_META[column] || COLUMN_META.submitted;
+    }
+
+    function orderHasBill(o, column) {
+        if (column === "paid" || column === "completed") return true;
+        return !!(o.paidAtUtc || o.billNumber);
+    }
+
+    function orderItems(o) {
+        return o.items || o.Items || [];
+    }
+
+    function itemPrepState(it) {
+        const qty = Number(it.quantity ?? it.Quantity) || 0;
+        const prepared = Number(it.preparedQuantity ?? it.PreparedQuantity) || 0;
+        return { qty, prepared, done: qty > 0 && prepared >= qty };
+    }
+
+    function orderPrepProgress(o) {
+        const items = orderItems(o);
+        let total = 0;
+        let done = 0;
+        items.forEach((it) => {
+            const st = itemPrepState(it);
+            total += st.qty;
+            done += Math.min(st.prepared, st.qty);
+        });
+        return { done, total, allDone: total > 0 && done >= total };
+    }
+
+    function buildPrepControls(it, orderId, column) {
+        if (column !== "paid" || !boardPermissions.canPrepareItems) return "";
+        const itemId = it.id || it.Id;
+        if (!itemId) return "";
+        const st = itemPrepState(it);
+        const countLabel = `${st.prepared}/${st.qty}`;
+        if (st.done) {
+            return `<div class="staff-prep-line__actions">
+                <span class="staff-prep-line__count">${countLabel}</span>
+                <button type="button" class="staff-prep-btn staff-prep-btn--undo guest-hit" data-staff-act="prep-undo" data-order-id="${orderId}" data-item-id="${itemId}">Chưa xong</button>
+            </div>`;
+        }
+        return `<div class="staff-prep-line__actions">
+            <span class="staff-prep-line__count">${countLabel}</span>
+            <button type="button" class="staff-prep-btn staff-prep-btn--done guest-hit" data-staff-act="prep-done" data-order-id="${orderId}" data-item-id="${itemId}">Xong</button>
+        </div>`;
+    }
+
+    function buildPrepSection(o, column) {
+        const progress = orderPrepProgress(o);
+        if (column === "paid" && boardPermissions.canPrepareItems) {
+            const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
+            return `<div class="staff-prep-progress">
+                <div class="staff-prep-progress__head">
+                    <span class="staff-prep-progress__label">Tiến độ pha chế</span>
+                    <span class="staff-prep-progress__count">Đã xong ${progress.done}/${progress.total} món</span>
+                </div>
+                <div class="staff-prep-progress__bar" style="--prep-pct:${pct}%"><span></span></div>
+            </div>`;
+        }
+        if (column === "paid" && !boardPermissions.canPrepareItems && progress.total > 0) {
+            return `<p class="staff-prep-progress__count staff-prep-progress__count--readonly">Đã xong ${progress.done}/${progress.total} món</p>`;
+        }
+        if (column === "completed" && progress.total > 0) {
+            return `<p class="staff-prep-progress__count staff-prep-progress__count--readonly">Đã xong ${progress.done}/${progress.total} món</p>`;
+        }
+        return "";
+    }
+
+    function buildItemCustomerNoteHtml(it) {
+        const customerNoteRaw = it.customerNote || it.CustomerNote || "";
+        const trimmed = customerNoteRaw && String(customerNoteRaw).trim() ? String(customerNoteRaw).trim() : "";
+        if (!trimmed) return "";
+        return `<p class="staff-order-note staff-order-note--item"><span class="staff-order-note__label">Ghi chú:</span> ${escapeHtml(trimmed)}</p>`;
+    }
+
+    function buildItemLine(it, orderId, column) {
+        const note = buildItemCustomerNoteHtml(it);
+        const st = itemPrepState(it);
+        const prepReadonly =
+            ((column === "paid" && !boardPermissions.canPrepareItems) || column === "completed") && st.qty > 0
+                ? `<span class="staff-prep-line__count staff-prep-line__count--readonly">${st.prepared}/${st.qty}</span>`
+                : "";
+        const prepControls = buildPrepControls(it, orderId, column);
+        const preparedByLine =
+            st.done && (it.preparedBy || it.PreparedBy)
+                ? `<p class="staff-order-card__item-prep-by">Xong bởi: ${escapeHtml(it.preparedBy || it.PreparedBy)}</p>`
+                : "";
+        return `<li class="staff-order-card__item${st.done ? " staff-order-card__item--prepared" : ""}">
+                <div class="staff-order-card__item-row">
+                    <span class="staff-order-card__item-name">${escapeHtml(it.name || it.Name)}</span>
+                    <span class="staff-order-card__item-qty">×${it.quantity}</span>
+                    ${prepReadonly}
+                </div>
+                ${note}
+                ${prepControls}
+                ${preparedByLine}
+            </li>`;
+    }
+
+    function buildCardActions(o, column) {
+        if (column === "completed") {
+            return `<div class="staff-order-card__ops staff-order-card__ops--mobile-solo">
+                <button type="button" class="staff-order-back staff-order-back--solo guest-hit" data-staff-act="view-bill" data-order-id="${o.id}">Xem bill</button>
+            </div>`;
+        }
+
         const bits = [];
-        if (st === "preparing" || st === "finishing") {
-            if (o.brewingOwner === me)
-                bits.push(
-                    `<button type="button" class="staff-own-chip guest-hit" data-staff-act="release-brew" data-order-id="${id}">Thả quầy</button>`
-                );
-            else if (!o.brewingOwner)
-                bits.push(
-                    `<button type="button" class="staff-own-chip guest-hit" data-staff-act="claim-brew" data-order-id="${id}">Giữ quầy</button>`
-                );
+        if (column === "submitted" && boardPermissions.canMarkPaid) {
+            bits.push(
+                `<button type="button" class="staff-order-advance staff-order-advance--pay guest-hit" data-staff-act="mark-paid" data-order-id="${o.id}">Xác nhận thanh toán</button>`
+            );
         }
-        if (st === "ready") {
-            if (o.servingOwner === me)
+        if (column === "paid" && boardPermissions.canComplete) {
+            const progress = orderPrepProgress(o);
+            if (!progress.allDone) {
                 bits.push(
-                    `<button type="button" class="staff-own-chip guest-hit" data-staff-act="release-serve" data-order-id="${id}">Thả bàn giao</button>`
+                    `<button type="button" class="staff-order-advance staff-order-advance--done guest-hit" disabled>Hoàn thành đơn</button>`
                 );
-            else if (!o.servingOwner)
+                bits.push(`<p class="staff-prep-complete-hint">Tick đủ món để hoàn thành</p>`);
+            } else {
                 bits.push(
-                    `<button type="button" class="staff-own-chip guest-hit" data-staff-act="claim-serve" data-order-id="${id}">Nhận bàn giao</button>`
+                    `<button type="button" class="staff-order-advance staff-order-advance--done guest-hit" data-staff-act="complete" data-order-id="${o.id}">Hoàn thành đơn</button>`
                 );
+            }
         }
-        return bits.join("");
+        if (orderHasBill(o, column) && column !== "completed") {
+            bits.push(
+                `<button type="button" class="staff-order-back guest-hit" data-staff-act="view-bill" data-order-id="${o.id}">Xem bill</button>`
+            );
+        }
+        if (!bits.length) return "";
+        const solo = bits.length === 1 && (column === "submitted" || (column === "paid" && boardPermissions.canComplete));
+        return `<div class="staff-order-card__ops"><div class="staff-order-card__ops-row${solo ? " staff-order-card__ops-row--solo" : ""}">${bits.join("")}</div></div>`;
+    }
+
+    function buildItemsList(o, column) {
+        const items = orderItems(o);
+        const usePreview = isMobileViewport();
+        const expanded = expandedItemOrders.has(o.id);
+        const limit = usePreview && !expanded ? MOBILE_ITEM_PREVIEW : items.length;
+        const visible = items.slice(0, limit);
+        const lines = visible.map((it) => buildItemLine(it, o.id, column)).join("");
+        const hiddenCount = items.length - MOBILE_ITEM_PREVIEW;
+        const more =
+            usePreview && !expanded && hiddenCount > 0
+                ? `<li class="staff-order-card__item staff-order-card__item--more">
+                    <button type="button" class="staff-order-card__expand guest-hit" data-staff-act="expand-items" data-order-id="${o.id}">Xem thêm ${hiddenCount} món</button>
+                   </li>`
+                : "";
+        return `<ul class="staff-order-card__items">${lines || '<li class="staff-order-card__item staff-order-card__item--empty">Không có món</li>'}${more}</ul>`;
+    }
+
+    function expandOrderItems(orderId) {
+        if (!orderId) return;
+        expandedItemOrders.add(orderId);
+        if (!lastBoardData) return;
+        const board = el("[data-staff-board]");
+        if (!board) return;
+        for (const col of BOARD_COLUMNS) {
+            const o = (lastBoardData[col] || []).find((x) => x.id === orderId);
+            if (o) {
+                mountCard(board, colBody(col), o, col, col === "completed");
+                break;
+            }
+        }
     }
 
     function buildCardHtml(o, opts) {
-        const servedCol = !!opts?.servedColumn;
-        const phase = escapeHtml(o.phaseLabel || o.staffStatus || "");
-        const pacingKey = pacingClass(o.pacing);
-        const pacingLabel = PACING_COPY[pacingKey] || PACING_COPY.steady;
-        const notes = o.guestNotes
-            ? `<p class="staff-order-note staff-order-note--ticket mt-3">Ghi chú · ${escapeHtml(o.guestNotes)}</p>`
-            : "";
-        const cups = typeof o.totalCups === "number" ? o.totalCups : (o.items || []).reduce((a, it) => a + (Number(it.quantity) || 0), 0);
-        const lines = (o.items || [])
-            .map((it) => {
-                const note = it.notes
-                    ? `<p class="staff-order-note staff-order-note--item mt-1">Ghi chú: ${escapeHtml(it.notes)}</p>`
-                    : "";
-                return `<li class="border-b border-white/[0.05] py-2.5 last:border-0 last:pb-0">
-                        <div class="flex items-baseline justify-between gap-2">
-                            <span class="min-w-0 truncate font-medium text-[rgb(var(--fg))]">${escapeHtml(it.name)}</span>
-                            <span class="shrink-0 tabular-nums text-xs text-[rgb(var(--muted))]">×${it.quantity}</span>
-                        </div>${note}</li>`;
-            })
-            .join("");
+        const column = opts?.column || o.boardColumn || "submitted";
+        const meta = columnMeta(column);
+        const pendingBadge =
+            column === "submitted" && (o.pendingPaymentBadgeVi || o.paymentMethod)
+                ? escapeHtml(
+                      o.pendingPaymentBadgeVi ||
+                          (o.paymentMethod === "BankTransfer"
+                              ? "Chuyển khoản · chờ xác nhận"
+                              : o.paymentMethod === "Card"
+                                ? "Thẻ · chờ thanh toán"
+                                : o.paymentMethod === "Cash"
+                                  ? "Tiền mặt · chờ thanh toán"
+                                  : o.paymentMethod === "CashOrCardAtCounter"
+                                    ? "Tại quầy · tiền mặt/thẻ"
+                                    : "Chờ thanh toán")
+                  )
+                : "";
+        const paymentLine =
+            column === "submitted" && pendingBadge
+                ? `<p class="staff-order-card__payment-line">${pendingBadge}</p>`
+                : "";
+        const paymentBadge =
+            column === "submitted" && pendingBadge
+                ? `<span class="staff-order-card__payment-badge staff-order-card__payment-badge--desktop">${pendingBadge}</span>`
+                : "";
+        const stepIso = o.statusChangedAtUtc || o.updatedAtUtc || o.createdAtUtc;
+        const tableCode = escapeHtml(o.tableCode || "—");
+        const waitBadge =
+            column === "submitted"
+                ? `<span class="staff-order-card__wait-badge" data-field="elapsed-wait">${fmtWaitVi(o.createdAtUtc)}</span>`
+                : "";
+        const transferMemoLine =
+            column === "submitted" && o.paymentMethod === "BankTransfer" && o.transferMemo
+                ? `<p class="staff-order-card__transfer-memo">CK: ${escapeHtml(o.transferMemo)}</p>`
+                : "";
+        const paidStatusBadge =
+            column === "paid"
+                ? `<span class="staff-order-card__status-pill staff-order-card__status-pill--paid staff-order-card__status-pill--desktop">Đã thanh toán</span>`
+                : "";
+        const paidTimeLine =
+            column === "paid" && o.paidAtUtc
+                ? `<p class="staff-order-card__meta-line staff-order-card__meta-line--mobile">TT <span>${fmtClock(o.paidAtUtc)}</span></p>`
+                : column === "completed" && o.paidAtUtc
+                  ? `<p class="staff-order-card__meta-line staff-order-card__meta-line--desktop">Thanh toán <span>${fmtClock(o.paidAtUtc)}</span></p>`
+                  : "";
+        function resolvePaymentMethodLabel(order) {
+            if (order.paymentMethodLabelVi) return String(order.paymentMethodLabelVi);
+            if (order.paymentMethod === "BankTransfer") return "Chuyển khoản";
+            if (order.paymentMethod === "Card") return "Thẻ";
+            if (order.paymentMethod === "Cash") return "Tiền mặt";
+            if (order.paymentMethod === "CashOrCardAtCounter") return "Tiền mặt/thẻ";
+            return "Chưa rõ";
+        }
+        const confirmedPaymentLine =
+            column === "paid" || column === "completed"
+                ? `<p class="staff-order-card__meta-line staff-order-card__payment-confirmed">Thanh toán: <span>${escapeHtml(
+                      resolvePaymentMethodLabel(o)
+                  )}</span></p>`
+                : "";
+        const confirmerLabel = column === "paid" ? "Thu bởi" : "Xác nhận bởi";
+        const confirmedByLine =
+            column === "paid" || column === "completed"
+                ? (() => {
+                      if (o.autoPaymentConfirmed) {
+                          return `<p class="staff-order-card__meta-line staff-order-card__confirmer">${confirmerLabel}: <span>Thanh toán tự động</span></p>`;
+                      }
+                      const name = o.paymentConfirmedBy ? String(o.paymentConfirmedBy).trim() : "";
+                      if (!name) return "";
+                      const timeSuffix = column === "completed" && o.paidAtUtc ? ` · ${fmtClock(o.paidAtUtc)}` : "";
+                      return `<p class="staff-order-card__meta-line staff-order-card__confirmer">${confirmerLabel}: <span>${escapeHtml(name)}${timeSuffix ? escapeHtml(timeSuffix) : ""}</span></p>`;
+                  })()
+                : "";
+        const doneLine =
+            column === "completed" && o.completedAtUtc
+                ? `<p class="staff-order-card__meta-line staff-order-card__meta-line--desktop">Hoàn thành <span>${fmtClock(o.completedAtUtc)}</span></p>`
+                : "";
+        const completedByLine =
+            column === "completed" && (o.completedBy || o.CompletedBy)
+                ? `<p class="staff-order-card__meta-line staff-order-card__confirmer">Hoàn thành bởi: <span>${escapeHtml(o.completedBy || o.CompletedBy)}${o.completedAtUtc ? ` · ${fmtClock(o.completedAtUtc)}` : ""}</span></p>`
+                : "";
         const totalLine =
             o.totalAmount != null
-                ? `<p class="mt-3 text-right text-xs tracking-wide text-[rgb(var(--muted))]">Tổng <span class="font-medium tabular-nums text-[rgb(var(--fg))]">${moneyFmt(o.totalAmount)}</span></p>`
+                ? `<div class="staff-order-card__total"><span class="staff-order-card__total-label">Tổng</span><span class="staff-order-card__total-amount">${moneyFmt(o.totalAmount)}</span></div>`
                 : "";
-        const hasPrev = !!prevStaff(o.staffStatus);
-        const stepIso = o.statusChangedAtUtc || o.updatedAtUtc || o.createdAtUtc;
-        const qa = Number(o.queueAhead) || 0;
-        const queueLine =
-            qa > 0
-                ? `<p data-field="queue-line" class="mt-1 text-[10px] tracking-[0.16em] text-[rgb(var(--muted-2))]">Hàng chờ yên tĩnh · ${qa} phiếu phía trước</p>`
-                : `<p data-field="queue-line" class="mt-1 hidden text-[10px] tracking-[0.16em] text-[rgb(var(--muted-2))]"></p>`;
-        const brew = o.brewingOwner ? escapeHtml(o.brewingOwner) : "";
-        const serv = o.servingOwner ? escapeHtml(o.servingOwner) : "";
-        const ownBits = [];
-        if (brew) ownBits.push(`Quầy pha · ${brew}`);
-        if (serv) ownBits.push(`Bàn giao · ${serv}`);
-        const ownLine =
-            ownBits.length > 0
-                ? `<p data-field="ownership-line" class="mt-2 text-[10px] leading-relaxed tracking-[0.14em] text-[rgb(var(--muted-2))]">${ownBits.join(" · ")}</p>`
-                : `<p data-field="ownership-line" class="mt-2 hidden text-[10px] text-[rgb(var(--muted-2))]"></p>`;
+        const columnBadge = `<span class="staff-order-badge staff-order-badge--${column} staff-order-badge--desktop">${escapeHtml(meta.badge)}</span>`;
 
-        const ownWrapInner = !servedCol ? ownershipChipsHtml(o) : "";
-
-        const advanceLabel = STAFF_TWO_COLUMN && !servedCol ? "Hoàn thành" : "Tiếp tục";
-        const ops = servedCol
-            ? ""
-            : `<div class="staff-order-card__ops mt-4 flex flex-col gap-2">
-                    <div class="flex flex-wrap items-stretch gap-2">
-                    <button type="button" class="staff-order-advance guest-hit" data-staff-act="advance" data-order-id="${o.id}">${advanceLabel}</button>
-                    <button type="button" class="staff-order-back guest-hit" data-staff-act="back" data-order-id="${o.id}"${hasPrev ? "" : " hidden"}>Lùi bước</button>
+        return `<article class="staff-order-card staff-order-card--${column} surface-glass"
+                data-order-id="${o.id}" data-staff-status="${o.staffStatus || ""}" data-board-column="${column}"
+                data-created-at="${o.createdAtUtc || ""}" data-updated-at="${o.updatedAtUtc || ""}" data-status-changed-at="${stepIso || ""}">
+                <div class="staff-order-card__top">
+                    <div class="staff-order-card__table-row">
+                        <span class="staff-order-card__table-prefix">Bàn</span>
+                        <span class="staff-order-card__table-code">${tableCode}</span>
+                        ${waitBadge}
                     </div>
-                    <div data-field="own-wrap" class="flex flex-wrap gap-2">${ownWrapInner}</div>
-               </div>`;
-        return `<article class="staff-order-card surface-glass relative overflow-hidden rounded-2xl p-4 ring-1 ring-white/[0.07]"
-                data-order-id="${o.id}" data-staff-status="${o.staffStatus}" data-created-at="${o.createdAtUtc || ""}" data-updated-at="${o.updatedAtUtc || ""}" data-status-changed-at="${stepIso || ""}">
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                    <div>
-                        <p class="text-[10px] font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted-2))]">Bàn</p>
-                        <p class="mt-1 font-display text-3xl leading-none tracking-tight text-[rgb(var(--fg))]">${escapeHtml(o.tableCode)}</p>
+                    <div class="staff-order-card__badges-row">
+                        ${paymentBadge}
+                        ${paidStatusBadge}
+                        ${columnBadge}
                     </div>
-                    <div class="text-right text-xs tabular-nums text-[rgb(var(--muted))]">
-                        <p>Kể từ khi đặt <span data-field="elapsed" class="text-[rgb(var(--fg))]">${fmtRel(o.createdAtUtc)}</span></p>
-                        <p class="mt-0.5">Bước này <span data-field="step-elapsed" class="text-[rgb(var(--fg))]">${fmtRel(stepIso)}</span></p>
-                        <p class="mt-1">${fmtClock(o.createdAtUtc)}</p>
-                        ${o.updatedAtUtc ? `<p class="mt-2 text-[10px] uppercase tracking-wider text-[rgb(var(--muted-2))]">Cập nhật ${fmtClock(o.updatedAtUtc)}</p>` : ""}
-                    </div>
+                    ${paymentLine}
+                    ${transferMemoLine}
                 </div>
-                <div class="mt-3 flex flex-wrap items-center gap-3">
-                    <span class="rounded-full bg-white/[0.05] px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-[rgb(var(--fg))] ring-1 ring-white/[0.08]">${phase}</span>
-                    <span class="staff-pacing staff-pacing--${pacingKey}" data-field="pacing-wrap">
-                        <span class="staff-pacing__dot" aria-hidden="true"></span>
-                        <span data-field="pacing-label">${escapeHtml(pacingLabel)}</span>
-                    </span>
-                    <span class="text-[10px] uppercase tracking-[0.22em] text-[rgb(var(--muted-2))]">${cups} ly</span>
+                <div class="staff-order-card__meta-block">
+                    ${paidTimeLine}
+                    ${confirmedPaymentLine}
+                    ${confirmedByLine}
+                    ${doneLine}
+                    ${completedByLine}
                 </div>
-                ${queueLine}
-                ${ownLine}
-                <ul class="mt-4 list-none border-t border-white/[0.06] text-sm">${lines || '<li class="py-3 text-[rgb(var(--muted))]">Không có món</li>'}</ul>
-                ${notes}
+                ${buildPrepSection(o, column)}
+                ${buildItemsList(o, column)}
                 ${totalLine}
-                ${ops}
+                ${buildCardActions(o, column)}
             </article>`;
     }
 
     function renderEmptyNode(text) {
         const p = document.createElement("p");
-        p.className =
-            "staff-col-empty rounded-xl bg-white/[0.03] px-3 py-10 text-center text-sm text-[rgb(var(--muted))] ring-1 ring-white/[0.05]";
+        p.className = "staff-col-empty staff-col-empty--note";
         p.textContent = text;
         return p;
+    }
+
+    function updateColumnBodyState(body, orderCount) {
+        if (!body) return;
+        body.classList.toggle("staff-col-body--has-cards", orderCount > 0);
+        body.classList.toggle("staff-col-body--idle", orderCount === 0);
+        body.classList.toggle("staff-col-body--scroll", orderCount >= 4);
     }
 
     function clearEmptyPlaceholders(body) {
@@ -222,57 +486,28 @@
         body.appendChild(renderEmptyNode(text));
     }
 
-    function updateCardContent(card, o) {
-        const pacingKey = pacingClass(o.pacing);
-        const pacingLabel = PACING_COPY[pacingKey] || PACING_COPY.steady;
-        const rel = card.querySelector('[data-field="elapsed"]');
-        if (rel) rel.textContent = fmtRel(o.createdAtUtc);
-        const stepIso = o.statusChangedAtUtc || o.updatedAtUtc || o.createdAtUtc;
-        const stEl = card.querySelector('[data-field="step-elapsed"]');
-        if (stEl) stEl.textContent = fmtRel(stepIso);
-        card.dataset.statusChangedAt = stepIso || "";
-        const pl = card.querySelector('[data-field="pacing-label"]');
-        if (pl) pl.textContent = pacingLabel;
-        const pw = card.querySelector('[data-field="pacing-wrap"]');
-        if (pw) {
-            pw.className = `staff-pacing staff-pacing--${pacingKey}`;
+    function mountCard(board, body, o, column, isServed) {
+        const existing = board.querySelector(`article.staff-order-card[data-order-id="${o.id}"]`);
+        const prevColumn = previousColumns.get(o.id);
+        const isNewOrder = previousIds.size > 0 && !previousIds.has(o.id);
+        const movedColumn = prevColumn && prevColumn !== column;
+
+        const wrap = document.createElement("div");
+        wrap.innerHTML = buildCardHtml(o, { column, servedColumn: isServed }).trim();
+        const card = wrap.firstElementChild;
+
+        if (existing) existing.remove();
+        body.appendChild(card);
+
+        if (isNewOrder) {
+            card.classList.add("staff-order-card--enter");
+            window.setTimeout(() => card.classList.remove("staff-order-card--enter"), 700);
+        } else if (movedColumn) {
+            card.classList.add("staff-order-card--shift");
+            window.setTimeout(() => card.classList.remove("staff-order-card--shift"), 450);
         }
-        const ql = card.querySelector('[data-field="queue-line"]');
-        if (ql) {
-            const qa = Number(o.queueAhead) || 0;
-            if (qa > 0) {
-                ql.textContent = `Hàng chờ yên tĩnh · ${qa} phiếu phía trước`;
-                ql.classList.remove("hidden");
-            } else {
-                ql.textContent = "";
-                ql.classList.add("hidden");
-            }
-        }
-        const ownLine = card.querySelector('[data-field="ownership-line"]');
-        if (ownLine) {
-            const brew = o.brewingOwner ? String(o.brewingOwner) : "";
-            const serv = o.servingOwner ? String(o.servingOwner) : "";
-            const parts = [];
-            if (brew) parts.push(`Machine · ${brew}`);
-            if (serv) parts.push(`Handoff · ${serv}`);
-            if (parts.length) {
-                ownLine.textContent = parts.join(" · ");
-                ownLine.classList.remove("hidden");
-            } else {
-                ownLine.textContent = "";
-                ownLine.classList.add("hidden");
-            }
-        }
-        const ow = card.querySelector('[data-field="own-wrap"]');
-        if (ow) ow.innerHTML = ownershipChipsHtml(o);
-        card.dataset.staffStatus = o.staffStatus;
-        card.dataset.createdAt = o.createdAtUtc || "";
-        card.dataset.updatedAt = o.updatedAtUtc || "";
-        const back = card.querySelector('[data-staff-act="back"]');
-        if (back) {
-            if (prevStaff(o.staffStatus)) back.removeAttribute("hidden");
-            else back.setAttribute("hidden", "hidden");
-        }
+
+        return card;
     }
 
     function syncColumn(board, status, orders, emptyText, isServed) {
@@ -280,38 +515,11 @@
         if (!body) return;
         clearEmptyPlaceholders(body);
         const sorted = [...orders].sort((a, b) => String(a.createdAtUtc).localeCompare(String(b.createdAtUtc)));
-        sorted.forEach((o, idx) => {
-            o.queueAhead = idx;
-        });
         const desiredIds = sorted.map((o) => o.id);
-        const byId = Object.fromEntries(sorted.map((o) => [o.id, o]));
 
-        for (const id of desiredIds) {
-            const o = byId[id];
-            let card = board.querySelector(`article.staff-order-card[data-order-id="${id}"]`);
-            if (!card) {
-                const wrap = document.createElement("div");
-                wrap.innerHTML = buildCardHtml(o, { servedColumn: isServed }).trim();
-                card = wrap.firstElementChild;
-                const isNew = previousIds.size > 0 && !previousIds.has(id);
-                body.appendChild(card);
-                if (isNew) {
-                    card.classList.add("staff-order-card--enter");
-                    window.setTimeout(() => card.classList.remove("staff-order-card--enter"), 700);
-                }
-            } else {
-                updateCardContent(card, o);
-                if (card.parentNode !== body) {
-                    body.appendChild(card);
-                    card.classList.add("staff-order-card--shift");
-                    window.setTimeout(() => card.classList.remove("staff-order-card--shift"), 450);
-                }
-            }
-        }
-
-        for (const id of desiredIds) {
-            const card = board.querySelector(`article.staff-order-card[data-order-id="${id}"]`);
-            if (card && card.parentNode === body) updateCardContent(card, byId[id]);
+        for (const o of sorted) {
+            o.boardColumn = status;
+            mountCard(board, body, o, status, isServed);
         }
 
         for (const id of desiredIds) {
@@ -319,15 +527,54 @@
             if (card && card.parentNode === body) body.appendChild(card);
         }
 
-        if (!body.querySelector("article.staff-order-card")) {
-            ensureEmpty(body, emptyText);
+        if (!body.querySelector("article.staff-order-card")) ensureEmpty(body, emptyText);
+        updateColumnBodyState(body, sorted.length);
+    }
+
+    function updateColumnCounts(data) {
+        const counts = {
+            submitted: (data.submitted || []).length,
+            paid: (data.paid || []).length,
+            completed: (data.completed || []).length
+        };
+        for (const col of BOARD_COLUMNS) {
+            const count = String(counts[col] ?? 0);
+            const badge = document.querySelector(`[data-staff-col-count="${col}"]`);
+            const tabBadge = document.querySelector(`[data-staff-tab-count="${col}"]`);
+            if (badge) badge.textContent = count;
+            if (tabBadge) tabBadge.textContent = count;
         }
+        updateKpiChips(data);
+    }
+
+    function updateKpiChips(data) {
+        const submitted = data.submitted || [];
+        const paid = data.paid || [];
+        const completed = data.completed || [];
+        const bankPending = submitted.filter((o) => o.paymentMethod === "BankTransfer").length;
+        const awaitingTotal = submitted.reduce((sum, o) => sum + (Number(o.totalAmount) || 0), 0);
+
+        const setKpi = (key, value) => {
+            const node = document.querySelector(`[data-staff-kpi="${key}"]`);
+            if (node) node.textContent = value;
+        };
+
+        setKpi("submitted", String(submitted.length));
+        setKpi("paid", String(paid.length));
+        setKpi("completed", String(completed.length));
+        setKpi("bank-pending", String(bankPending));
+        const amountNode = document.querySelector('[data-staff-kpi="awaiting-amount"]');
+        if (amountNode) amountNode.textContent = moneyFmt(awaitingTotal);
+
+        const completedChip = document.querySelector('[data-staff-kpi-chip="completed"]');
+        if (completedChip) completedChip.classList.toggle("staff-floor-kpi__chip--hidden", completed.length === 0);
     }
 
     function collectAllIds(data) {
         const s = new Set();
-        (data.active || []).forEach((o) => s.add(o.id));
-        (data.recentServed || []).forEach((o) => s.add(o.id));
+        (data.submitted || []).forEach((o) => s.add(o.id));
+        (data.paid || []).forEach((o) => s.add(o.id));
+        (data.completed || []).forEach((o) => s.add(o.id));
         return s;
     }
 
@@ -344,57 +591,39 @@
     }
 
     function mergeBoard(data) {
+        lastBoardData = data;
         const board = el("[data-staff-board]");
         if (!board) return;
 
-        staffIdentityName = (data.youAre && String(data.youAre).trim()) || null;
-        if (STAFF_TWO_COLUMN) {
-            const activeInbox = [];
-            for (const o of data.active || []) {
-                if (o.staffStatus === "cancelled") continue;
-                activeInbox.push(o);
-            }
-            syncColumn(board, "pending", activeInbox, "Khoảnh khắc yên lặng — chưa có phiếu đang mở.", false);
-            syncColumn(board, "served", data.recentServed || [], "Không có đơn nào gần đây.", true);
-        } else {
-            const activeBy = { pending: [], preparing: [], finishing: [], ready: [] };
-            for (const o of data.active || []) {
-                const st = o.staffStatus;
-                if (st === "cancelled") continue;
-                if (activeBy[st]) activeBy[st].push(o);
-                else activeBy.pending.push(o);
-            }
-
-            syncColumn(board, "pending", activeBy.pending, "Khoảnh khắc yên lặng — chưa có gì mới.", false);
-            syncColumn(board, "preparing", activeBy.preparing, "Không có phiếu nào tại quầy.", false);
-            syncColumn(board, "finishing", activeBy.finishing, "Không có gì đang hoàn thiện.", false);
-            syncColumn(board, "ready", activeBy.ready, "Không có bàn giao nào đang chờ.", false);
-            syncColumn(board, "served", data.recentServed || [], "Không có đơn nào gần đây.", true);
+        if (data.permissions) {
+            boardPermissions = {
+                canMarkPaid: !!data.permissions.canMarkPaid,
+                canComplete: !!data.permissions.canComplete,
+                canPrepareItems: !!data.permissions.canPrepareItems,
+                canManageBills: !!data.permissions.canManageBills
+            };
         }
+
+        syncColumn(board, "submitted", data.submitted || [], COLUMN_META.submitted.empty, false);
+        syncColumn(board, "paid", data.paid || [], COLUMN_META.paid.empty, false);
+        syncColumn(board, "completed", data.completed || [], COLUMN_META.completed.empty, true);
 
         const all = collectAllIds(data);
         removeOrphanCards(board, all);
+
+        const nextColumns = new Map();
+        for (const col of BOARD_COLUMNS) {
+            (data[col] || []).forEach((o) => nextColumns.set(o.id, col));
+        }
+        previousColumns = nextColumns;
         previousIds = all;
+        updateColumnCounts(data);
+        applyMobileTabVisibility();
 
         window.setTimeout(() => {
-            const emptyCopy = STAFF_TWO_COLUMN
-                ? {
-                      pending: "Khoảnh khắc yên lặng — chưa có phiếu đang mở.",
-                      served: "Không có đơn nào gần đây."
-                  }
-                : {
-                      pending: "Khoảnh khắc yên lặng — chưa có gì mới.",
-                      preparing: "Không có phiếu nào tại quầy.",
-                      finishing: "Không có gì đang hoàn thiện.",
-                      ready: "Không có bàn giao nào đang chờ.",
-                      served: "Không có đơn nào gần đây."
-                  };
-            const cols = STAFF_TWO_COLUMN ? ["pending", "served"] : ["pending", "preparing", "finishing", "ready", "served"];
-            for (const st of cols) {
+            for (const st of BOARD_COLUMNS) {
                 const b = colBody(st);
-                if (b && !b.querySelector("article.staff-order-card")) {
-                    ensureEmpty(b, emptyCopy[st]);
-                }
+                if (b && !b.querySelector("article.staff-order-card")) ensureEmpty(b, COLUMN_META[st].empty);
             }
         }, 420);
     }
@@ -413,39 +642,33 @@
         const board = el("[data-staff-board]");
         if (!board) return;
         board.querySelectorAll("article.staff-order-card").forEach((card) => {
+            if (card.dataset.boardColumn !== "submitted") return;
             const iso = card.getAttribute("data-created-at");
-            const rel = card.querySelector('[data-field="elapsed"]');
-            if (rel && iso) rel.textContent = fmtRel(iso);
-            const stepIso = card.getAttribute("data-status-changed-at");
-            const stEl = card.querySelector('[data-field="step-elapsed"]');
-            if (stEl && stepIso) stEl.textContent = fmtRel(stepIso);
+            const wait = card.querySelector('[data-field="elapsed-wait"]');
+            if (wait && iso) wait.textContent = fmtWaitVi(iso);
         });
     }
 
     function setHubUi(state) {
-        const dot = el(".staff-pulse-dot");
+        const dot = document.querySelectorAll(".staff-sync-dot");
         const label = el("#staff-last-sync");
-        if (dot) {
-            dot.classList.remove("staff-sync-dot--live", "staff-sync-dot--soft", "staff-sync-dot--reconnect");
-            if (state === "connected") dot.classList.add("staff-sync-dot--live");
-            else if (state === "reconnecting") dot.classList.add("staff-sync-dot--reconnect");
-            else dot.classList.add("staff-sync-dot--soft");
-        }
-        if (label) {
-            if (state === "connected") label.textContent = "Trực tiếp · đồng bộ sàn";
-            else if (state === "reconnecting") label.textContent = "Đang kết nối lại…";
-            else if (state === "connecting") label.textContent = "Đang kết nối…";
-            else label.textContent = "Chế độ yên lặng · làm mới nếu cần";
-        }
-        try {
-            const d = window.AnnapGuestLanDebug;
-            if (d && typeof d.setHub === "function") {
-                const map = { connected: "Connected", reconnecting: "Reconnecting", connecting: "Connecting", offline: "Offline" };
-                d.setHub(map[state] || state);
-            }
-        } catch {
-            /* ignore */
-        }
+        const mobileLabel = el("#staff-mobile-sync-label");
+        dot.forEach((d) => {
+            d.classList.remove("staff-sync-dot--live", "staff-sync-dot--soft", "staff-sync-dot--reconnect");
+            if (state === "connected") d.classList.add("staff-sync-dot--live");
+            else if (state === "reconnecting") d.classList.add("staff-sync-dot--reconnect");
+            else d.classList.add("staff-sync-dot--soft");
+        });
+        const text =
+            state === "connected"
+                ? "Trực tiếp"
+                : state === "reconnecting"
+                  ? "Đang kết nối lại…"
+                  : state === "connecting"
+                    ? "Đang kết nối…"
+                    : "Yên tĩnh · làm mới nếu cần";
+        if (label) label.textContent = text;
+        if (mobileLabel) mobileLabel.textContent = text;
     }
 
     async function loadBoard(opts) {
@@ -453,20 +676,33 @@
         if (loadInFlight) return;
         loadInFlight = true;
         if (userRefresh) showError("");
+        const migrationMsg =
+            "Cơ sở dữ liệu chưa được cập nhật cho quy trình thanh toán. Vui lòng chạy migration rồi thử lại.";
         try {
-            const res = await fetch(typeof window.__annapApiUrl === "function" ? window.__annapApiUrl("/api/staff/orders") : "/api/staff/orders", { headers: { Accept: "application/json" }, credentials: "same-origin" });
-            if (!res.ok) throw new Error("Không thể tải đơn hàng.");
-            const data = await res.json();
+            const res = await fetch(apiUrl("/api/staff/orders"), {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin"
+            });
+            const data = await res.json().catch(() => null);
+            if (!res.ok) {
+                if (data?.error === "database_migration_required") throw new Error(migrationMsg);
+                throw new Error("Không thể tải đơn hàng.");
+            }
             mergeBoard(data);
+            showError("");
+            const stamp = el("#staff-last-updated");
+            const mobileStamp = el("#staff-mobile-sync-time");
+            const nowText = fmtClock(new Date().toISOString());
+            if (stamp) stamp.textContent = nowText;
+            if (mobileStamp) mobileStamp.textContent = nowText;
+        } catch (e) {
+            closeBillSheet();
+            showError(e.message || "Lỗi mạng.");
+        } finally {
             if (firstPaint) {
                 firstPaint = false;
                 setSkeletons(false);
             }
-            const stamp = el("#staff-last-updated");
-            if (stamp) stamp.textContent = fmtClock(new Date().toISOString());
-        } catch (e) {
-            showError(e.message || "Lỗi mạng.");
-        } finally {
             loadInFlight = false;
         }
     }
@@ -479,96 +715,190 @@
         }, 280);
     }
 
-    async function patchStatus(orderId, nextStaffStatus, cardEl) {
-        if (!orderId || !nextStaffStatus) return;
-        const prevStatus = cardEl ? cardEl.getAttribute("data-staff-status") : null;
-        const prevParent = cardEl ? cardEl.parentNode : null;
-        if (cardEl) {
-            cardEl.classList.add("staff-order-card--syncing");
-            const dropKey =
-                STAFF_TWO_COLUMN && nextStaffStatus === "served"
-                    ? "served"
-                    : STAFF_TWO_COLUMN && isActiveStaffStatus(nextStaffStatus)
-                      ? "pending"
-                      : nextStaffStatus;
-            const body = colBody(dropKey);
-            if (body && cardEl.parentNode !== body) {
-                clearEmptyPlaceholders(body);
-                body.appendChild(cardEl);
-                cardEl.classList.add("staff-order-card--shift");
-                window.setTimeout(() => cardEl.classList.remove("staff-order-card--shift"), 450);
-            }
-            cardEl.setAttribute("data-staff-status", nextStaffStatus);
-        }
+    function renderBillHtml(bill) {
+        if (!bill) return "";
+        const items = bill.items || bill.Items || [];
+        const lines = items
+            .map((it) => {
+                const qty = it.quantity ?? 1;
+                const unit = it.unitPrice ?? it.UnitPrice;
+                const lineTotal = it.lineTotal ?? (unit != null ? unit * qty : null);
+                const itemNoteRaw = it.customerNote || it.CustomerNote || "";
+                const itemNoteLine =
+                    itemNoteRaw && String(itemNoteRaw).trim()
+                        ? `<p class="staff-bill-receipt__line-note">Ghi chú: ${escapeHtml(String(itemNoteRaw).trim())}</p>`
+                        : "";
+                return `<li class="staff-bill-receipt__line">
+                    <div class="staff-bill-receipt__line-main">
+                        <span class="staff-bill-receipt__line-name">${escapeHtml(it.name || it.Name)}</span>
+                        <span class="staff-bill-receipt__line-qty">×${qty}</span>
+                    </div>
+                    ${itemNoteLine}
+                    <div class="staff-bill-receipt__line-meta">
+                        ${unit != null ? `<span>${moneyFmt(unit)}</span>` : ""}
+                        ${lineTotal != null ? `<span class="staff-bill-receipt__line-total">${moneyFmt(lineTotal)}</span>` : ""}
+                    </div>
+                </li>`;
+            })
+            .join("");
+        const paidAt = bill.paidAtUtc ? fmtClock(bill.paidAtUtc) : "—";
+        const statusLabel = bill.paidAtUtc ? "Đã thanh toán" : bill.paymentStatusLabelVi || "Chờ thanh toán";
+        const methodLabel =
+            bill.paymentMethodLabelVi ||
+            bill.PaymentMethodLabelVi ||
+            (bill.paymentMethod === "BankTransfer"
+                ? "Chuyển khoản"
+                : bill.paymentMethod === "Card"
+                  ? "Thẻ"
+                  : bill.paymentMethod === "Cash"
+                    ? "Tiền mặt"
+                    : bill.paymentMethod === "CashOrCardAtCounter"
+                      ? "Tiền mặt/thẻ"
+                      : bill.paymentMethod || "—");
+        const confirmedByRaw = bill.paymentConfirmedBy || bill.PaymentConfirmedBy || "";
+        const confirmedByLabel =
+            confirmedByRaw && String(confirmedByRaw).startsWith("bank-webhook:")
+                ? "Thanh toán tự động"
+                : confirmedByRaw || "—";
+        const confirmedBy =
+            bill.paidAtUtc
+                ? `<div><dt>Xác nhận bởi</dt><dd>${escapeHtml(confirmedByLabel)}</dd></div>`
+                : "";
+        const completedByRaw = bill.completedBy || bill.CompletedBy || "";
+        const completedAt = bill.completedAtUtc ? fmtClock(bill.completedAtUtc) : "";
+        const completedBy =
+            completedByRaw
+                ? `<div><dt>Hoàn thành bởi</dt><dd>${escapeHtml(completedByRaw)}${completedAt ? ` · ${completedAt}` : ""}</dd></div>`
+                : "";
+        const methodLine =
+            bill.paidAtUtc
+                ? `<div><dt>Phương thức</dt><dd>${escapeHtml(methodLabel)}</dd></div>`
+                : "";
+        return `<div class="staff-bill-receipt">
+            <div class="staff-bill-receipt__hero">
+                <p class="staff-bill-receipt__bill-label">Mã bill</p>
+                <p class="staff-bill-receipt__bill-no">#${escapeHtml(bill.billNumber || "—")}</p>
+            </div>
+            <dl class="staff-bill-receipt__meta">
+                <div><dt>Bàn</dt><dd>${escapeHtml(bill.tableCode || "—")}</dd></div>
+                <div><dt>Gửi lúc</dt><dd>${fmtClock(bill.submittedAtUtc)}</dd></div>
+                <div><dt>Thanh toán lúc</dt><dd>${paidAt}</dd></div>
+                <div><dt>Trạng thái</dt><dd>${escapeHtml(statusLabel)}</dd></div>
+                ${methodLine}
+                ${confirmedBy}
+                ${completedBy}
+            </dl>
+            <ul class="staff-bill-receipt__items">${lines || '<li class="staff-bill-receipt__line staff-bill-receipt__line--empty">Không có món</li>'}</ul>
+            <p class="staff-bill-receipt__grand-total">
+                <span>Tổng cộng</span>
+                <strong>${moneyFmt(bill.totalAmount)}</strong>
+            </p>
+            <p class="staff-bill-receipt__thanks">Cảm ơn bạn đã ghé Annap.</p>
+        </div>`;
+    }
+
+    function openBillSheet(html) {
+        if (!html || !String(html).trim()) return;
+        const sheet = el("#staff-bill-sheet");
+        const body = el("#staff-bill-body");
+        if (!sheet || !body) return;
+        body.innerHTML = html;
+        sheet.classList.add("is-open");
+        sheet.classList.remove("hidden");
+        sheet.hidden = false;
+        document.body.classList.add("staff-bill-open");
+    }
+
+    function closeBillSheet() {
+        const sheet = el("#staff-bill-sheet");
+        const body = el("#staff-bill-body");
+        if (!sheet) return;
+        sheet.classList.remove("is-open");
+        sheet.classList.add("hidden");
+        sheet.hidden = true;
+        document.body.classList.remove("staff-bill-open");
+        if (body) body.innerHTML = "";
+    }
+
+    async function markPaid(orderId, cardEl) {
+        if (!orderId) return;
+        if (cardEl) cardEl.classList.add("staff-order-card--syncing");
         try {
-            const res = await fetch(
-                (typeof window.__annapApiUrl === "function"
-                    ? window.__annapApiUrl("/api/staff/orders/" + orderId + "/status")
-                    : "/api/staff/orders/" + orderId + "/status"),
-                {
-                method: "PATCH",
+            const res = await fetch(apiUrl(`/api/staff/orders/${orderId}/mark-paid`), {
+                method: "POST",
                 headers: { "Content-Type": "application/json", Accept: "application/json" },
                 credentials: "same-origin",
-                body: JSON.stringify({ staffStatus: nextStaffStatus })
+                body: JSON.stringify({})
             });
             const j = await res.json().catch(() => null);
-            if (!res.ok) {
-                const msg = j?.error || "Update failed.";
-                if (res.status === 409) {
-                    showError(msg);
-                    if (cardEl) {
-                        cardEl.classList.remove("staff-order-card--syncing");
-                        if (prevParent && prevStatus) {
-                            cardEl.setAttribute("data-staff-status", prevStatus);
-                            prevParent.appendChild(cardEl);
-                        }
-                    }
-                    await loadBoard({});
-                    return;
-                }
-                throw new Error(msg);
-            }
-            if (cardEl) cardEl.classList.remove("staff-order-card--syncing");
+            if (!res.ok) throw new Error(j?.error || "Không xác nhận được thanh toán.");
+            if (j?.bill) openBillSheet(renderBillHtml(j.bill));
             await loadBoard({});
         } catch (e) {
-            showError(e.message || "Update failed.");
-            if (cardEl) {
-                cardEl.classList.remove("staff-order-card--syncing");
-                if (prevParent && prevStatus) {
-                    cardEl.setAttribute("data-staff-status", prevStatus);
-                    prevParent.appendChild(cardEl);
-                }
-            }
+            showError(e.message || "Lỗi thanh toán.");
             await loadBoard({});
+        } finally {
+            if (cardEl) cardEl.classList.remove("staff-order-card--syncing");
         }
     }
 
-    async function patchOwnership(orderId, body) {
-        if (!orderId) return;
+    async function setItemPrepared(orderId, itemId, body, cardEl) {
+        if (!orderId || !itemId) return;
+        if (cardEl) cardEl.classList.add("staff-order-card--syncing");
         try {
-            const res = await fetch(
-                (typeof window.__annapApiUrl === "function"
-                    ? window.__annapApiUrl("/api/staff/orders/" + orderId + "/ownership")
-                    : "/api/staff/orders/" + orderId + "/ownership"),
-                {
-                method: "PATCH",
+            const res = await fetch(apiUrl(`/api/staff/orders/${orderId}/items/${itemId}/prepared`), {
+                method: "POST",
                 headers: { "Content-Type": "application/json", Accept: "application/json" },
                 credentials: "same-origin",
                 body: JSON.stringify(body)
             });
             const j = await res.json().catch(() => null);
-            if (!res.ok) {
-                const msg = j?.error || "Could not update who holds this ticket.";
-                if (res.status === 409) {
-                    showError(msg);
-                    await loadBoard({});
-                    return;
-                }
-                throw new Error(msg);
-            }
+            if (!res.ok) throw new Error(j?.message || j?.error || "Không cập nhật được tiến độ pha chế.");
             await loadBoard({});
         } catch (e) {
-            showError(e.message || "Update failed.");
+            showError(e.message || "Lỗi pha chế.");
+            await loadBoard({});
+        } finally {
+            if (cardEl) cardEl.classList.remove("staff-order-card--syncing");
+        }
+    }
+
+    async function completeOrder(orderId, cardEl) {
+        if (!orderId) return;
+        if (cardEl) cardEl.classList.add("staff-order-card--syncing");
+        try {
+            const res = await fetch(apiUrl(`/api/staff/orders/${orderId}/complete`), {
+                method: "POST",
+                headers: { Accept: "application/json" },
+                credentials: "same-origin"
+            });
+            const j = await res.json().catch(() => null);
+            if (!res.ok) throw new Error(j?.messageVi || j?.message || j?.error || "Không hoàn thành được đơn.");
+            await loadBoard({});
+        } catch (e) {
+            showError(e.message || "Lỗi hoàn thành.");
+            await loadBoard({});
+        } finally {
+            if (cardEl) cardEl.classList.remove("staff-order-card--syncing");
+        }
+    }
+
+    async function viewBill(orderId) {
+        try {
+            const res = await fetch(apiUrl(`/api/staff/orders/${orderId}/bill`), {
+                headers: { Accept: "application/json" },
+                credentials: "same-origin"
+            });
+            const j = await res.json().catch(() => null);
+            if (!res.ok) throw new Error(j?.error || "Không tải được bill.");
+            const bill = j && j.pendingPayment && j.summary ? j.summary : j;
+            if (!bill || (!bill.billNumber && !bill.items && !bill.Items && !bill.totalAmount)) {
+                throw new Error("Không tải được bill.");
+            }
+            openBillSheet(renderBillHtml(bill));
+        } catch (e) {
+            closeBillSheet();
+            showError(e.message || "Không tải được bill.");
         }
     }
 
@@ -596,10 +926,7 @@
                 .withUrl(typeof window.__annapHubUrl === "function" ? window.__annapHubUrl() : "/hubs/orders")
                 .withAutomaticReconnect([0, 3000, 8000, 20000, 45000, 60000])
                 .build();
-            hubConnection.on("boardRefresh", (payload) => {
-                const at = payload && typeof payload.atUtc === "number" ? payload.atUtc : null;
-                if (at != null && lastBoardPulseAt === at) return;
-                lastBoardPulseAt = at;
+            hubConnection.on("boardRefresh", () => {
                 showError("");
                 scheduleHubRefresh();
             });
@@ -615,22 +942,9 @@
                 await loadBoard({});
             });
             hubConnection.onclose(() => setHubUi("offline"));
-            await new Promise((resolve, reject) => {
-                const t = setTimeout(() => reject(new Error("SignalR start timeout")), 22000);
-                hubConnection
-                    .start()
-                    .then(() => {
-                        clearTimeout(t);
-                        resolve();
-                    })
-                    .catch((e) => {
-                        clearTimeout(t);
-                        reject(e);
-                    });
-            });
+            await hubConnection.start();
             await hubConnection.invoke("JoinStaffBoard");
             setHubUi("connected");
-            console.info("[annap] staff SignalR connected");
         } catch (e) {
             console.warn("[annap] staff SignalR failed", e);
             hubConnection = null;
@@ -640,6 +954,8 @@
 
     function wireUi() {
         el("#staff-refresh-btn")?.addEventListener("click", () => loadBoard({ user: true }));
+        el("#staff-mobile-refresh-btn")?.addEventListener("click", () => loadBoard({ user: true }));
+        wireMobileTabs();
         el("#staff-backup-poll")?.addEventListener("change", () => {
             if (el("#staff-backup-poll")?.checked) startBackupPoll();
             else stopBackupPoll();
@@ -647,55 +963,37 @@
         document.addEventListener("visibilitychange", () => {
             if (document.visibilityState === "visible") loadBoard({});
         });
+        document.querySelectorAll("[data-staff-bill-close]").forEach((btn) => {
+            btn.addEventListener("click", closeBillSheet);
+        });
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") closeBillSheet();
+        });
 
         document.querySelector("[data-staff-board]")?.addEventListener("click", (e) => {
             const actEl = e.target.closest("[data-staff-act]");
-            if (actEl) {
-                const act = actEl.getAttribute("data-staff-act");
-                const oid = actEl.getAttribute("data-order-id");
-                if (act === "claim-brew" && oid) {
-                    void patchOwnership(oid, { claimBrewing: true });
-                    return;
-                }
-                if (act === "release-brew" && oid) {
-                    void patchOwnership(oid, { releaseBrewing: true });
-                    return;
-                }
-                if (act === "claim-serve" && oid) {
-                    void patchOwnership(oid, { claimServing: true });
-                    return;
-                }
-                if (act === "release-serve" && oid) {
-                    void patchOwnership(oid, { releaseServing: true });
-                    return;
-                }
-            }
-            const adv = e.target.closest('[data-staff-act="advance"]');
-            if (adv) {
-                const id = adv.getAttribute("data-order-id");
-                const board = el("[data-staff-board]");
-                const card = board?.querySelector(`article.staff-order-card[data-order-id="${id}"]`);
-                const cur = card?.getAttribute("data-staff-status");
-                const n = cur ? nextStaff(cur) : null;
-                if (id && n) void patchStatus(id, n, card || null);
-                return;
-            }
-            const back = e.target.closest('[data-staff-act="back"]');
-            if (back) {
-                const id = back.getAttribute("data-order-id");
-                const board = el("[data-staff-board]");
-                const card = board?.querySelector(`article.staff-order-card[data-order-id="${id}"]`);
-                const cur = card?.getAttribute("data-staff-status");
-                const p = cur ? prevStaff(cur) : null;
-                if (id && p) void patchStatus(id, p, card || null);
-            }
+            if (!actEl) return;
+            const act = actEl.getAttribute("data-staff-act");
+            const oid = actEl.getAttribute("data-order-id");
+            const itemId = actEl.getAttribute("data-item-id");
+            const card = oid
+                ? document.querySelector(`article.staff-order-card[data-order-id="${oid}"]`)
+                : null;
+            if (act === "mark-paid" && oid) void markPaid(oid, card);
+            else if (act === "complete" && oid) void completeOrder(oid, card);
+            else if (act === "view-bill" && oid) void viewBill(oid);
+            else if (act === "prep-done" && oid && itemId) void setItemPrepared(oid, itemId, { isPrepared: true }, card);
+            else if (act === "prep-undo" && oid && itemId) void setItemPrepared(oid, itemId, { isPrepared: false }, card);
+            else if (act === "expand-items" && oid) expandOrderItems(oid);
         });
     }
 
     function boot() {
         if (!document.querySelector("[data-staff-board]")) return;
+        closeBillSheet();
         setSkeletons(true);
         wireUi();
+        initMobileTabs();
         void loadBoard({});
         void startHub();
         startBackupPoll();

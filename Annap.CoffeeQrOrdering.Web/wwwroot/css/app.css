@@ -170,31 +170,30 @@ html {
 }
 
 @layer utilities {
-  /* Editorial / display — whisper register */
   .annap-type-display {
-    font-family: "DM Serif Display", ui-serif, Georgia, "Times New Roman", serif;
-    font-weight: 200;
-    letter-spacing: 0.08em;
-    line-height: 1.1;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-style: normal;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
     color: var(--annap-text-primary);
   }
 
-  /* Narrative / body — conversation register */
   .annap-type-narrative {
-    font-family: "Crimson Pro", ui-serif, Georgia, "Times New Roman", serif;
+    font-family: var(--font-ui);
     font-weight: 400;
-    letter-spacing: 0.01em;
+    font-style: normal;
+    letter-spacing: 0;
     line-height: 1.55;
     color: var(--annap-text-primary);
   }
 
-  /* Functional / micro — signal register */
   .annap-type-functional {
-    font-family: "Outfit", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    font-weight: 500;
-    font-size: 0.625rem;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 0.75rem;
     line-height: 1.35;
-    letter-spacing: 0.14em;
+    letter-spacing: var(--tracking-functional);
     text-transform: uppercase;
     color: var(--annap-text-tertiary);
   }

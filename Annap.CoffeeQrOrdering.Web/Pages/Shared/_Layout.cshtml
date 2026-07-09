@@ -19,27 +19,21 @@
     // The home page (Index) must NEVER get annap-seated-guest, even when ?vt= is present in the URL
     // or after a non-bfcache back-navigation from Menu.
     var isSeatedContext = ViewData["IsSeatedPage"] is true;
+    var slimSeatedArrival = ViewData["SlimSeatedChrome"] is true;
+    var compactGuestHeader = ViewData["CompactGuestHeader"] is true;
+    var seatedSlimChrome = isSeatedContext || slimSeatedArrival;
+    var isSeatedArrival = slimSeatedArrival && !isSeatedContext;
 }
 <!DOCTYPE html>
-<html lang="en" class="annap-correspond-ui@(guestNoMotion ? " annap-guest-no-motion" : "")@(isSeatedContext ? " annap-seated-guest" : "")">
+<html lang="en" class="annap-correspond-ui@(guestNoMotion ? " annap-guest-no-motion" : "")@(isSeatedContext ? " annap-seated-guest" : "")@(isSeatedArrival ? " annap-seated-arrival" : "")@(compactGuestHeader ? " annap-compact-guest-header" : "")">
 <head>
     <meta charset="utf-8" />
-    @if (isSeatedContext)
-    {
-        @* Seated QR menu: disable pinch-zoom to prevent WebView layout resets and tray jumps *@
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
-    }
-    else
-    {
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    }
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#faf7f2" />
     <meta name="color-scheme" content="dark light" />
     <title>@ViewData["Title"] - Annap Coffee Atelier</title>
     <partial name="Shared/_AnnapRuntimeHead" model="useDevUi" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Serif+Text&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=EB+Garamond:ital,wght@0,400;1,400&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;1,300;1,400&display=swap" rel="stylesheet" />
+    <partial name="Shared/_AnnapFonts" model="@("guest")" />
     @if (devErrorCapture)
     {
         <script src="~/js/guest-dev-global-errors.js" asp-append-version="true"></script>
@@ -54,10 +48,17 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/correspondence.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/menu-browse.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/menu-browse-physical.css" asp-append-version="true" />
+    @if (!seatedSlimChrome)
+    {
+        <link rel="stylesheet" href="~/css/menu-browse-physical.css" asp-append-version="true" />
+    }
     <link rel="stylesheet" href="~/css/drink-detail.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/atmosphere-modes.css" asp-append-version="true" />
+    @if (!seatedSlimChrome)
+    {
+        <link rel="stylesheet" href="~/css/atmosphere-modes.css" asp-append-version="true" />
+    }
     <link rel="stylesheet" href="~/Annap.CoffeeQrOrdering.Web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/typography-brand.css" asp-append-version="true" />
     <script src="~/js/annap-viewport.js" asp-append-version="true"></script>
     @if (!isSeatedContext)
     {
@@ -96,19 +97,24 @@
 </head>
 <body class="guest-app min-h-dvh overflow-x-hidden antialiased font-normal text-[rgb(var(--fg))]">
     <div id="annap-root" class="annap-root">
+        @if (!seatedSlimChrome)
+        {
         <div class="annap-ambient-stack" aria-hidden="true">
             <div class="annap-ambient-bg"></div>
             <div class="annap-ambient-thermal" aria-hidden="true"></div>
             <div class="annap-ambient-grain"></div>
         </div>
+        }
         <div class="annap-root-surface">
-    <header class="guest-header guest-masthead sticky top-0 z-40 pt-[max(0.35rem,env(safe-area-inset-top))]">
+    @if (!seatedSlimChrome)
+    {
+    <header class="guest-header guest-masthead@(compactGuestHeader ? " guest-masthead--compact" : "") sticky top-0 z-40 pt-[max(0.35rem,env(safe-area-inset-top))]">
         <div class="mx-auto max-w-5xl px-4 sm:px-4">
             <div class="guest-masthead__sheet surface-glass overflow-hidden rounded-sm shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_10px_32px_-12px_rgba(26,18,9,0.08)] sm:rounded-sm">
                 <div class="postal-airmail-edge postal-airmail-edge--top" aria-hidden="true"></div>
                 <div class="px-4 py-[max(0.75rem,2.2vh)] sm:px-5 sm:py-[max(0.85rem,2.4vh)]">
                 <div class="flex flex-col gap-[max(0.75rem,2vh)] lg:flex-row lg:items-center lg:justify-between lg:gap-4">
-                    <a class="guest-hit guest-masthead__mark inline-flex min-h-11 max-w-full items-center font-display text-[0.72rem] font-medium italic tracking-[0.14em] text-[rgb(var(--muted))] transition active:opacity-80 sm:text-xs sm:tracking-[0.2em]"
+                    <a class="guest-hit guest-masthead__mark inline-flex min-h-11 max-w-full items-center font-display text-[0.72rem] font-medium tracking-[0.06em] text-[rgb(var(--muted))] transition active:opacity-80 sm:text-xs"
                        asp-page="/Index"
                        data-guest-vt-link="1">
                         Annap Coffee Atelier
@@ -133,12 +139,13 @@
             </div>
         </div>
     </header>
+    }
 
-    <main role="main" class="guest-main mx-auto max-w-5xl px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] lg:px-4">
+    <main role="main" class="guest-main mx-auto max-w-5xl px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] lg:px-4@(seatedSlimChrome ? " guest-main--seated pt-[max(0.5rem,env(safe-area-inset-top))]" : "")">
             @RenderBody()
     </main>
 
-    @if (guestBoot.ShowBootChecklist)
+    @if (guestBoot.ShowBootChecklist && !seatedSlimChrome)
     {
         <div id="annap-boot-overlay"
              class="fixed top-[max(4.25rem,env(safe-area-inset-top))] right-2 z-[250] max-w-[min(20rem,calc(100vw-1rem))] pointer-events-none max-md:right-2 max-md:left-auto sm:top-[max(5rem,env(safe-area-inset-top))]"
@@ -168,11 +175,14 @@
         <div id="annap-boot-overlay" class="hidden" aria-hidden="true"></div>
     }
 
+    @if (!seatedSlimChrome)
+    {
     <footer class="pb-[max(2rem,env(safe-area-inset-bottom))] pt-4">
         <div class="mx-auto max-w-5xl px-4 text-[10px] tracking-[0.16em] text-[rgb(var(--muted-2))] lg:text-xs lg:tracking-[0.18em]">
             &copy; @DateTimeOffset.UtcNow.Year - Annap Coffee Atelier
         </div>
     </footer>
+    }
         </div>
 
     <div id="guestToast" class="fixed left-4 right-4 z-50 hidden [bottom:max(1rem,calc(env(safe-area-inset-bottom)+var(--keyboard-inset,0px)))]">
@@ -191,7 +201,10 @@
         <script src="~/js/guest-order-queue.js" asp-append-version="true"></script>
     }
     <script src="~/js/site.js" asp-append-version="true" defer></script>
-    <script src="~/js/add-to-order-animation-provider.js" asp-append-version="true" defer></script>
+    @if (!seatedSlimChrome)
+    {
+        <script src="~/js/add-to-order-animation-provider.js" asp-append-version="true" defer></script>
+    }
     <script src="~/js/correspondence.js" asp-append-version="true" defer></script>
     @if (skipI18n)
     {
@@ -211,10 +224,14 @@
     {
         <script src="~/js/guest-i18n.js" asp-append-version="true"></script>
     }
-    @if (!slimGuestBoot)
+    @if (!slimGuestBoot && !seatedSlimChrome)
     {
         <script src="~/js/guest-interaction-contract.js" asp-append-version="true"></script>
         <script src="~/js/guest-feedback.js" asp-append-version="true"></script>
+    }
+    else if (seatedSlimChrome)
+    {
+        <script src="~/js/guest-interaction-contract.js" asp-append-version="true"></script>
     }
 
     @if (useDevUi && DiagOptions.Value.ShowLanDebugOverlay)

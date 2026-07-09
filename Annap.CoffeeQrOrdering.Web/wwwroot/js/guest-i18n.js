@@ -3,6 +3,8 @@
  */
 (function () {
     const STORAGE_KEY = "annap_guest_lang";
+    /** Bump when guest-en.json / guest-vi.json copy changes so phones refetch bundles. */
+    const I18N_BUNDLE_REV = "2026070712";
     const bundles = { en: null, vi: null };
     let current = "en";
 
@@ -25,13 +27,25 @@
         } catch (_e2) {}
     }
 
-    async function fetchBundleJson(url) {
+    async function fetchBundleJson(lang) {
         const ac = new AbortController();
         const t = setTimeout(function () {
             ac.abort();
         }, I18N_FETCH_MS);
         try {
-            return await fetch(url, { cache: "force-cache", signal: ac.signal });
+            var rev = I18N_BUNDLE_REV;
+            try {
+                var tag = document.querySelector('script[src*="guest-i18n.js"]');
+                if (tag) {
+                    var src = tag.getAttribute("src") || "";
+                    var m = src.match(/[?&]v=([^&]+)/);
+                    if (m) rev = rev + "-" + m[1];
+                }
+            } catch (_rev) {
+                /* ignore */
+            }
+            var url = "/i18n/guest-" + lang + ".json?v=" + encodeURIComponent(rev);
+            return await fetch(url, { cache: "no-store", signal: ac.signal });
         } finally {
             clearTimeout(t);
         }
@@ -39,7 +53,7 @@
 
     const loadPromise = (async () => {
         const t0 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
-        const [rEn, rVi] = await Promise.all([fetchBundleJson("/i18n/guest-en.json"), fetchBundleJson("/i18n/guest-vi.json")]);
+        const [rEn, rVi] = await Promise.all([fetchBundleJson("en"), fetchBundleJson("vi")]);
         if (!rEn.ok || !rVi.ok) throw new Error("i18n load failed");
         bundles.en = await rEn.json();
         bundles.vi = await rVi.json();

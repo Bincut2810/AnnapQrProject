@@ -24,4 +24,30 @@ public static class HomepageExperienceBootstrapper
 
         await db.SaveChangesAsync(cancellationToken);
     }
+
+    /// <summary>
+    /// Development-only: repair CMS flags when ritual experience was disabled in local DB.
+    /// Production CMS remains admin-controlled.
+    /// </summary>
+    public static async Task EnsureDevelopmentRitualFlagsAsync(
+        IApplicationDbContext db,
+        bool isDevelopment,
+        CancellationToken cancellationToken = default)
+    {
+        if (!isDevelopment)
+            return;
+
+        var id = HomepageExperienceSettingsConfiguration.SingletonId;
+        var home = await db.HomepageExperienceSettings.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (home is null)
+            return;
+
+        if (home.IsSoloEnabled && home.IsSommelierEnabled)
+            return;
+
+        home.IsSoloEnabled = true;
+        home.IsSommelierEnabled = true;
+        home.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await db.SaveChangesAsync(cancellationToken);
+    }
 }

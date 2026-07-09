@@ -2,6 +2,7 @@ using Annap.CoffeeQrOrdering.Domain.Entities;
 using Annap.CoffeeQrOrdering.Infrastructure.Persistence;
 using Annap.CoffeeQrOrdering.Web.Pages.Admin.Experience;
 using Annap.CoffeeQrOrdering.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Annap.CoffeeQrOrdering.Web.Pages.Admin;
 
 /// <summary>Admin home metrics — EF queries run sequentially on the scoped DbContext (never parallel on one context).</summary>
+[Authorize(Policy = "StaffAdmin")]
 public sealed class IndexModel(
     AppDbContext db,
     IWebHostEnvironment env,

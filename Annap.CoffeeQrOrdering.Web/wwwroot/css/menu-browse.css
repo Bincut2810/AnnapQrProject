@@ -1,4 +1,4 @@
-﻿/*
+/*
  * menu-browse.css — editorial grid · category bar · print material
  * Loaded after site.css + correspondence.css; no Tailwind build step needed.
  */
@@ -87,7 +87,7 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 }
 
 .menu-chapter__index {
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.52rem;
     font-weight: 500;
     letter-spacing: 0.36em;
@@ -211,9 +211,9 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 }
 
 .menu-chapter-support .menu-editorial-card__name {
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(0.9rem, 2.35vw, 1.02rem);
-    font-style: italic;
+    font-style: normal;
     font-weight: 400;
     color: rgba(26, 20, 16, 0.62);
     line-height: 1.35;
@@ -286,7 +286,7 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 
 .menu-editorial-card__price {
     margin: 0;
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 500;
     font-style: normal;
@@ -398,17 +398,17 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 }
 
 .menu-editorial-card__no-poster-glyph {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 2.75rem;
     font-weight: 400;
-    font-style: italic;
+    font-style: normal;
     color: rgba(26, 20, 16, 0.72);
     line-height: 1;
 }
 
 .menu-editorial-card__no-poster-lbl {
     font-size: 0.52rem;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: rgba(26, 20, 16, 0.38);
 }
@@ -421,7 +421,7 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
     z-index: 2;
     font-size: 0.46rem;
     font-weight: 500;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: rgba(26, 20, 16, 0.62);
     background: rgba(241, 232, 216, 0.82);
@@ -439,7 +439,7 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 }
 
 .menu-editorial-card__name {
-    font-family: "Playfair Display", "DM Serif Display", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(0.9rem, 2.3vw, 1.02rem);
     font-weight: 400;
     line-height: 1.35;
@@ -613,10 +613,10 @@ html.annap-correspond-ui .menu-editorial-chip.is-active {
    Italic serif, muted â€” reads as an editorial gesture not a UI label.
    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .menu-cat-heading {
-    font-family: "DM Serif Display", ui-serif, Georgia, "Times New Roman", serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.125rem, 3.2vw, 1.625rem);
     font-weight: 400;
-    font-style: italic;
+    font-style: normal;
     line-height: 1.15;
     letter-spacing: 0.01em;
     color: rgb(var(--muted, 120 100 80));
@@ -624,7 +624,7 @@ html.annap-correspond-ui .menu-editorial-chip.is-active {
 }
 
 html.annap-correspond-ui .menu-cat-heading {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.5rem, 5vw, 2rem);
     color: var(--ink-deep, #1a1209);
 }
@@ -753,7 +753,7 @@ html.annap-correspond-ui .menu-cat-heading {
 .menu-browse--catalogue .menu-chapter-head .menu-cat-heading {
     grid-column: 2;
     margin: 0;
-    font-family: "Playfair Display", "DM Serif Display", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.35rem, 4.2vw, 1.75rem);
     font-style: normal;
     font-weight: 400;
@@ -767,9 +767,9 @@ html.annap-correspond-ui .menu-cat-heading {
     grid-column: 2;
     margin: 0;
     max-width: 22rem;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(0.8rem, 2.15vw, 0.92rem);
-    font-style: italic;
+    font-style: normal;
     font-weight: 400;
     line-height: 1.42;
     color: rgba(26, 20, 16, 0.58);
@@ -842,9 +842,9 @@ html.annap-correspond-ui .menu-cat-heading {
 
 .menu-browse--catalogue .menu-editorial-card__taste {
     margin: 0;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(0.78rem, 2.1vw, 0.88rem);
-    font-style: italic;
+    font-style: normal;
     line-height: 1.35;
     color: rgba(26, 20, 16, 0.58);
 }
@@ -854,7 +854,7 @@ html.annap-correspond-ui .menu-cat-heading {
     align-items: center;
     gap: 0.35rem;
     margin: 0.1rem 0 0;
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.68rem;
     font-weight: 500;
     letter-spacing: 0.14em;
@@ -909,7 +909,7 @@ html.annap-correspond-ui .menu-cat-heading {
 }
 
 .menu-browse--catalogue .menu-chapter-support .menu-editorial-card__name {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(0.92rem, 2.5vw, 1.04rem);
     font-style: normal;
     font-weight: 400;
@@ -936,7 +936,7 @@ html.annap-correspond-ui .menu-cat-heading {
     align-items: center;
     gap: 0.28rem;
     flex-shrink: 0;
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.62rem;
     font-weight: 500;
     letter-spacing: 0.12em;
@@ -994,7 +994,7 @@ html.annap-correspond-ui .menu-cat-heading {
 }
 
 html.annap-correspond-ui .menu-browse--catalogue .menu-chapter-head .menu-cat-heading {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-ui);
     color: var(--ink-deep, #1a1209);
 }
 
@@ -1004,7 +1004,7 @@ html.annap-correspond-ui .menu-browse--catalogue .menu-chapter__rest {
 }
 
 html.annap-correspond-ui .menu-browse--catalogue .menu-chapter-hero .menu-editorial-card__price {
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-style: normal;
     color: rgba(122, 32, 24, 0.9);
 }
@@ -1025,7 +1025,7 @@ html.annap-correspond-ui .menu-browse--catalogue .menu-chapter-hero .menu-editor
 }
 
 html.annap-correspond-ui .menu-browse--catalogue .menu-chapter-support .menu-editorial-card__price {
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-style: normal;
     color: rgba(26, 20, 16, 0.72);
 }
@@ -1034,6 +1034,48 @@ html.annap-correspond-ui .menu-browse--catalogue .menu-chapter-support .menu-edi
     .menu-browse--catalogue .menu-editorial-chip,
     .menu-browse--catalogue .menu-editorial-chip::after {
         transition: none;
+    }
+}
+
+/* ── Phase 1A: seated QR menu — mobile scanability ─────────────────────────── */
+html.annap-seated-guest .menu-browse--catalogue .menu-editorial-card {
+    min-height: 2.75rem;
+}
+
+html.annap-seated-guest .menu-browse--catalogue .menu-editorial-card__name {
+    font-size: clamp(1rem, 4.2vw, 1.125rem);
+    line-height: 1.35;
+}
+
+html.annap-seated-guest .menu-browse--catalogue .menu-editorial-card__price {
+    font-size: clamp(0.9375rem, 3.8vw, 1.0625rem);
+    font-weight: 600;
+}
+
+html.annap-seated-guest .menu-browse--catalogue .menu-editorial-chip {
+    min-height: 2.75rem;
+    padding-inline: 1rem;
+}
+
+html.annap-seated-guest .menu-browse--catalogue .menu-cat-section {
+    margin-bottom: clamp(2rem, 5vh, 2.75rem);
+}
+
+@media (max-width: 390px) {
+    html.annap-seated-guest .menu-browse--catalogue .menu-chapter-head {
+        margin-bottom: 1.25rem;
+    }
+
+    html.annap-seated-guest .menu-browse--catalogue h1 {
+        font-size: clamp(1.75rem, 8vw, 2.15rem);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html.annap-seated-guest .menu-browse--catalogue .menu-card-reveal,
+    html.annap-seated-guest .menu-browse--catalogue .menu-editorial-chip {
+        animation: none !important;
+        transition: none !important;
     }
 }
 

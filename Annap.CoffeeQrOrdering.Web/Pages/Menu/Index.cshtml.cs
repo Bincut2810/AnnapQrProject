@@ -1,5 +1,6 @@
 using Annap.CoffeeQrOrdering.Application.Abstractions;
 using Annap.CoffeeQrOrdering.Domain.Entities;
+using Annap.CoffeeQrOrdering.Web.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +17,11 @@ public sealed class IndexModel(IApplicationDbContext db) : PageModel
 
     public bool HasSeatedTable => VenueTableId is not null;
 
+    public bool TableHandoffInvalid { get; private set; }
+
+    public GuestTableContextState TableContextState =>
+        GuestTableContext.Resolve(HasSeatedTable, false, TableHandoffInvalid);
+
     public async Task OnGetAsync(Guid? vt, CancellationToken cancellationToken)
     {
         if (vt is Guid g)
@@ -26,6 +32,10 @@ public sealed class IndexModel(IApplicationDbContext db) : PageModel
             {
                 VenueTableId = t.Id;
                 TableGuestLabel = string.IsNullOrWhiteSpace(t.DisplayLabel) ? t.DisplayCode : t.DisplayLabel;
+            }
+            else
+            {
+                TableHandoffInvalid = true;
             }
         }
 

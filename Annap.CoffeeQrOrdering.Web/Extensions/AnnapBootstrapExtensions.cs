@@ -59,6 +59,8 @@ public static class AnnapBootstrapExtensions
             await TryEnsureHospitalityCatalogBootstrapAsync(app, cts.Token).ConfigureAwait(false);
             await TryEnsureVenueTablesAsync(app, cts.Token).ConfigureAwait(false);
             logger.LogInformation("Development DB bootstrap completed.");
+            await PaymentWorkflowSchemaStartupExtensions.ValidatePaymentWorkflowSchemaAsync(app, cts.Token)
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cts.IsCancellationRequested)
         {

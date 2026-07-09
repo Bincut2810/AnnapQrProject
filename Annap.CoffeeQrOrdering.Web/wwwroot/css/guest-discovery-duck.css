@@ -539,7 +539,7 @@
 
 .ge-duck-blocked__title {
     margin: 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.28rem;
     font-weight: 500;
     color: rgb(var(--fg));
@@ -556,7 +556,7 @@
 .ge-duck-blocked__owner {
     margin: 1rem 0 0;
     padding: 0 0.15rem;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.02rem;
     font-style: italic;
     font-weight: 500;

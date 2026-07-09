@@ -379,6 +379,13 @@ public static class EndpointExtensions
             var json = GuidedSommelierExperienceCatalog.ToClientJson(questions, GuidedSommelierCatalog.QuestionSetId);
             return Results.Text(json, "application/json");
         }).AllowAnonymous();
+
+        app.MapGet("/api/guest/sommelier-lite/config", async (IApplicationDbContext db, CancellationToken ct) =>
+        {
+            var questions = await GuidedSommelierExperienceCatalog.LoadQuestionSeedsAsync(db, ct);
+            var compat = GuestSommelierLiteCompatibility.Assess(questions);
+            return Results.Json(compat.ToClientDto());
+        }).AllowAnonymous();
         
         app.MapPost("/api/guest/discovery/reveal", async (
             GuestDiscoveryRevealRequest body,
@@ -666,6 +673,14 @@ public static class EndpointExtensions
         
             if (request.Items.Count == 0)
                 return Results.BadRequest(new { error = "Add at least one cup to your tray." });
+
+            if (request.Items.Count > OrderSubmitLimits.MaxLineItems)
+            {
+                return Results.BadRequest(new
+                {
+                    error = $"Your tray can hold at most {OrderSubmitLimits.MaxLineItems} lines — please send two smaller trays."
+                });
+            }
         
             foreach (var line in request.Items)
             {
@@ -708,6 +723,37 @@ public static class EndpointExtensions
                     error = "A tray receipt key is required. Refresh the page and send your tray again."
                 });
             }
+
+            foreach (var line in request.Items)
+            {
+                if (OrderItemCustomerNoteHelper.Normalize(line.CustomerNote, out var itemNoteTooLong) is null
+                    && itemNoteTooLong)
+                {
+                    return Results.BadRequest(new
+                    {
+                        error = $"Each item note must be at most {OrderItemCustomerNoteHelper.MaxLength} characters."
+                    });
+                }
+            }
+
+            string? paymentMethodRaw = request.PaymentMethod;
+            if (!string.IsNullOrWhiteSpace(paymentMethodRaw))
+            {
+                var normalizedPayment = OrderPaymentMethods.Normalize(paymentMethodRaw);
+                if (normalizedPayment is null)
+                {
+                    return Results.BadRequest(new
+                    {
+                        error = "Invalid paymentMethod. Use Cash, Card, BankTransfer, or CashOrCardAtCounter."
+                    });
+                }
+
+                paymentMethodRaw = normalizedPayment;
+            }
+            else
+            {
+                paymentMethodRaw = OrderPaymentMethods.Cash;
+            }
         
             for (var attempt = 0; attempt < 3; attempt++)
             {
@@ -731,17 +777,22 @@ public static class EndpointExtensions
                         SubmitIdempotencyKey = idemKey,
                         Status = OrderStatus.Submitted,
                         StatusChangedAtUtc = DateTimeOffset.UtcNow,
+                        PaymentMethod = paymentMethodRaw,
                         Items = request.Items.Select(i => new OrderItem
                         {
                             MenuItemId = i.MenuItemId,
                             Quantity = i.Quantity,
                             UnitPrice = menuItems[i.MenuItemId].Price,
                             Notes = string.IsNullOrWhiteSpace(i.Notes) ? null : i.Notes.Trim(),
+                            CustomerNote = OrderItemCustomerNoteHelper.Normalize(i.CustomerNote, out _),
                             MenuItemName = menuItems[i.MenuItemId].Name
                         }).ToList()
                     };
         
                     order.RecalculateTotals();
+
+                    if (string.Equals(paymentMethodRaw, OrderPaymentMethods.BankTransfer, StringComparison.Ordinal))
+                        order.BillNumber = OrderBillHelper.EnsureBillNumber(order);
         
                     var snapshotAt = DateTimeOffset.UtcNow;
                     var outboxMessage = new KiotVietOutboxMessage
@@ -764,6 +815,10 @@ public static class EndpointExtensions
                     var pulse = order.UpdatedAtUtc ?? order.CreatedAtUtc;
                     await notifier.NotifyStaffBoardAsync(ct);
                     await notifier.NotifyGuestOrderAsync(order.Id, pulse, ct);
+                    await notifier.NotifyGuestOrderWorkflowAsync(
+                        order.Id,
+                        OrderWorkflowEndpoints.BuildWorkflowPulse(order),
+                        ct);
         
                     return OrderSubmitHelper.IdempotentOrderResponse(order, token, false);
                 }
@@ -786,6 +841,11 @@ public static class EndpointExtensions
             return Results.Json(
                 new { error = "The floor is busy—please try your tray again in a breath." },
                 statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+            catch (Exception ex) when (PaymentWorkflowSchemaGuard.IsMissingPaymentColumnException(ex))
+            {
+                log.LogError(ex, "{Message}", PaymentWorkflowSchemaGuard.StartupFailureMessage);
+                return PaymentWorkflowSchemaGuard.MigrationRequiredResult();
             }
             finally
             {
@@ -827,7 +887,12 @@ public static class EndpointExtensions
             });
         });
         
-        app.MapGet("/api/track/orders/{orderId:guid}", async (HttpRequest http, Guid orderId, AppDbContext db, CancellationToken ct) =>
+        app.MapGet("/api/track/orders/{orderId:guid}", async (
+            HttpRequest http,
+            Guid orderId,
+            AppDbContext db,
+            BankTransferQrBuilder bankTransferQr,
+            CancellationToken ct) =>
         {
             var order = await db.Orders
                 .AsNoTracking()
@@ -851,84 +916,120 @@ public static class EndpointExtensions
             }
         
             var p = CustomerTrackStatusHelper.Resolve(order.Status);
+            var pendingPayment = StaffOrderBoardColumnHelper.IsAwaitingPayment(order.Status);
+            var showBill = p.showBill;
+            var bill = showBill ? OrderBillHelper.BuildPaidReceipt(order) : null;
+            var checkBill = pendingPayment ? OrderBillHelper.BuildCheckBill(order) : null;
+            var (pendingStatusVi, pendingStatusEn) = OrderPaymentMethods.PendingStatusLabels(order.PaymentMethod);
+            var (methodVi, methodEn) = OrderPaymentMethods.Labels(order.PaymentMethod);
+            var transferQr = bankTransferQr.BuildForTrack(order);
             return Results.Ok(new
             {
                 order.Id,
                 order.TableCode,
                 order.CreatedAtUtc,
                 order.UpdatedAtUtc,
+                order.PaidAtUtc,
+                order.CompletedAtUtc,
+                order.PaymentMethod,
+                paymentMethodLabelVi = methodVi,
+                paymentMethodLabelEn = methodEn,
+                pendingStatusLabelVi = pendingStatusVi,
+                pendingStatusLabelEn = pendingStatusEn,
                 step = p.step,
                 phaseKey = p.key,
-                title = p.title,
-                line = p.line,
+                title = p.titleVi,
+                line = p.lineVi,
+                titleVi = p.titleVi,
+                lineVi = p.lineVi,
+                titleEn = p.titleEn,
+                lineEn = p.lineEn,
                 isComplete = p.isComplete,
+                pendingPayment,
+                showBill,
+                showCheckBill = pendingPayment,
+                bill,
+                checkBill,
+                transferQr,
                 items = order.Items.Select(i => new { name = i.MenuItemName ?? i.MenuItem.Name, i.Quantity })
             });
         });
         
-        app.MapGet("/api/staff/orders", async (HttpContext http, bool? recentServed, AppDbContext db, CancellationToken ct) =>
+        app.MapGet("/api/staff/orders", async (
+            HttpContext http,
+            bool? recentServed,
+            AppDbContext db,
+            BankTransferQrBuilder bankTransferQr,
+            ILoggerFactory loggerFactory,
+            CancellationToken ct) =>
         {
-            var includeRecentServed = recentServed ?? true;
-            var servedSince = DateTimeOffset.UtcNow.AddHours(-3);
-        
-            var active = await db.Orders
-                .AsNoTracking()
-                .Include(o => o.Items)
-                .ThenInclude(i => i.MenuItem)
-                .Where(o => o.Status != OrderStatus.Completed && o.Status != OrderStatus.Cancelled)
-                .OrderBy(o => o.CreatedAtUtc)
-                .ToListAsync(ct);
-        
-            List<Order> recentCompleted = [];
-            if (includeRecentServed)
+            if (!StaffAuthorizationHelper.CanViewStaffBoard(http.User))
+                return Results.Json(new { error = "Forbidden" }, statusCode: StatusCodes.Status403Forbidden);
+
+            var log = loggerFactory.CreateLogger("Api.StaffOrders");
+            try
             {
-                recentCompleted = await db.Orders
+                var includeRecentCompleted = recentServed ?? true;
+                var completedSince = DateTimeOffset.UtcNow.AddHours(-3);
+
+                var open = await db.Orders
                     .AsNoTracking()
                     .Include(o => o.Items)
                     .ThenInclude(i => i.MenuItem)
-                    .Where(o => o.Status == OrderStatus.Completed
-                        && (o.UpdatedAtUtc ?? o.CreatedAtUtc) >= servedSince)
-                    .OrderByDescending(o => o.UpdatedAtUtc ?? o.CreatedAtUtc)
-                    .Take(24)
+                    .Where(o => o.Status != OrderStatus.Completed && o.Status != OrderStatus.Cancelled)
+                    .OrderBy(o => o.CreatedAtUtc)
                     .ToListAsync(ct);
-            }
-        
-            static object Project(Order o)
-            {
-                var track = CustomerTrackStatusHelper.Resolve(o.Status);
-                return new
+
+                List<Order> recentCompleted = [];
+                if (includeRecentCompleted)
                 {
-                    o.Id,
-                    o.TableCode,
-                    staffStatus = StaffOrderStatusHelper.ToStaffStatus(o.Status),
-                    phaseLabel = o.Status == OrderStatus.Cancelled ? "Cancelled" : track.title,
-                    o.CreatedAtUtc,
-                    o.UpdatedAtUtc,
-                    statusChangedAtUtc = o.StatusChangedAtUtc ?? o.UpdatedAtUtc ?? o.CreatedAtUtc,
-                    brewingOwner = o.BrewingOwnerStaffName,
-                    servingOwner = o.ServingOwnerStaffName,
-                    o.TotalAmount,
-                    totalCups = o.Items.Sum(i => (int)i.Quantity),
-                    pacing = StaffOrderPacingHelper.Resolve(o),
-                    guestNotes = StaffOrderBoardNotes.Format(o),
-                    Items = o.Items.Select(i => new
+                    recentCompleted = await db.Orders
+                        .AsNoTracking()
+                        .Include(o => o.Items)
+                        .ThenInclude(i => i.MenuItem)
+                        .Where(o => o.Status == OrderStatus.Completed
+                            && (o.CompletedAtUtc ?? o.UpdatedAtUtc ?? o.CreatedAtUtc) >= completedSince)
+                        .OrderByDescending(o => o.CompletedAtUtc ?? o.UpdatedAtUtc ?? o.CreatedAtUtc)
+                        .Take(24)
+                        .ToListAsync(ct);
+                }
+
+                var submitted = open
+                    .Where(o => StaffOrderBoardColumnHelper.ToColumn(o.Status) == StaffOrderBoardColumnHelper.Submitted)
+                    .Select(o => OrderWorkflowEndpoints.ProjectStaffBoardOrder(o, bankTransferQr))
+                    .ToList();
+                var paid = open
+                    .Where(o => StaffOrderBoardColumnHelper.ToColumn(o.Status) == StaffOrderBoardColumnHelper.Paid)
+                    .Select(o => OrderWorkflowEndpoints.ProjectStaffBoardOrder(o, bankTransferQr))
+                    .ToList();
+                var completed = recentCompleted
+                    .Select(o => OrderWorkflowEndpoints.ProjectStaffBoardOrder(o, bankTransferQr))
+                    .ToList();
+
+                return Results.Ok(new
+                {
+                    youAre = http.User.Identity?.Name?.Trim(),
+                    roles = StaffAuthorizationHelper.Roles(http.User),
+                    permissions = new
                     {
-                        i.MenuItemId,
-                        Name = i.MenuItemName ?? i.MenuItem.Name,
-                        i.Quantity,
-                        i.UnitPrice,
-                        i.Notes
-                    })
-                };
+                        canMarkPaid = StaffAuthorizationHelper.CanMarkPaid(http.User),
+                        canComplete = StaffAuthorizationHelper.CanComplete(http.User),
+                        canPrepareItems = StaffAuthorizationHelper.CanPrepareItems(http.User),
+                        canManageBills = StaffAuthorizationHelper.CanManageBills(http.User)
+                    },
+                    submitted,
+                    paid,
+                    completed,
+                    active = open.OrderBy(o => o.TableCode).Select(o => OrderWorkflowEndpoints.ProjectStaffBoardOrder(o, bankTransferQr)).ToList(),
+                    recentServed = completed
+                });
             }
-        
-            return Results.Ok(new
+            catch (Exception ex) when (PaymentWorkflowSchemaGuard.IsMissingPaymentColumnException(ex))
             {
-                youAre = http.User.Identity?.Name?.Trim(),
-                active = active.OrderBy(o => o.TableCode).Select(Project).ToList(),
-                recentServed = recentCompleted.Select(Project).ToList()
-            });
-        }).RequireAuthorization("Staff");
+                log.LogError(ex, "{Message}", PaymentWorkflowSchemaGuard.StartupFailureMessage);
+                return PaymentWorkflowSchemaGuard.MigrationRequiredResult();
+            }
+        }).RequireAuthorization("StaffBoardAccess");
         
         app.MapPatch("/api/staff/orders/{orderId:guid}/status", async (
             HttpContext http,
@@ -972,6 +1073,12 @@ public static class EndpointExtensions
                 var prev = order.Status;
                 if (prev != next)
                 {
+                    if (!LegacyStaffStatusPatchHelper.IsAllowed(prev, next))
+                    {
+                        await tx.RollbackAsync(ct);
+                        return Results.BadRequest(new { error = LegacyStaffStatusPatchHelper.BlockedMessage(prev, next) });
+                    }
+
                     if (!StaffOrderStatusTransitionHelper.IsValidTransition(prev, next))
                     {
                         await tx.RollbackAsync(ct);
@@ -1009,7 +1116,7 @@ public static class EndpointExtensions
                     new { error = "Another hand moved this ticket first—refresh the board for a quiet read." },
                     statusCode: StatusCodes.Status409Conflict);
             }
-        }).RequireAuthorization("Staff");
+        }).RequireAuthorization("StaffAdmin");
         
         app.MapPatch("/api/staff/orders/{orderId:guid}/ownership", async (
             HttpContext http,
@@ -1095,7 +1202,7 @@ public static class EndpointExtensions
                     new { error = "Two hands reached at once—take a breath and try again." },
                     statusCode: StatusCodes.Status409Conflict);
             }
-        }).RequireAuthorization("Staff");
+        }).RequireAuthorization("StaffAdmin");
         
         app.MapGet("/api/staff/kiotviet/status", async (
             AppDbContext db,
@@ -1128,9 +1235,10 @@ public static class EndpointExtensions
                 deadLetteredCount,
                 lastSuccessfulPushUtc = lastSuccessLog
             });
-        }).RequireAuthorization("Staff");
+        }).RequireAuthorization("StaffAdmin");
         
-        
+        app.MapOrderWorkflowEndpoints();
+        app.MapBankTransferWebhookEndpoints();
         
         app.MapPost("/api/sommelier/feedback", async (HttpContext http, SommelierFeedbackRequest body, AppDbContext db) =>
         {

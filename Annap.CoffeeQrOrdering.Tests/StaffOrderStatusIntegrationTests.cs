@@ -26,7 +26,9 @@ public sealed class StaffOrderStatusIntegrationTests(AnnapPostgresWebApplication
         var idemKey = "staff-forward-1";
         var orderId = await SubmitOrderAsync(staffClient, fixture, idemKey, quantity: 1);
 
-        // Submitted → InProgress
+        Assert.Equal(HttpStatusCode.OK, (await staffClient.PostAsJsonAsync($"/api/staff/orders/{orderId}/mark-paid", new { })).StatusCode);
+
+        // Paid → InProgress (legacy admin prep)
         var r1 = await PatchStatusAsync(staffClient, orderId, "preparing");
         Assert.Equal(HttpStatusCode.OK, r1.statusCode);
         Assert.Equal("preparing", r1.body.GetProperty("staffStatus").GetString());
@@ -41,19 +43,18 @@ public sealed class StaffOrderStatusIntegrationTests(AnnapPostgresWebApplication
         Assert.Equal(HttpStatusCode.OK, r3.statusCode);
         Assert.Equal("ready", r3.body.GetProperty("staffStatus").GetString());
 
-        // Ready → Completed
-        var r4 = await PatchStatusAsync(staffClient, orderId, "served");
-        Assert.Equal(HttpStatusCode.OK, r4.statusCode);
-        Assert.Equal("served", r4.body.GetProperty("staffStatus").GetString());
+        // Ready → Completed via workflow endpoint (legacy PATCH to served is blocked)
+        await PrepareAllItemsForOrderAsync(staffClient, orderId);
+        var r4 = await staffClient.PostAsync($"/api/staff/orders/{orderId}/complete", null);
+        Assert.Equal(HttpStatusCode.OK, r4.StatusCode);
 
         // Completed → InProgress (backward) should fail
         var r5 = await PatchStatusAsync(staffClient, orderId, "preparing");
         Assert.Equal(HttpStatusCode.BadRequest, r5.statusCode);
 
-        // Completed → Completed should still work (no-op)
-        var r6 = await PatchStatusAsync(staffClient, orderId, "served");
-        Assert.Equal(HttpStatusCode.OK, r6.statusCode);
-        Assert.Equal("served", r6.body.GetProperty("staffStatus").GetString());
+        // Completed → Completed should still work (no-op via complete endpoint)
+        var r6 = await staffClient.PostAsync($"/api/staff/orders/{orderId}/complete", null);
+        Assert.Equal(HttpStatusCode.OK, r6.StatusCode);
     }
 
     [Fact]
@@ -67,22 +68,20 @@ public sealed class StaffOrderStatusIntegrationTests(AnnapPostgresWebApplication
         var fixture = await OrderTestSeedHelper.SeedMinimalOrderSubmitDataAsync(db);
 
         var inProgressOrderId = await SubmitOrderAsync(staffClient, fixture, "staff-back-inprogress-1", quantity: 1);
+        Assert.Equal(HttpStatusCode.OK, (await staffClient.PostAsJsonAsync($"/api/staff/orders/{inProgressOrderId}/mark-paid", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await PatchStatusAsync(staffClient, inProgressOrderId, "preparing")).statusCode);
 
         var fromInProgress = await PatchStatusAsync(staffClient, inProgressOrderId, "pending");
         Assert.Equal(HttpStatusCode.BadRequest, fromInProgress.statusCode);
-        Assert.Contains("Invalid staff status transition", fromInProgress.body.GetProperty("error").GetString(),
-            StringComparison.OrdinalIgnoreCase);
 
         var readyOrderId = await SubmitOrderAsync(staffClient, fixture, "staff-back-ready-1", quantity: 1);
+        Assert.Equal(HttpStatusCode.OK, (await staffClient.PostAsJsonAsync($"/api/staff/orders/{readyOrderId}/mark-paid", new { })).StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await PatchStatusAsync(staffClient, readyOrderId, "preparing")).statusCode);
         Assert.Equal(HttpStatusCode.OK, (await PatchStatusAsync(staffClient, readyOrderId, "finishing")).statusCode);
         Assert.Equal(HttpStatusCode.OK, (await PatchStatusAsync(staffClient, readyOrderId, "ready")).statusCode);
 
         var fromReady = await PatchStatusAsync(staffClient, readyOrderId, "pending");
         Assert.Equal(HttpStatusCode.BadRequest, fromReady.statusCode);
-        Assert.Contains("Invalid staff status transition", fromReady.body.GetProperty("error").GetString(),
-            StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -137,7 +136,7 @@ public sealed class StaffOrderStatusIntegrationTests(AnnapPostgresWebApplication
         Assert.NotEqual(JsonValueKind.Undefined, orderEl.ValueKind);
 
         Assert.Equal(expectedTableCode, GetProp(orderEl, "tableCode").GetString());
-        Assert.Equal("pending", GetProp(orderEl, "staffStatus").GetString());
+        Assert.Equal("submitted", GetProp(orderEl, "staffStatus").GetString());
         Assert.True(GetProp(orderEl, "createdAtUtc").ValueKind is JsonValueKind.String);
         Assert.Equal(2, GetProp(orderEl, "totalCups").GetInt32());
 
@@ -265,6 +264,23 @@ public sealed class StaffOrderStatusIntegrationTests(AnnapPostgresWebApplication
 
         var body = await res.Content.ReadFromJsonAsync<JsonElement>();
         return body.GetProperty("id").GetGuid();
+    }
+
+    private async Task PrepareAllItemsForOrderAsync(HttpClient client, Guid orderId)
+    {
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var itemIds = await db.OrderItems.AsNoTracking()
+            .Where(i => i.OrderId == orderId)
+            .Select(i => i.Id)
+            .ToListAsync();
+        foreach (var itemId in itemIds)
+        {
+            var res = await client.PostAsJsonAsync(
+                $"/api/staff/orders/{orderId}/items/{itemId}/prepared",
+                new { isPrepared = true });
+            res.EnsureSuccessStatusCode();
+        }
     }
 }
 

@@ -9,7 +9,7 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
     public void Configure(EntityTypeBuilder<Order> builder)
     {
         builder.ToTable("orders", t =>
-            t.HasCheckConstraint("CK_orders_Status_Valid", "\"Status\" IN (0, 1, 2, 3, 4, 5, 6)"));
+            t.HasCheckConstraint("CK_orders_Status_Valid", "\"Status\" IN (0, 1, 2, 3, 4, 5, 6, 7)"));
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.TableCode).HasMaxLength(50).IsRequired();
@@ -18,6 +18,15 @@ public sealed class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.Property(x => x.Status).IsRequired();
         builder.Property(x => x.TotalAmount).HasPrecision(10, 2).IsRequired();
         builder.Property(x => x.StatusChangedAtUtc);
+        builder.Property(x => x.PaidAtUtc);
+        builder.Property(x => x.PaymentConfirmedBy).HasMaxLength(120);
+        builder.Property(x => x.PaymentConfirmedByAccountId);
+        builder.Property(x => x.PaymentMethod).HasMaxLength(40);
+        builder.Property(x => x.CustomerNote).HasMaxLength(300);
+        builder.Property(x => x.BillNumber).HasMaxLength(24);
+        builder.Property(x => x.CompletedAtUtc);
+        builder.Property(x => x.CompletedBy).HasMaxLength(120);
+        builder.Property(x => x.CompletedByAccountId);
         builder.Property(x => x.BrewingOwnerStaffName).HasMaxLength(120);
         builder.Property(x => x.ServingOwnerStaffName).HasMaxLength(120);
 

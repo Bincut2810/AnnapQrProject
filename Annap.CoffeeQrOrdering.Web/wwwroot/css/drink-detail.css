@@ -56,7 +56,7 @@
 }
 
 .dd-loading {
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1rem;
     font-style: italic;
     letter-spacing: 0.02em;
@@ -90,7 +90,7 @@
     padding: 0 0.65rem;
     border: none;
     background: transparent;
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -115,7 +115,7 @@
     border-radius: 999px;
     background: rgba(140, 35, 24, 0.9);
     color: #faf5eb;
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.72rem;
     font-weight: 500;
     letter-spacing: 0.03em;
@@ -337,7 +337,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 }
 
 .dd-stamp__text {
-    font-family: "Crimson Pro", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.58rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -352,7 +352,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
     margin-top: 3.75rem;
     padding-bottom: 0.5rem;
     border-bottom: 1px solid rgba(26, 20, 16, 0.15);
-    font-family: "Outfit", system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.58rem;
     letter-spacing: 0.14em;
     text-transform: uppercase;
@@ -389,7 +389,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 }
 
 .dd-atelier-seal__mark {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.1rem;
     font-style: italic;
     line-height: 1;
@@ -398,7 +398,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 .dd-atelier-seal__copy {
     position: absolute;
     bottom: 0.56rem;
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.34rem;
     font-weight: 700;
     letter-spacing: 0.1em;
@@ -432,7 +432,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-eyebrow {
     margin: 0 0 0.35rem;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.72rem;
     font-style: italic;
     letter-spacing: 0.08em;
@@ -441,7 +441,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-title {
     margin: 0;
-    font-family: "Playfair Display", "Cormorant Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.75rem, 7vw, 2.35rem);
     font-weight: 400;
     line-height: 1.08;
@@ -491,7 +491,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
     border: 1px solid rgba(140, 105, 66, 0.22);
     border-radius: 999px;
     background: rgba(253, 249, 244, 0.5);
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.72rem;
     font-style: italic;
     line-height: 1;
@@ -533,7 +533,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 .dd-composition-line,
 .dd-provenance-origin {
     margin: 0;
-    font-family: "Crimson Pro", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.9rem;
     line-height: 1.5;
     color: rgba(26, 20, 16, 0.72);
@@ -541,7 +541,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-tasting-body {
     margin: 0;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1rem;
     font-style: italic;
     line-height: 1.55;
@@ -550,7 +550,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-no-poster__name {
     position: relative;
-    font-family: "Outfit", system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.25rem, 6vw, 1.75rem);
     font-weight: 800;
     line-height: 1;
@@ -598,7 +598,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 }
 
 .dd-meta-row__val {
-    font-family: "Crimson Pro", Georgia, serif;
+    font-family: var(--font-ui);
 }
 
 .dd-flavor-path {
@@ -619,7 +619,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-flavor-path__val {
     margin: 0;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.95rem;
     line-height: 1.5;
 }
@@ -641,7 +641,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-tasting__body {
     margin: 0;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1rem;
     font-style: italic;
     line-height: 1.55;
@@ -769,7 +769,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-no-poster__glyph {
     position: relative;
-    font-family: "Outfit", system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 3.5rem;
     font-weight: 800;
     line-height: 1;
@@ -851,7 +851,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-pairings__lead {
     margin: 0 0 0.85rem;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.05rem;
     font-style: italic;
     line-height: 1.35;
@@ -949,7 +949,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 }
 
 .dd-pairing__name {
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.72rem;
     font-weight: 400;
     line-height: 1.3;
@@ -969,7 +969,7 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 .dd-price {
     margin: 0;
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.35rem;
     letter-spacing: 0.02em;
 }
@@ -1293,7 +1293,7 @@ html.annap-correspond-ui .drink-detail-action-bar {
 }
 
 html.annap-correspond-ui .drink-detail-action-bar__back {
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-style: italic;
     font-size: 0.9rem;
     color: rgba(61, 43, 26, 0.72);
@@ -1393,7 +1393,7 @@ html.annap-correspond-ui .drink-detail-action-bar__add {
     border: 1px solid rgba(196, 168, 130, 0.38);
     border-radius: 999px;
     background: rgba(252, 248, 242, 0.94);
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.46rem;
     font-weight: 500;
     letter-spacing: 0.06em;
@@ -1431,7 +1431,7 @@ body.drink-detail-open.annap-has-order-tray-dock .dd-passport__inner {
 }
 .dd-letter__title {
     margin: 0;
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.65rem, 5vw, 2.1rem);
     font-weight: 400;
     line-height: 1.15;

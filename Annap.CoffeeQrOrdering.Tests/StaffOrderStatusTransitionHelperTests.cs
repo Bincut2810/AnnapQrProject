@@ -6,6 +6,8 @@ namespace Annap.CoffeeQrOrdering.Tests;
 public sealed class StaffOrderStatusTransitionHelperTests
 {
     [Theory]
+    [InlineData(OrderStatus.Submitted, OrderStatus.Paid, true)]
+    [InlineData(OrderStatus.Paid, OrderStatus.InProgress, true)]
     [InlineData(OrderStatus.Submitted, OrderStatus.InProgress, true)]
     [InlineData(OrderStatus.InProgress, OrderStatus.FinishingTouches, true)]
     [InlineData(OrderStatus.FinishingTouches, OrderStatus.Ready, true)]
@@ -43,7 +45,9 @@ public sealed class StaffOrderStatusTransitionHelperTests
     }
 
     [Theory]
+    [InlineData("submitted", OrderStatus.Submitted)]
     [InlineData("pending", OrderStatus.Submitted)]
+    [InlineData("paid", OrderStatus.Paid)]
     [InlineData("preparing", OrderStatus.InProgress)]
     [InlineData("finishing", OrderStatus.FinishingTouches)]
     [InlineData("ready", OrderStatus.Ready)]

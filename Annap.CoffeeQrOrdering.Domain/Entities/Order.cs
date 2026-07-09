@@ -21,6 +21,33 @@ public sealed class Order : AuditableEntity
     /// <summary>Last time <see cref="Status"/> changed (brew timer / floor pacing).</summary>
     public DateTimeOffset? StatusChangedAtUtc { get; set; }
 
+    /// <summary>When checkout staff confirmed payment.</summary>
+    public DateTimeOffset? PaidAtUtc { get; set; }
+
+    /// <summary>Staff identity that confirmed payment.</summary>
+    public string? PaymentConfirmedBy { get; set; }
+
+    /// <summary>Individual staff account that confirmed payment (null for shared-password or webhook).</summary>
+    public Guid? PaymentConfirmedByAccountId { get; set; }
+
+    /// <summary>Optional payment method label (cash, card, etc.).</summary>
+    public string? PaymentMethod { get; set; }
+
+    /// <summary>Optional order-level note from the guest (e.g. less ice, no cream).</summary>
+    public string? CustomerNote { get; set; }
+
+    /// <summary>Human-readable bill number shown on electronic bill.</summary>
+    public string? BillNumber { get; set; }
+
+    /// <summary>When barista marked the order complete.</summary>
+    public DateTimeOffset? CompletedAtUtc { get; set; }
+
+    /// <summary>Staff display name that completed the order.</summary>
+    public string? CompletedBy { get; set; }
+
+    /// <summary>Individual staff account that completed the order (null for shared barista).</summary>
+    public Guid? CompletedByAccountId { get; set; }
+
     /// <summary>Optional staff name (cookie identity) brewing this ticket.</summary>
     public string? BrewingOwnerStaffName { get; set; }
 

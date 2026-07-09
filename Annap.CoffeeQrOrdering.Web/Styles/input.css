@@ -1,5 +1,6 @@
 @import "../wwwroot/css/app.css";
 @import "../src/styles/tokens.css";
+@import "../src/styles/typography.css";
 @import "../src/styles/motion.css";
 @import "../src/styles/globals.css";
 
@@ -320,6 +321,7 @@
   body {
     background-color: rgb(var(--bg));
     color: rgb(var(--fg));
+    font-family: var(--font-ui);
     font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
     text-rendering: optimizeLegibility;
     line-height: 1.55;
@@ -768,10 +770,10 @@
   .mood-pill-title {
     display: block;
     margin-top: 0.45rem;
-    font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.05rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+    font-weight: 600;
+    letter-spacing: 0;
     color: rgb(var(--fg));
   }
 
@@ -920,8 +922,8 @@
   }
 
   #moodSenseTag {
-    font-style: italic;
-    letter-spacing: 0.02em;
+    font-style: normal;
+    letter-spacing: 0;
   }
 
   .refine-chip {
@@ -930,10 +932,10 @@
     background: rgba(255, 255, 255, 0.03);
     padding: 0.5rem 1.1rem;
     min-height: 2.75rem;
-    font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
-    font-size: 0.78rem;
+    font-family: var(--font-ui);
+    font-size: 0.8125rem;
     font-weight: 500;
-    letter-spacing: 0.04em;
+    letter-spacing: 0;
     text-transform: none;
     color: rgb(var(--muted));
     transition:
@@ -1147,7 +1149,7 @@
     background-color: rgb(var(--bg));
     background-image: linear-gradient(180deg, rgb(254 252 249) 0%, rgb(252 249 244) 38%, rgb(246 239 230) 100%);
     color: rgb(var(--fg));
-    font-family: "Crimson Pro", Georgia, "Times New Roman", serif;
+    font-family: var(--font-ui);
     font-weight: 400;
   }
 
@@ -1431,7 +1433,7 @@
     padding: 0.35rem 0.85rem;
     font-size: 0.62rem;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: rgb(var(--accent));
     transform: rotate(-3deg);
@@ -1441,7 +1443,7 @@
 
   .postal-hero-kicker {
     font-size: 0.62rem;
-    letter-spacing: 0.24em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: rgb(var(--muted-2));
     font-weight: 600;
@@ -1467,7 +1469,7 @@
     border-radius: 2px;
     background: rgba(253, 249, 244, 0.55);
     box-shadow: inset 0 -1px 0 rgba(180, 155, 125, 0.28);
-    letter-spacing: 0.16em;
+    letter-spacing: 0.04em;
   }
 
   body.guest-app .menu-cat-chip.ring-1 {

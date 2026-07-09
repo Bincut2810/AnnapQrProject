@@ -2,7 +2,7 @@ using Annap.CoffeeQrOrdering.Application;
 using Microsoft.Extensions.Options;
 using Annap.CoffeeQrOrdering.Infrastructure;
 using Annap.CoffeeQrOrdering.Infrastructure.Persistence;
-using Annap.CoffeeQrOrdering.Web.Hubs;
+using Annap.CoffeeQrOrdering.Web.Internal;
 using Annap.CoffeeQrOrdering.Web.Security;
 using Annap.CoffeeQrOrdering.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -40,6 +40,12 @@ public static class DependencyInjectionExtensions
         builder.Services.AddScoped<ProductionDataAuditService>();
 
         builder.Services.Configure<StaffAuthOptions>(builder.Configuration.GetSection(StaffAuthOptions.SectionName));
+        builder.Services.Configure<BankTransferOptions>(builder.Configuration.GetSection(BankTransferOptions.SectionName));
+        builder.Services.AddSingleton<BankTransferQrBuilder>();
+        builder.Services.AddScoped<IOrderPaymentWorkflowService, OrderPaymentWorkflowService>();
+        builder.Services.AddScoped<IBankTransferConfirmationService, BankTransferConfirmationService>();
+        builder.Services.AddScoped<IStaffAccountService, StaffAccountService>();
+        builder.Services.AddSingleton<DevBankTransferWebhookParser>();
         builder.Services.Configure<DiagnosticsOptions>(
             builder.Configuration.GetSection(DiagnosticsOptions.SectionName));
         builder.Services.Configure<GuestOperationalOptions>(
@@ -77,8 +83,8 @@ public static class DependencyInjectionExtensions
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(o =>
             {
-                o.LoginPath = "/Staff/Login";
-                o.AccessDeniedPath = "/Staff/Login";
+                o.LoginPath = "/staff/login";
+                o.AccessDeniedPath = "/staff/login";
                 o.SlidingExpiration = true;
                 o.ExpireTimeSpan = TimeSpan.FromHours(12);
                 o.Cookie.Name = "annap_staff";
@@ -87,20 +93,51 @@ public static class DependencyInjectionExtensions
                     ? CookieSecurePolicy.SameAsRequest
                     : CookieSecurePolicy.Always;
                 o.Cookie.SameSite = SameSiteMode.Lax;
+                o.Events.OnRedirectToLogin = StaffCookieAuthenticationEvents.OnRedirectToLogin;
+                o.Events.OnRedirectToAccessDenied = StaffCookieAuthenticationEvents.OnRedirectToAccessDenied;
             });
-        builder.Services.AddAuthorization(o => o.AddPolicy("Staff", p => p.RequireRole("Staff")));
+        builder.Services.AddAuthorization(o =>
+        {
+            o.AddPolicy("Staff", p => p.RequireRole(StaffRoleNames.Admin));
+            o.AddPolicy("StaffAdmin", p => p.RequireRole(StaffRoleNames.Admin));
+            o.AddPolicy("StaffCheckout", p => p.RequireRole(StaffRoleNames.Admin, StaffRoleNames.Checkout));
+            o.AddPolicy("StaffBarista", p => p.RequireRole(StaffRoleNames.Admin, StaffRoleNames.Barista));
+            o.AddPolicy("StaffBoardAccess", p => p.RequireRole(
+                StaffRoleNames.Admin,
+                StaffRoleNames.Checkout,
+                StaffRoleNames.Barista));
+            o.AddPolicy("StaffFloor", p => p.RequireRole(
+                StaffRoleNames.Admin,
+                StaffRoleNames.Checkout,
+                StaffRoleNames.Barista));
+            o.AddPolicy("BillManage", p => p.RequireRole(StaffRoleNames.Admin));
+            o.AddPolicy("BillView", p => p.RequireRole(
+                StaffRoleNames.Admin,
+                StaffRoleNames.Checkout,
+                StaffRoleNames.Barista));
+            // Kết ca — admin and checkout (shared + employee), not barista-only.
+            o.AddPolicy("StaffShiftClose", p => p.RequireRole(
+                StaffRoleNames.Admin,
+                StaffRoleNames.Checkout));
+        });
+
+        builder.Services.AddScoped<IShiftCloseService, ShiftCloseService>();
+        builder.Services.AddSingleton<IStaffCredentialFlashStore, StaffCredentialFlashStore>();
 
         builder.Services.AddRazorPages(o =>
         {
-            o.Conventions.AuthorizeFolder("/Staff");
-            o.Conventions.AuthorizeFolder("/Admin", "Staff");
+            o.Conventions.AuthorizeFolder("/Staff", "StaffFloor");
+            o.Conventions.AuthorizePage("/Staff/ShiftClose/Index", "StaffShiftClose");
+            o.Conventions.AuthorizeFolder("/Admin", "StaffAdmin");
             o.Conventions.AllowAnonymousToPage("/Diag/Mobile");
             o.Conventions.AllowAnonymousToPage("/Diag/Assets");
             o.Conventions.AllowAnonymousToPage("/Diag/Minimal");
             o.Conventions.AllowAnonymousToPage("/Staff/Login");
             o.Conventions.AllowAnonymousToPage("/Staff/Logout");
         });
-        builder.Services.AddHealthChecks().AddDbContextCheck<AppDbContext>("database");
+        builder.Services.AddHealthChecks()
+            .AddDbContextCheck<AppDbContext>("database")
+            .AddCheck<PaymentWorkflowSchemaHealthCheck>("payment_workflow_schema");
         builder.Services.AddHttpClient();
         builder.Services.AddScoped<GoLiveVerificationService>();
 
@@ -109,10 +146,19 @@ public static class DependencyInjectionExtensions
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             options.OnRejected = async (ctx, _) =>
             {
-                ctx.HttpContext.Response.ContentType = "application/json";
-                await ctx.HttpContext.Response.WriteAsJsonAsync(
+                var http = ctx.HttpContext;
+                if (http.Request.Path.StartsWithSegments("/staff/login", StringComparison.OrdinalIgnoreCase)
+                    && HttpMethods.IsPost(http.Request.Method))
+                {
+                    http.Response.Redirect("/staff/login?rateLimited=1");
+                    return;
+                }
+
+                http.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                http.Response.ContentType = "application/json";
+                await http.Response.WriteAsJsonAsync(
                     new { error = "Too many requests. Please wait a moment and try again." },
-                    cancellationToken: ctx.HttpContext.RequestAborted);
+                    cancellationToken: http.RequestAborted);
             };
 
             static string Partition(HttpContext http)
@@ -151,6 +197,22 @@ public static class DependencyInjectionExtensions
                         QueueLimit = 0,
                         AutoReplenishment = true
                     }));
+
+            options.AddPolicy("staff-login", httpContext =>
+            {
+                if (!HttpMethods.IsPost(httpContext.Request.Method))
+                    return RateLimitPartition.GetNoLimiter("staff-login-get");
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    Partition(httpContext),
+                    _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 8,
+                        Window = TimeSpan.FromMinutes(5),
+                        QueueLimit = 0,
+                        AutoReplenishment = true
+                    });
+            });
         });
 
         builder.Services

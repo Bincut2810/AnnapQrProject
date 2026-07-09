@@ -15,6 +15,40 @@ const GUEST_CTX = (function () {
 let VENUE_TABLE_ID = "";
 let menuOrderIdempotencyKey = null;
 let menuOrderSubmitInFlight = false;
+const TRAY_STATE = {
+    EMPTY: "empty",
+    EDITING: "editing",
+    REVIEW: "review",
+    PAYMENT_CHOICE: "paymentChoice",
+    SUBMITTING: "submitting",
+    SUBMITTED_COUNTER: "submittedCounterPayment",
+    SUBMITTED_CASH: "submittedCashPayment",
+    SUBMITTED_CARD: "submittedCardPayment",
+    SUBMITTED_BANK: "submittedBankTransfer",
+    SUBMITTED_PENDING: "submittedPendingPayment",
+    PAID: "paid",
+    COMPLETED: "completed"
+};
+const PAYMENT_METHOD = {
+    CASH: "Cash",
+    CARD: "Card",
+    BANK: "BankTransfer",
+    LEGACY_CASH_CARD: "CashOrCardAtCounter"
+};
+const TRAY_PAYMENT_FLOW_VERSION = "v5-guest-status-poll";
+let checkoutStep = null;
+let selectedPaymentMethod = PAYMENT_METHOD.CASH;
+const expandedItemNoteKeys = new Set();
+let bankTransferConfigured = null;
+let traySubmittedStatus = null;
+let trayStatusPollTimer = null;
+let trayKnownPendingPayment = null;
+const celebratedPaidOrderIds = new Set();
+const TRAY_STATUS_POLL_MS = 3500;
+let bankTransferQrInflightKey = "";
+let bankTransferQrCache = null;
+let bankTransferQrCacheKey = "";
+window.__annapBankTransferDebug = window.__annapBankTransferDebug || {};
 function __annapTrayDevOn() {
     var b = typeof window.AnnapGuestBoot !== "undefined" ? window.AnnapGuestBoot : {};
     return window.__ANNAP_DEBUG === true || b.showBootChecklist === true;
@@ -30,6 +64,21 @@ function __annapTrayErr() {
     try {
         window.console.error.apply(window.console, arguments);
     } catch (_e2) {}
+}
+function __annapTrayPaymentDevLog(label, detail) {
+    if (!__annapTrayDevOn()) return;
+    try {
+        if (detail !== undefined) window.console.log("[annap-tray-payment:" + TRAY_PAYMENT_FLOW_VERSION + "]", label, detail);
+        else window.console.log("[annap-tray-payment:" + TRAY_PAYMENT_FLOW_VERSION + "]", label);
+    } catch (_e) {}
+}
+
+function __annapBankTransferDebugPatch(patch) {
+    if (!patch || typeof patch !== "object") return;
+    const current = window.__annapBankTransferDebug || {};
+    const next = { ...current, ...patch, at: new Date().toISOString() };
+    window.__annapBankTransferDebug = next;
+    if (__annapTrayDevOn()) __annapTrayPaymentDevLog("bank-transfer-debug", next);
 }
 
 function __annapModalDebugOn() {
@@ -127,15 +176,35 @@ function __annapMenuRuntimeJsonSelfCheck() {
             return s;
         }
 
+        function formatTableMetaLine() {
+            const lab = String((GUEST_CTX && GUEST_CTX.label) || "").trim();
+            if (!VENUE_TABLE_ID && !lab) return "";
+            const tableLabel = lab || trayCopyFallback("cart.linkedTable", "Bàn của bạn", "Your table");
+            return (
+                tfmt("cart.tableMetaShort", { label: tableLabel }) ||
+                trayCopyFallback(
+                    "cart.tableMetaShort",
+                    "Bàn " + tableLabel + " · 106/1 Nguyễn Thị Minh Khai",
+                    "Table " + tableLabel + " · 106/1 Nguyễn Thị Minh Khai"
+                )
+            );
+        }
+
         function refreshTableIdentityUi() {
             syncCartKey();
             const idBlock = document.getElementById("menu-table-identity");
             const needQr = document.getElementById("menu-table-need-qr");
             const primary = document.getElementById("menu-table-primary");
+            const tableMeta = document.getElementById("trayTableMeta");
             const btn = document.getElementById("menuSubmitBtn");
             const has = !!VENUE_TABLE_ID;
-            if (idBlock) idBlock.classList.toggle("hidden", !has);
+            if (idBlock) idBlock.classList.add("hidden");
             if (needQr) needQr.classList.toggle("hidden", has);
+            if (tableMeta) {
+                const meta = has ? formatTableMetaLine() : "";
+                tableMeta.textContent = meta;
+                tableMeta.classList.toggle("hidden", !meta);
+            }
             if (btn) {
                 if (has) btn.removeAttribute("disabled");
                 else btn.setAttribute("disabled", "disabled");
@@ -195,7 +264,13 @@ function __annapMenuRuntimeJsonSelfCheck() {
 
         function cartLineKey(l) {
             const gl = (l.guestLabel && String(l.guestLabel).trim()) || "";
-            return String(l.menuItemId) + "\u0001" + gl;
+            const menuId =
+                l.menuItemId != null && l.menuItemId !== ""
+                    ? l.menuItemId
+                    : l.id != null && l.id !== ""
+                      ? l.id
+                      : "";
+            return String(menuId) + "\u0001" + gl;
         }
 
         const cartItems = new Map(); /* line key -> { id, guestLabel, name, unitPrice, qty } */
@@ -223,7 +298,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     name: l.name,
                     unitPrice: l.unitPrice,
                     qty: l.qty,
-                    imageSrc: l.imageSrc || ""
+                    imageSrc: l.imageSrc || "",
+                    customerNote: l.customerNote && String(l.customerNote).trim() ? String(l.customerNote).trim() : ""
                 });
             }
         }
@@ -654,28 +730,1119 @@ function __annapMenuRuntimeJsonSelfCheck() {
             return isVi ? vi : en;
         }
 
+        function trayCopyFallback(key, vi, en) {
+            const t = tOrder(key);
+            if (t) return t;
+            const isVi =
+                (window.LuxuryI18n && window.LuxuryI18n.getLang && window.LuxuryI18n.getLang() === "vi") ||
+                (document.documentElement.lang || "").toLowerCase().startsWith("vi");
+            return isVi ? vi : en;
+        }
+
+        function readSubmittedSession() {
+            if (typeof GuestInteractionContract === "undefined") return null;
+            return GuestInteractionContract.readGuestOrderSession();
+        }
+
+        function buildTrackHref(sess) {
+            if (!sess) return "";
+            if (typeof GuestInteractionContract.buildGuestTrackUrl === "function") {
+                return GuestInteractionContract.buildGuestTrackUrl(sess.orderId, sess.token);
+            }
+            return `/track/${encodeURIComponent(sess.orderId)}?token=${encodeURIComponent(sess.token)}`;
+        }
+
+        function buildGuestStatusApiPath(sess) {
+            if (!sess) return "";
+            if (typeof GuestInteractionContract.buildGuestTrackApiUrl === "function") {
+                return GuestInteractionContract.buildGuestTrackApiUrl(sess.orderId, sess.token);
+            }
+            return `/api/track/orders/${encodeURIComponent(sess.orderId)}?token=${encodeURIComponent(sess.token)}`;
+        }
+
+        function fetchGuestOrderStatus(sess) {
+            const path = buildGuestStatusApiPath(sess);
+            if (!path) return Promise.reject(new Error("missing session"));
+            const url = typeof window.__annapApiUrl === "function" ? window.__annapApiUrl(path) : path;
+            return fetch(url, {
+                headers: { Accept: "application/json" },
+                cache: "no-store"
+            });
+        }
+
+        function resolveSubmittedCounterState(pm) {
+            const method = String(pm || "").trim();
+            if (method === PAYMENT_METHOD.CARD) return TRAY_STATE.SUBMITTED_CARD;
+            if (method === PAYMENT_METHOD.CASH || method === PAYMENT_METHOD.LEGACY_CASH_CARD) return TRAY_STATE.SUBMITTED_CASH;
+            if (method === PAYMENT_METHOD.BANK) return TRAY_STATE.SUBMITTED_BANK;
+            return TRAY_STATE.SUBMITTED_COUNTER;
+        }
+
+        function resolveTrayState() {
+            const n = totalQty();
+            const sess = readSubmittedSession();
+            if (menuOrderSubmitInFlight) {
+                if (sess && sess.orderId && sess.token && n === 0) {
+                    const st = traySubmittedStatus || sess.status || TRAY_STATE.SUBMITTED_PENDING;
+                    if (st === TRAY_STATE.COMPLETED || st === "completed") return TRAY_STATE.COMPLETED;
+                    if (st === TRAY_STATE.PAID || st === "paid") return TRAY_STATE.PAID;
+                    const pm = String(sess.paymentMethod || "").trim();
+                    if (pm === PAYMENT_METHOD.BANK || st === TRAY_STATE.SUBMITTED_BANK) return TRAY_STATE.SUBMITTED_BANK;
+                    if (st === TRAY_STATE.SUBMITTED_CARD || pm === PAYMENT_METHOD.CARD) return TRAY_STATE.SUBMITTED_CARD;
+                    if (
+                        st === TRAY_STATE.SUBMITTED_CASH ||
+                        st === TRAY_STATE.SUBMITTED_COUNTER ||
+                        pm === PAYMENT_METHOD.CASH ||
+                        pm === PAYMENT_METHOD.LEGACY_CASH_CARD
+                    )
+                        return resolveSubmittedCounterState(pm);
+                    return TRAY_STATE.SUBMITTED_PENDING;
+                }
+                return TRAY_STATE.SUBMITTING;
+            }
+            if (checkoutStep === "review") return TRAY_STATE.REVIEW;
+            if (checkoutStep === "payment") return TRAY_STATE.PAYMENT_CHOICE;
+            if (n > 0) return TRAY_STATE.EDITING;
+            if (sess && sess.orderId && sess.token) {
+                const st = traySubmittedStatus || sess.status || TRAY_STATE.SUBMITTED_PENDING;
+                if (st === TRAY_STATE.COMPLETED || st === "completed") return TRAY_STATE.COMPLETED;
+                if (st === TRAY_STATE.PAID || st === "paid") return TRAY_STATE.PAID;
+                const pm = String(sess.paymentMethod || "").trim();
+                if (pm === PAYMENT_METHOD.BANK || st === TRAY_STATE.SUBMITTED_BANK) return TRAY_STATE.SUBMITTED_BANK;
+                if (st === TRAY_STATE.SUBMITTED_CARD || pm === PAYMENT_METHOD.CARD) return TRAY_STATE.SUBMITTED_CARD;
+                if (
+                    st === TRAY_STATE.SUBMITTED_CASH ||
+                    st === TRAY_STATE.SUBMITTED_COUNTER ||
+                    pm === PAYMENT_METHOD.CASH ||
+                    pm === PAYMENT_METHOD.LEGACY_CASH_CARD
+                )
+                    return resolveSubmittedCounterState(pm);
+                return TRAY_STATE.SUBMITTED_PENDING;
+            }
+            return TRAY_STATE.EMPTY;
+        }
+
+        function isSubmittedTrayState(state) {
+            return (
+                state === TRAY_STATE.SUBMITTED_PENDING ||
+                state === TRAY_STATE.SUBMITTED_COUNTER ||
+                state === TRAY_STATE.SUBMITTED_CASH ||
+                state === TRAY_STATE.SUBMITTED_CARD ||
+                state === TRAY_STATE.SUBMITTED_BANK ||
+                state === TRAY_STATE.PAID ||
+                state === TRAY_STATE.COMPLETED
+            );
+        }
+
+        function restoreSubmitButtonState(btn, prepLabel) {
+            if (!btn) return;
+            btn.classList.remove("order-tray-submit--preparing", "order-tray-submit--success", "order-tray-submit--pulse");
+            btn.removeAttribute("disabled");
+            if (prepLabel) btn.textContent = prepLabel;
+        }
+
+        function renderInlineTransferFallback(host, qr, options) {
+            options = options || {};
+            const q = qr || {};
+            const amount = q.amountFormatted || q.amount || "—";
+            const memo = q.memo || "—";
+            const bankName = q.bankName || "ACB";
+            const account = q.accountNumber || "7385268";
+            const holder = q.accountName || "HO KINH DOANH ANNAP";
+            const qrImage = q.qrImageUrl ? String(q.qrImageUrl) : "";
+            const warningLine = options.showWarning
+                ? `<p class="order-tray-submitted-card__note">${escapeHtml(
+                      trayCopyFallback(
+                          "checkout.transferQrLoadFailed",
+                          "Không tải được mã QR. Bạn vẫn có thể chuyển khoản bằng thông tin bên dưới.",
+                          "Could not load the QR code. You can still transfer using the details below."
+                      )
+                  )}</p>`
+                : "";
+            host.innerHTML = `<div class="guest-bank-transfer guest-bank-transfer--tray" role="status">
+                ${
+                    qrImage
+                        ? `<div class="guest-bank-transfer__qr-wrap">
+                    <img class="guest-bank-transfer__qr" src="${escapeHtml(qrImage)}" alt="${escapeHtml(
+                              trayCopyFallback("checkout.transferQrAlt", "Mã QR chuyển khoản Annap", "Annap transfer QR")
+                          )}" loading="eager" decoding="async" referrerpolicy="no-referrer" />
+                    <p class="guest-bank-transfer__qr-fallback hidden" role="status">${escapeHtml(
+                        trayCopyFallback(
+                            "checkout.transferQrLoadFailed",
+                            "Không tải được mã QR. Bạn vẫn có thể chuyển khoản bằng thông tin bên dưới.",
+                            "Could not load the QR code. You can still transfer using the details below."
+                        )
+                    )}</p>
+                </div>`
+                        : ""
+                }
+                <p class="guest-bank-transfer__amount">${escapeHtml(String(amount))}</p>
+                <div class="guest-bank-transfer__keep-open" role="status">
+                    <p class="guest-bank-transfer__keep-open-title">${escapeHtml(
+                        trayCopyFallback(
+                            "checkout.bankTransferKeepOpen",
+                            "Vui lòng giữ nguyên màn hình chuyển khoản để nhân viên ra kiểm tra và xác nhận thanh toán.",
+                            "Please keep the bank transfer screen open so staff can come verify and confirm payment."
+                        )
+                    )}</p>
+                    <p class="guest-bank-transfer__keep-open-sub">${escapeHtml(
+                        trayCopyFallback(
+                            "checkout.bankTransferStaffConfirmNote",
+                            "Đơn chỉ chuyển sang Đã thanh toán sau khi nhân viên xác nhận.",
+                            "Your order is marked paid only after staff confirm payment."
+                        )
+                    )}</p>
+                </div>
+                <dl class="guest-bank-transfer__meta">
+                    <div><dt>${escapeHtml(trayCopyFallback("checkout.transferMemo", "Nội dung", "Transfer memo"))}</dt><dd class="guest-bank-transfer__memo">${escapeHtml(
+                        String(memo)
+                    )}</dd></div>
+                    <div><dt>${escapeHtml(trayCopyFallback("checkout.transferBank", "Ngân hàng", "Bank"))}</dt><dd>${escapeHtml(
+                        String(bankName)
+                    )}</dd></div>
+                    <div><dt>${escapeHtml(trayCopyFallback("checkout.transferAccountNumber", "Số tài khoản", "Account number"))}</dt><dd>${escapeHtml(
+                        String(account)
+                    )}</dd></div>
+                    <div><dt>${escapeHtml(trayCopyFallback("checkout.transferAccountHolder", "Chủ tài khoản", "Account holder"))}</dt><dd>${escapeHtml(
+                        String(holder)
+                    )}</dd></div>
+                </dl>
+                <div class="guest-bank-transfer__actions">
+                    <button type="button" class="guest-bank-transfer__copy guest-hit" data-copy-memo="${escapeHtml(String(memo))}">${escapeHtml(
+                        trayCopyFallback("checkout.copyMemo", "Sao chép nội dung", "Copy memo")
+                    )}</button>
+                    <button type="button" class="guest-bank-transfer__copy guest-hit" data-copy-amount="${escapeHtml(
+                        String(q.amount || "")
+                    )}">${escapeHtml(trayCopyFallback("checkout.copyAmount", "Sao chép số tiền", "Copy amount"))}</button>
+                </div>
+                ${warningLine}
+            </div>`;
+            const img = host.querySelector(".guest-bank-transfer__qr");
+            const fallback = host.querySelector(".guest-bank-transfer__qr-fallback");
+            if (img && fallback) {
+                img.addEventListener("load", function () {
+                    __annapBankTransferDebugPatch({
+                        qrImageLoadState: "loaded",
+                        qrImageNaturalWidth: img.naturalWidth || 0,
+                        qrImageNaturalHeight: img.naturalHeight || 0
+                    });
+                });
+                img.addEventListener("error", function () {
+                    img.classList.add("hidden");
+                    fallback.classList.remove("hidden");
+                    __annapBankTransferDebugPatch({
+                        qrImageLoadState: "error",
+                        qrImageNaturalWidth: img.naturalWidth || 0,
+                        qrImageNaturalHeight: img.naturalHeight || 0
+                    });
+                });
+            }
+            host.querySelectorAll("[data-copy-memo]").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    if (window.GuestBankTransfer && typeof window.GuestBankTransfer.copyText === "function")
+                        void window.GuestBankTransfer.copyText(btn.getAttribute("data-copy-memo"), null);
+                });
+            });
+            host.querySelectorAll("[data-copy-amount]").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    if (window.GuestBankTransfer && typeof window.GuestBankTransfer.copyText === "function")
+                        void window.GuestBankTransfer.copyText(btn.getAttribute("data-copy-amount"), null);
+                });
+            });
+        }
+
+        function renderTransferFatalFallback(host, onRetry) {
+            host.innerHTML = `<div class="guest-bank-transfer guest-bank-transfer--tray" role="alert">
+                <p class="guest-bank-transfer__message">${escapeHtml(
+                    trayCopyFallback(
+                        "checkout.transferUnavailableInTray",
+                        "Không tải được thông tin chuyển khoản. Vui lòng gọi nhân viên.",
+                        "Could not load transfer details. Please call staff."
+                    )
+                )}</p>
+                <div class="guest-bank-transfer__actions">
+                    <button type="button" class="guest-bank-transfer__copy guest-hit" data-bt-retry="1">${escapeHtml(
+                        trayCopyFallback("checkout.transferRetry", "Tải lại mã chuyển khoản", "Retry transfer QR")
+                    )}</button>
+                </div>
+            </div>`;
+            const retryBtn = host.querySelector("[data-bt-retry]");
+            if (retryBtn && typeof onRetry === "function") {
+                retryBtn.addEventListener("click", function (ev) {
+                    ev.preventDefault();
+                    onRetry();
+                });
+            }
+        }
+
+        function ensureBankTransferQrMounted(sess) {
+            if (!sess || String(sess.paymentMethod || "").trim() !== PAYMENT_METHOD.BANK) return Promise.resolve(false);
+            const state = resolveTrayState();
+            if (state !== TRAY_STATE.SUBMITTED_BANK) return Promise.resolve(false);
+            const host = document.getElementById("order-tray-transfer-host");
+            const cacheKey = `${sess.orderId || ""}|${sess.token || ""}`;
+            __annapBankTransferDebugPatch({
+                appVersion: TRAY_PAYMENT_FLOW_VERSION,
+                trayState: state,
+                submittedStatus: traySubmittedStatus || sess.status || "",
+                paymentMethod: sess.paymentMethod || "",
+                orderId: sess.orderId || "",
+                hasGuestToken: !!sess.token,
+                qrMountFound: !!host
+            });
+            if (!host || !sess.orderId || !sess.token) return Promise.resolve(false);
+            host.innerHTML =
+                '<p class="order-tray-submitted-card__note">' +
+                escapeHtml(
+                    trayCopyFallback("checkout.transferQrLoading", "Đang tải mã chuyển khoản...", "Loading transfer QR...")
+                ) +
+                "</p>";
+            if (__annapTrayDevOn()) {
+                host.insertAdjacentHTML(
+                    "beforeend",
+                    `<p class="order-tray-submitted-card__note">BT debug: state=${escapeHtml(state)} key=${escapeHtml(cacheKey)}</p>`
+                );
+            }
+            if (bankTransferQrCache && bankTransferQrCacheKey === cacheKey) {
+                if (window.GuestBankTransfer && typeof window.GuestBankTransfer.mountTransferCard === "function")
+                    window.GuestBankTransfer.mountTransferCard(host, bankTransferQrCache, { compact: true });
+                else renderInlineTransferFallback(host, bankTransferQrCache);
+                __annapBankTransferDebugPatch({ qrRenderCalled: true, qrCardInserted: true, qrFetchStatus: "cache" });
+                return Promise.resolve(true);
+            }
+            if (bankTransferQrInflightKey === cacheKey) return Promise.resolve(true);
+            bankTransferQrInflightKey = cacheKey;
+            __annapBankTransferDebugPatch({ qrFetchStarted: true });
+            const fetchQr =
+                window.GuestBankTransfer && typeof window.GuestBankTransfer.fetchTransferQr === "function"
+                    ? window.GuestBankTransfer.fetchTransferQr(sess.orderId, sess.token)
+                    : Promise.resolve(null);
+            return fetchQr
+                .then(function (qr) {
+                    __annapBankTransferDebugPatch({
+                        qrFetchStatus: "200",
+                        qrFetchBodyHasQrImageUrl: !!(qr && qr.qrImageUrl)
+                    });
+                    if (qr) {
+                        bankTransferQrCache = qr;
+                        bankTransferQrCacheKey = cacheKey;
+                    }
+                    if (qr && window.GuestBankTransfer && typeof window.GuestBankTransfer.mountTransferCard === "function")
+                        window.GuestBankTransfer.mountTransferCard(host, qr, { compact: true });
+                    else if (qr) renderInlineTransferFallback(host, qr);
+                    else renderTransferFatalFallback(host, function () { void ensureBankTransferQrMounted(sess); });
+                    const card = host.querySelector(".guest-bank-transfer");
+                    const rect = card ? card.getBoundingClientRect() : null;
+                    __annapBankTransferDebugPatch({
+                        qrRenderCalled: true,
+                        qrCardInserted: !!card,
+                        qrCardVisible: !!(rect && rect.height > 0 && rect.width > 0),
+                        qrCardRect: rect
+                            ? { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
+                            : null
+                    });
+                    return !!card;
+                })
+                .catch(function (err) {
+                    __annapBankTransferDebugPatch({ lastError: String(err && err.message ? err.message : err), qrFetchStatus: "error" });
+                    const fallbackPath = `/api/track/orders/${encodeURIComponent(sess.orderId)}?token=${encodeURIComponent(sess.token)}`;
+                    const fallbackUrl = typeof window.__annapApiUrl === "function" ? window.__annapApiUrl(fallbackPath) : fallbackPath;
+                    return fetch(fallbackUrl, { headers: { Accept: "application/json" }, cache: "no-store" })
+                        .then(function (res) {
+                            if (!res.ok) throw new Error("fallback track fetch failed");
+                            return res.json();
+                        })
+                        .then(function (track) {
+                            const qr = track && track.transferQr ? track.transferQr : null;
+                            if (qr) {
+                                bankTransferQrCache = qr;
+                                bankTransferQrCacheKey = cacheKey;
+                            }
+                            if (qr && window.GuestBankTransfer && typeof window.GuestBankTransfer.mountTransferCard === "function")
+                                window.GuestBankTransfer.mountTransferCard(host, qr, { compact: true });
+                            else if (qr) renderInlineTransferFallback(host, qr, { showWarning: true });
+                            else renderTransferFatalFallback(host, function () { void ensureBankTransferQrMounted(sess); });
+                            return !!host.querySelector(".guest-bank-transfer");
+                        })
+                        .catch(function () {
+                            renderTransferFatalFallback(host, function () { void ensureBankTransferQrMounted(sess); });
+                            return false;
+                        });
+                })
+                .finally(function () {
+                    bankTransferQrInflightKey = "";
+                });
+        }
+
+        function applySubmitSuccessUi(payload, paymentMethod, btn, prepLabel) {
+            const submittedStatus =
+                paymentMethod === PAYMENT_METHOD.BANK
+                    ? TRAY_STATE.SUBMITTED_BANK
+                    : paymentMethod === PAYMENT_METHOD.CARD
+                      ? TRAY_STATE.SUBMITTED_CARD
+                      : TRAY_STATE.SUBMITTED_CASH;
+
+            GuestInteractionContract.writeGuestOrderSession({
+                orderId: payload.id,
+                token: payload.guestSessionToken,
+                venueTableId: VENUE_TABLE_ID,
+                submittedAt: new Date().toISOString(),
+                status: submittedStatus,
+                paymentMethod: paymentMethod
+            });
+            expandedItemNoteKeys.clear();
+            traySubmittedStatus = submittedStatus;
+            trayKnownPendingPayment = true;
+            menuOrderSubmitInFlight = false;
+            resetCheckoutStep();
+
+            GuestInteractionContract.clearCart();
+            linesToCartMap(GuestInteractionContract.getCartLines());
+            renderCart();
+            updateCheckoutUi();
+            updateTraySummary();
+            setTrayOpen(true, { userIntent: true });
+            startTrayStatusPolling();
+
+            if (btn) {
+                btn.classList.remove("order-tray-submit--preparing");
+                btn.setAttribute("disabled", "disabled");
+            }
+
+            __annapTrayPaymentDevLog("submit success ui", {
+                paymentMethod: paymentMethod,
+                renderState: submittedStatus,
+                orderId: payload.id ? "present" : "missing",
+                token: payload.guestSessionToken ? "present" : "missing",
+                trackUrl: payload.trackUrl ? "present" : "missing"
+            });
+
+            document.body.classList.add("annap-order-confirming");
+            window.setTimeout(function () {
+                document.body.classList.remove("annap-order-confirming");
+            }, 1200);
+        }
+
+        function resetCheckoutStep() {
+            checkoutStep = null;
+            selectedPaymentMethod = PAYMENT_METHOD.CASH;
+        }
+
+        function setCheckoutStep(step) {
+            checkoutStep = step === "review" || step === "payment" ? step : null;
+            if (checkoutStep === "review") selectedPaymentMethod = PAYMENT_METHOD.CASH;
+            if (checkoutStep === "payment" && typeof refreshBankTransferAvailability === "function") {
+                refreshBankTransferAvailability();
+            }
+            updateCheckoutUi();
+            updateTraySummary();
+            if (checkoutStep === "payment") {
+                window.requestAnimationFrame(function () {
+                    scrollCheckoutCtaIntoView();
+                });
+            }
+        }
+
+        async function refreshBankTransferAvailability() {
+            if (!window.GuestBankTransfer || typeof window.GuestBankTransfer.fetchAvailability !== "function") {
+                bankTransferConfigured = null;
+                applyBankTransferAvailabilityUi();
+                return;
+            }
+            try {
+                const data = await window.GuestBankTransfer.fetchAvailability();
+                bankTransferConfigured = !!data.enabled;
+            } catch (_e) {
+                bankTransferConfigured = false;
+            }
+            applyBankTransferAvailabilityUi();
+        }
+
+        function applyBankTransferAvailabilityUi() {
+            const bankBtn = document.querySelector('.order-tray-payment-option[data-payment-method="BankTransfer"]');
+            if (!bankBtn) return;
+            const unavailable = bankTransferConfigured === false;
+            bankBtn.disabled = unavailable;
+            bankBtn.classList.toggle("order-tray-payment-option--disabled", unavailable);
+            bankBtn.setAttribute("aria-disabled", unavailable ? "true" : "false");
+            let hint = bankBtn.querySelector(".order-tray-payment-option__hint");
+            if (unavailable) {
+                if (!hint) {
+                    hint = document.createElement("span");
+                    hint.className = "order-tray-payment-option__hint";
+                    bankBtn.appendChild(hint);
+                }
+                hint.textContent = trayCopyFallback(
+                    "checkout.bankTransferUnavailable",
+                    "Chuyển khoản hiện chưa khả dụng. Vui lòng thanh toán tại quầy.",
+                    "Bank transfer is currently unavailable. Please pay at the counter."
+                );
+            } else if (hint) {
+                hint.remove();
+            }
+            if (unavailable && selectedPaymentMethod === PAYMENT_METHOD.BANK) {
+                selectedPaymentMethod = PAYMENT_METHOD.CASH;
+                updatePaymentOptionUi();
+            }
+        }
+
+        function renderCheckoutReviewLines() {
+            const host = document.getElementById("order-tray-checkout-lines");
+            const totalEl = document.getElementById("order-tray-checkout-total");
+            if (!host) return;
+            const lines = Array.from(cartItems.values());
+            host.innerHTML = lines
+                .map(function (line) {
+                    const lineTotal = line.qty * line.unitPrice;
+                    return `<li class="order-tray-checkout__line">
+                        <span class="order-tray-checkout__line-name">${escapeHtml(line.name)}</span>
+                        <span class="order-tray-checkout__line-qty">×${line.qty}</span>
+                        <span class="order-tray-checkout__line-total">${escapeHtml(money.format(lineTotal))}</span>
+                    </li>`;
+                })
+                .join("");
+            if (totalEl) totalEl.textContent = money.format(subtotal());
+        }
+
+        function getPaymentSubmitLabel(method) {
+            if (method === PAYMENT_METHOD.BANK) {
+                return (
+                    tOrder("checkout.submitForQr") ||
+                    trayCopyFallback("checkout.submitForQr", "Gửi đơn — lấy mã QR", "Send order — get QR code")
+                );
+            }
+            if (method === PAYMENT_METHOD.CARD) {
+                return (
+                    tOrder("checkout.submitCard") ||
+                    trayCopyFallback("checkout.submitCard", "Gửi đơn — thanh toán bằng thẻ", "Send order — pay by card")
+                );
+            }
+            return (
+                tOrder("checkout.submitCash") ||
+                trayCopyFallback("checkout.submitCash", "Gửi đơn — thanh toán tiền mặt", "Send order — pay cash")
+            );
+        }
+
+        function updatePaymentPreviewUi() {
+            const preview = document.getElementById("order-tray-payment-preview");
+            const titleEl = document.getElementById("order-tray-payment-preview-title");
+            const bodyEl = document.getElementById("order-tray-payment-preview-body");
+            const noteEl = document.getElementById("order-tray-payment-preview-note");
+            const keepOpenEl = document.getElementById("order-tray-payment-preview-keepopen");
+            if (!preview || checkoutStep !== "payment" || !selectedPaymentMethod) {
+                if (preview) {
+                    preview.classList.add("hidden");
+                    preview.hidden = true;
+                }
+                if (keepOpenEl) {
+                    keepOpenEl.classList.add("hidden");
+                    keepOpenEl.hidden = true;
+                }
+                return;
+            }
+            let title;
+            let body;
+            let note;
+            if (selectedPaymentMethod === PAYMENT_METHOD.BANK) {
+                title = trayCopyFallback("checkout.bankPreviewTitle", "Chuyển khoản", "Bank transfer");
+                body = trayCopyFallback(
+                    "checkout.bankPreviewBody",
+                    "Sau khi gửi đơn, mã QR chuyển khoản đúng số tiền sẽ hiện tại đây.",
+                    "After you send the order, a transfer QR for the exact amount will appear here."
+                );
+                note = trayCopyFallback(
+                    "checkout.bankPreviewNote",
+                    "Vui lòng chuyển đúng số tiền và nội dung để nhân viên xác nhận nhanh hơn.",
+                    "Please transfer the exact amount and memo so staff can confirm faster."
+                );
+                if (keepOpenEl) {
+                    keepOpenEl.textContent = trayCopyFallback(
+                        "checkout.bankPreviewKeepOpen",
+                        "Sau khi chuyển khoản, vui lòng giữ nguyên màn hình chuyển khoản để nhân viên ra kiểm tra.",
+                        "After transferring, please keep the bank transfer screen open for staff to verify."
+                    );
+                    keepOpenEl.classList.remove("hidden");
+                    keepOpenEl.hidden = false;
+                }
+            } else if (selectedPaymentMethod === PAYMENT_METHOD.CARD) {
+                title = trayCopyFallback("checkout.cardPreviewTitle", "Thanh toán bằng thẻ", "Pay by card");
+                body = trayCopyFallback(
+                    "checkout.cardPreviewBody",
+                    "Sau khi gửi đơn, vui lòng đến quầy để thanh toán bằng thẻ. Nhân viên sẽ kiểm tra lại đơn của bạn.",
+                    "After you send the order, please go to the counter to pay by card. Staff will check your order."
+                );
+                note = trayCopyFallback(
+                    "checkout.counterPreviewNote",
+                    "Đơn chỉ chuyển sang Đã Thanh Toán sau khi nhân viên xác nhận.",
+                    "Your order is marked paid only after staff confirm payment."
+                );
+                if (keepOpenEl) {
+                    keepOpenEl.textContent = "";
+                    keepOpenEl.classList.add("hidden");
+                    keepOpenEl.hidden = true;
+                }
+            } else {
+                title = trayCopyFallback("checkout.cashPreviewTitle", "Thanh toán tiền mặt", "Pay cash");
+                body = trayCopyFallback(
+                    "checkout.cashPreviewBody",
+                    "Sau khi gửi đơn, vui lòng đến quầy để thanh toán bằng tiền mặt. Nhân viên sẽ kiểm tra lại đơn của bạn.",
+                    "After you send the order, please go to the counter to pay cash. Staff will check your order."
+                );
+                note = trayCopyFallback(
+                    "checkout.counterPreviewNote",
+                    "Đơn chỉ chuyển sang Đã Thanh Toán sau khi nhân viên xác nhận.",
+                    "Your order is marked paid only after staff confirm payment."
+                );
+                if (keepOpenEl) {
+                    keepOpenEl.textContent = "";
+                    keepOpenEl.classList.add("hidden");
+                    keepOpenEl.hidden = true;
+                }
+            }
+            if (titleEl) titleEl.textContent = title;
+            if (bodyEl) bodyEl.textContent = body;
+            if (noteEl) noteEl.textContent = note;
+            preview.classList.remove("hidden");
+            preview.hidden = false;
+        }
+
+        function scrollCheckoutCtaIntoView() {
+            const sticky = document.getElementById("order-tray-checkout-sticky");
+            const btn = document.getElementById("menuSubmitBtn");
+            const target = sticky || btn;
+            if (!target || typeof target.scrollIntoView !== "function") return;
+            try {
+                target.scrollIntoView({ block: "nearest", behavior: reducedMotionTray() ? "auto" : "smooth" });
+            } catch (_e) {
+                target.scrollIntoView(false);
+            }
+        }
+
+        function updatePaymentOptionUi() {
+            document.querySelectorAll(".order-tray-payment-option").forEach(function (btn) {
+                const method = btn.getAttribute("data-payment-method");
+                const on = method === selectedPaymentMethod;
+                btn.classList.toggle("order-tray-payment-option--selected", on);
+                btn.setAttribute("aria-pressed", on ? "true" : "false");
+            });
+            updatePaymentPreviewUi();
+            const btn = document.getElementById("menuSubmitBtn");
+            if (btn && checkoutStep === "payment" && !menuOrderSubmitInFlight && !isSubmittedTrayState(resolveTrayState())) {
+                btn.textContent = getPaymentSubmitLabel(selectedPaymentMethod);
+            }
+        }
+
+        function updateCheckoutUi() {
+            const review = document.getElementById("order-tray-checkout-review");
+            const payment = document.getElementById("order-tray-checkout-payment");
+            const cartFooter = document.getElementById("order-tray-cart-footer");
+            const backRow = document.getElementById("order-tray-checkout-actions");
+            const stickyBar = document.getElementById("order-tray-checkout-sticky");
+            const clearBtn = document.getElementById("order-tray-clear");
+            const btn = document.getElementById("menuSubmitBtn");
+            const inCheckout = checkoutStep === "review" || checkoutStep === "payment";
+            const inPayment = checkoutStep === "payment";
+            const submitted = isSubmittedTrayState(resolveTrayState());
+
+            if (review) {
+                const showReview = checkoutStep === "review" || checkoutStep === "payment";
+                review.classList.toggle("hidden", !showReview);
+                review.hidden = !showReview;
+                review.classList.toggle("order-tray-checkout--compact", inPayment);
+            }
+            if (payment) {
+                payment.classList.toggle("hidden", !inPayment);
+                payment.hidden = !inPayment;
+            }
+            if (cartFooter) {
+                const hideSubtotal = inCheckout;
+                cartFooter.classList.toggle("order-tray-cart-footer--checkout", inCheckout);
+                const subtotalRow = cartFooter.querySelector(".flex.items-baseline");
+                if (subtotalRow) subtotalRow.classList.toggle("hidden", hideSubtotal);
+            }
+            if (backRow) {
+                backRow.classList.toggle("hidden", !inCheckout);
+                backRow.hidden = !inCheckout;
+            }
+            if (stickyBar) {
+                stickyBar.classList.toggle("order-tray-checkout-sticky--pinned", inPayment);
+            }
+            if (clearBtn) clearBtn.classList.toggle("hidden", inCheckout || submitted);
+
+            const linesWrap = document.getElementById("order-tray-lines-wrap");
+            if (linesWrap) {
+                const showLines = !inCheckout || submitted;
+                linesWrap.classList.toggle("hidden", !showLines);
+                linesWrap.hidden = !showLines;
+            }
+            if (orderTrayRoot) {
+                orderTrayRoot.classList.toggle("order-tray-root--checkout", inCheckout);
+                orderTrayRoot.classList.toggle("order-tray-root--checkout-payment", inPayment);
+            }
+
+            if (checkoutStep === "review") renderCheckoutReviewLines();
+            if (checkoutStep === "payment") updatePaymentOptionUi();
+            if (inCheckout || submitted) refreshTableIdentityUi();
+
+            if (btn && !submitted && !menuOrderSubmitInFlight) {
+                if (checkoutStep === "review") {
+                    btn.textContent = tOrder("checkout.continueToPayment") || trayCopyFallback("checkout.continueToPayment", "Chọn phương thức thanh toán", "Choose payment method");
+                    btn.removeAttribute("disabled");
+                } else if (checkoutStep === "payment") {
+                    btn.textContent = getPaymentSubmitLabel(selectedPaymentMethod);
+                    btn.removeAttribute("disabled");
+                } else if (totalQty() > 0 && VENUE_TABLE_ID) {
+                    btn.textContent = tOrder("checkout.reviewOrder") || trayCopyFallback("checkout.reviewOrder", "Kiểm tra đơn", "Review order");
+                    btn.removeAttribute("disabled");
+                } else {
+                    btn.textContent = tOrder("checkout.reviewOrder") || trayCopyFallback("checkout.reviewOrder", "Kiểm tra đơn", "Review order");
+                }
+            } else if (btn && submitted) {
+                btn.setAttribute("disabled", "disabled");
+            }
+        }
+
+        function handlePrimaryTrayAction() {
+            if (menuOrderSubmitInFlight) return;
+            if (!VENUE_TABLE_ID) {
+                const orderResult = document.getElementById("orderResult");
+                if (orderResult)
+                    orderResult.textContent =
+                        tOrder("order.needTableScan") || tOrder("order.needTable") || "Please scan the table QR to begin.";
+                return;
+            }
+            if (cartItems.size === 0) {
+                const orderResult = document.getElementById("orderResult");
+                if (orderResult) orderResult.textContent = tOrder("order.minOne") || "Your tray is empty.";
+                return;
+            }
+            if (!checkoutStep) {
+                setTrayOpen(true, { userIntent: true });
+                setCheckoutStep("review");
+                return;
+            }
+            if (checkoutStep === "review") {
+                setCheckoutStep("payment");
+                return;
+            }
+            if (checkoutStep === "payment") {
+                void submitOrder();
+            }
+        }
+
+        function isPendingTrackPayload(data) {
+            if (!data || data.isCancelled || data.isComplete) return false;
+            if (data.pendingPayment === true) return true;
+            const phase = data.phaseKey != null ? String(data.phaseKey) : "";
+            return phase === "awaiting_payment" || Number(data.step) === 1;
+        }
+
+        function isPaidTrackPayload(data) {
+            return isOrderPaidForGuest(data);
+        }
+
+        function isOrderPaidForGuest(data) {
+            if (!data || data.isCancelled || data.isComplete) return false;
+            if (data.pendingPayment === true) return false;
+            if (data.paidAtUtc) return true;
+            const phase = data.phaseKey != null ? String(data.phaseKey) : "";
+            if (phase === "paid_preparing" || phase.startsWith("paid") || phase === "completed") return true;
+            if (data.showBill === true && data.pendingPayment === false) return true;
+            const statusRaw = data.status != null ? String(data.status) : "";
+            if (/^(Paid|InProgress|FinishingTouches|Ready)$/i.test(statusRaw)) return true;
+            return false;
+        }
+
+        function isSubmittedPendingTrayState(state) {
+            return (
+                state === TRAY_STATE.SUBMITTED_PENDING ||
+                state === TRAY_STATE.SUBMITTED_COUNTER ||
+                state === TRAY_STATE.SUBMITTED_CASH ||
+                state === TRAY_STATE.SUBMITTED_CARD ||
+                state === TRAY_STATE.SUBMITTED_BANK
+            );
+        }
+
+        function shouldPollSubmittedTrayStatus() {
+            if (!readSubmittedSession()) return false;
+            return isSubmittedPendingTrayState(resolveTrayState());
+        }
+
+        function stopTrayStatusPolling() {
+            if (trayStatusPollTimer) {
+                window.clearInterval(trayStatusPollTimer);
+                trayStatusPollTimer = null;
+            }
+        }
+
+        function startTrayStatusPolling() {
+            if (!shouldPollSubmittedTrayStatus()) return;
+            function pollTick() {
+                if (!shouldPollSubmittedTrayStatus()) {
+                    stopTrayStatusPolling();
+                    return;
+                }
+                refreshSubmittedTrayStatus()
+                    .then(function (result) {
+                        if (result && result.uiChanged) {
+                            updateTraySummary();
+                            renderCart();
+                        }
+                    })
+                    .catch(function () {
+                        /* ignore */
+                    });
+            }
+            pollTick();
+            if (trayStatusPollTimer) return;
+            trayStatusPollTimer = window.setInterval(pollTick, TRAY_STATUS_POLL_MS);
+        }
+
+        function dismissPaymentSuccessCelebration() {
+            const host = document.getElementById("order-tray-payment-celebration");
+            if (!host) return;
+            host.classList.remove("is-visible");
+            window.setTimeout(function () {
+                if (host.parentNode) host.parentNode.removeChild(host);
+            }, 280);
+        }
+
+        function runTrayConfettiBurst() {
+            if (reducedMotionTray()) return;
+            const wrap = document.createElement("div");
+            wrap.className = "order-tray-confetti";
+            wrap.setAttribute("aria-hidden", "true");
+            const colors = ["#f5c842", "#e8a838", "#6fcf97", "#56ccf2", "#bb6bd9", "#f2994a"];
+            for (let i = 0; i < 52; i++) {
+                const piece = document.createElement("span");
+                piece.className = "order-tray-confetti__piece";
+                piece.style.setProperty("--x", String(Math.random()));
+                piece.style.setProperty("--delay", String(Math.random() * 0.35) + "s");
+                piece.style.setProperty("--rot", String(Math.random() * 360) + "deg");
+                piece.style.setProperty("--drift", String((Math.random() - 0.5) * 80) + "px");
+                piece.style.background = colors[i % colors.length];
+                wrap.appendChild(piece);
+            }
+            document.body.appendChild(wrap);
+            window.setTimeout(function () {
+                if (wrap.parentNode) wrap.parentNode.removeChild(wrap);
+            }, 2000);
+        }
+
+        function showPaymentSuccessCelebration(sess) {
+            dismissPaymentSuccessCelebration();
+            const host = document.createElement("div");
+            host.id = "order-tray-payment-celebration";
+            host.className = "order-tray-payment-celebration";
+            host.setAttribute("role", "dialog");
+            host.setAttribute("aria-modal", "true");
+            host.setAttribute("aria-live", "polite");
+            const title = trayCopyFallback("menuTray.chipPaidTitle", "Thanh toán thành công", "Payment successful");
+            const body = trayCopyFallback(
+                "menuTray.paymentSuccessCelebrationBody",
+                "Đơn của bạn đã được nhân viên xác nhận. Chúng tôi đang chuẩn bị món.",
+                "Staff have confirmed your order. We are preparing your drinks."
+            );
+            const trackLabel = trayCopyFallback("menuTray.chipTrackCta", "Theo dõi đơn", "Track order");
+            const closeLabel = trayCopyFallback("menuTray.paymentSuccessClose", "Đóng", "Close");
+            const trackHref = String(buildTrackHref(sess)).replace(/"/g, "&quot;");
+            host.innerHTML =
+                '<div class="order-tray-payment-celebration__backdrop" data-celebration-act="close"></div>' +
+                '<div class="order-tray-payment-celebration__card surface-glass">' +
+                '<p class="order-tray-payment-celebration__title">' +
+                escapeHtml(title) +
+                "</p>" +
+                '<p class="order-tray-payment-celebration__body">' +
+                escapeHtml(body) +
+                "</p>" +
+                '<div class="order-tray-payment-celebration__actions">' +
+                '<a href="' +
+                trackHref +
+                '" class="order-tray-payment-celebration__track guest-hit">' +
+                escapeHtml(trackLabel) +
+                "</a>" +
+                '<button type="button" class="order-tray-payment-celebration__close guest-hit" data-celebration-act="close">' +
+                escapeHtml(closeLabel) +
+                "</button>" +
+                "</div></div>";
+            host.addEventListener("click", function (ev) {
+                const act = ev.target && ev.target.closest ? ev.target.closest("[data-celebration-act]") : null;
+                if (!act) return;
+                ev.preventDefault();
+                dismissPaymentSuccessCelebration();
+            });
+            document.body.appendChild(host);
+            window.requestAnimationFrame(function () {
+                host.classList.add("is-visible");
+            });
+            runTrayConfettiBurst();
+        }
+
+        function handlePaymentConfirmedCelebration(sess) {
+            setTrayOpen(false);
+            updateTraySummary();
+            renderCart();
+            showPaymentSuccessCelebration(sess);
+            __annapTrayPaymentDevLog("payment confirmed celebration", { orderId: sess && sess.orderId });
+        }
+
+        async function refreshSubmittedTrayStatus() {
+            const sess = readSubmittedSession();
+            if (!sess) {
+                traySubmittedStatus = null;
+                trayKnownPendingPayment = null;
+                stopTrayStatusPolling();
+                return { uiChanged: false };
+            }
+            try {
+                const res = await fetchGuestOrderStatus(sess);
+                if (res.status === 404) {
+                    GuestInteractionContract.removeGuestOrderSession();
+                    traySubmittedStatus = null;
+                    trayKnownPendingPayment = null;
+                    stopTrayStatusPolling();
+                    return { uiChanged: true };
+                }
+                if (!res.ok) return { uiChanged: false };
+                let data;
+                try {
+                    data = await res.json();
+                } catch (_json) {
+                    __annapTrayPaymentDevLog("guest status poll: non-json response", { status: res.status });
+                    return { uiChanged: false };
+                }
+                if (data.isCancelled) {
+                    GuestInteractionContract.removeGuestOrderSession();
+                    traySubmittedStatus = null;
+                    trayKnownPendingPayment = null;
+                    stopTrayStatusPolling();
+                    return { uiChanged: true };
+                }
+                const wasPending =
+                    trayKnownPendingPayment === true ||
+                    (trayKnownPendingPayment !== false &&
+                        isSubmittedPendingTrayState(traySubmittedStatus || sess.status || TRAY_STATE.SUBMITTED_PENDING));
+                const isPending = isPendingTrackPayload(data);
+                const isPaid = isPaidTrackPayload(data);
+                if (data.isComplete) {
+                    traySubmittedStatus = TRAY_STATE.COMPLETED;
+                    GuestInteractionContract.updateGuestOrderSessionStatus(TRAY_STATE.COMPLETED);
+                    trayKnownPendingPayment = false;
+                    stopTrayStatusPolling();
+                } else if (isPaid) {
+                    traySubmittedStatus = TRAY_STATE.PAID;
+                    GuestInteractionContract.updateGuestOrderSessionStatus(TRAY_STATE.PAID);
+                    trayKnownPendingPayment = false;
+                    stopTrayStatusPolling();
+                } else {
+                    const pendingState = resolveSubmittedCounterState(sess.paymentMethod);
+                    traySubmittedStatus = pendingState;
+                    GuestInteractionContract.updateGuestOrderSessionStatus(pendingState);
+                    if (isPending) trayKnownPendingPayment = true;
+                }
+                let celebrated = false;
+                const orderKey = sess.orderId ? String(sess.orderId) : "";
+                if (wasPending && isPaid && orderKey && !celebratedPaidOrderIds.has(orderKey)) {
+                    celebratedPaidOrderIds.add(orderKey);
+                    handlePaymentConfirmedCelebration(sess);
+                    celebrated = true;
+                }
+                if (isPending) startTrayStatusPolling();
+                return { uiChanged: true, celebrated: celebrated };
+            } catch (_st) {
+                return { uiChanged: false };
+            }
+        }
+
+        function updateTraySheetForState(state) {
+            const footer = document.getElementById("order-tray-sheet-footer");
+            const clearBtn = document.getElementById("order-tray-clear");
+            const submitted = isSubmittedTrayState(state);
+            if (footer) footer.classList.toggle("order-tray-sheet-footer--hidden", submitted);
+            if (clearBtn) clearBtn.classList.toggle("hidden", submitted);
+        }
+
+        function renderSubmittedTraySheet(sess, state) {
+            const el = document.getElementById("cart");
+            if (!el || !sess) return;
+            let title;
+            let body;
+            let statusLabel;
+            let note;
+            if (state === TRAY_STATE.COMPLETED) {
+                title = trayCopyFallback("menuTray.chipCompleteTitle", "Đơn đã hoàn thành", "Order complete");
+                body = trayCopyFallback("menuTray.chipCompleteBody", "Cảm ơn bạn đã ghé Annap.", "Thank you for visiting Annap.");
+                statusLabel = "";
+                note = "";
+            } else if (state === TRAY_STATE.PAID) {
+                title = trayCopyFallback("menuTray.chipPaidTitle", "Thanh toán thành công", "Payment successful");
+                body = trayCopyFallback(
+                    "menuTray.paymentSuccessCelebrationBody",
+                    "Đơn của bạn đã được nhân viên xác nhận. Chúng tôi đang chuẩn bị món.",
+                    "Staff have confirmed your order. We are preparing your drinks."
+                );
+                statusLabel = "";
+                note = "";
+            } else if (state === TRAY_STATE.SUBMITTED_BANK) {
+                title = trayCopyFallback("checkout.waitingBankTransfer", "Chờ chuyển khoản", "Waiting for bank transfer");
+                body = trayCopyFallback(
+                    "checkout.bankTransferPendingBodyShort",
+                    "Quét mã QR hoặc chuyển khoản theo thông tin bên dưới.",
+                    "Scan the QR or transfer using the details below."
+                );
+                statusLabel = "";
+                note = "";
+            } else if (state === TRAY_STATE.SUBMITTED_CARD) {
+                title = trayCopyFallback("menuTray.chipSubmittedTitle", "Đơn đã được gửi", "Order sent");
+                body = trayCopyFallback(
+                    "checkout.cardSubmittedBodyShort",
+                    "Vui lòng đến quầy để thanh toán bằng thẻ.",
+                    "Please go to the counter to pay by card."
+                );
+                statusLabel = trayCopyFallback(
+                    "checkout.waitingCardPayment",
+                    "Chờ thanh toán bằng thẻ tại quầy",
+                    "Waiting for card payment at counter"
+                );
+                note = "";
+            } else {
+                title = trayCopyFallback("menuTray.chipSubmittedTitle", "Đơn đã được gửi", "Order sent");
+                body = trayCopyFallback(
+                    "checkout.cashSubmittedBodyShort",
+                    "Vui lòng đến quầy để thanh toán bằng tiền mặt.",
+                    "Please go to the counter to pay cash."
+                );
+                statusLabel = trayCopyFallback(
+                    "checkout.waitingCashPayment",
+                    "Chờ thanh toán tiền mặt tại quầy",
+                    "Waiting for cash payment at counter"
+                );
+                note = "";
+            }
+            const cardClass =
+                state === TRAY_STATE.SUBMITTED_BANK
+                    ? "order-tray-submitted-card order-tray-submitted-card--bank"
+                    : "order-tray-submitted-card order-tray-submitted-card--compact";
+            const keepOpen = trayCopyFallback(
+                "menuTray.chipSubmittedNote",
+                "Bạn có thể giữ màn hình này mở để nhận cập nhật.",
+                "You can keep this screen open for updates."
+            );
+            const cta = trayCopyFallback("menuTray.chipTrackCta", "Theo dõi đơn", "Track order");
+            const href = String(buildTrackHref(sess)).replace(/"/g, "&quot;");
+            const statusHtml = statusLabel
+                ? `<p class="order-tray-submitted-card__status">${escapeHtml(statusLabel)}</p>`
+                : "";
+            const noteHtml = note ? `<p class="order-tray-submitted-card__note">${escapeHtml(note)}</p>` : `<p class="order-tray-submitted-card__note">${escapeHtml(keepOpen)}</p>`;
+            el.className = "order-tray-lines order-tray-lines--correspondence pb-0 text-sm";
+            el.innerHTML = `<div class="${cardClass}" role="status">
+                <div class="order-tray-submitted-card__seal" aria-hidden="true">A</div>
+                <p class="order-tray-submitted-card__title">${escapeHtml(title)}</p>
+                ${statusHtml}
+                <p class="order-tray-submitted-card__body">${escapeHtml(body)}</p>
+                ${noteHtml}
+                <div id="order-tray-transfer-host"></div>
+                <a href="${href}" class="order-tray-submitted-card__link">${escapeHtml(cta)}</a>
+            </div>`;
+            if (state === TRAY_STATE.SUBMITTED_BANK) void ensureBankTransferQrMounted(sess);
+        }
+
         function updateTraySummary(opts) {
             opts = opts || {};
             const n = totalQty();
+            const state = resolveTrayState();
+            const submitted = isSubmittedTrayState(state);
+            const isEmpty = n === 0 && !submitted;
             const line = document.getElementById("trayCountLine");
+            const sheetTitle = document.getElementById("traySheetTitle");
             const chipTitle = document.getElementById("order-tray-chip-title");
             const chipSub = document.getElementById("order-tray-chip-sub");
             const chipStack = document.getElementById("order-tray-chip-stack");
             const chipTotal = document.getElementById("order-tray-chip-total");
             const subEl = document.getElementById("order-tray-subtotal");
             const st = subtotal();
-            if (orderTrayRoot) orderTrayRoot.classList.toggle("order-tray-root--empty", n === 0);
-            if (orderTrayChip) orderTrayChip.classList.toggle("order-tray-chip--has-items", n > 0);
+            if (orderTrayRoot) {
+                orderTrayRoot.classList.toggle("order-tray-root--empty", isEmpty);
+                orderTrayRoot.classList.toggle(
+                    "order-tray-root--submitted",
+                    submitted && state !== TRAY_STATE.PAID && state !== TRAY_STATE.COMPLETED
+                );
+                orderTrayRoot.classList.toggle("order-tray-root--submitted-paid", state === TRAY_STATE.PAID);
+                orderTrayRoot.classList.toggle("order-tray-root--submitted-complete", state === TRAY_STATE.COMPLETED);
+            }
+            if (orderTrayChip) orderTrayChip.classList.toggle("order-tray-chip--has-items", n > 0 && !submitted);
+
+            if (sheetTitle) {
+                if (submitted) {
+                    if (state === TRAY_STATE.COMPLETED) {
+                        sheetTitle.textContent = trayCopyFallback("menuTray.chipCompleteTitle", "Đơn đã hoàn thành", "Order complete");
+                    } else if (state === TRAY_STATE.PAID) {
+                        sheetTitle.textContent = trayCopyFallback("menuTray.chipPaidTitle", "Thanh toán thành công", "Payment successful");
+                    } else if (state === TRAY_STATE.SUBMITTED_BANK) {
+                        sheetTitle.textContent = trayCopyFallback("checkout.waitingBankTransfer", "Chờ chuyển khoản", "Waiting for bank transfer");
+                    } else {
+                        sheetTitle.textContent = trayCopyFallback("menuTray.chipSubmittedTitle", "Đơn đã được gửi", "Order sent");
+                    }
+                } else if (checkoutStep === "review" || checkoutStep === "payment") {
+                    sheetTitle.textContent =
+                        n === 1
+                            ? trayCopyFallback("menuTray.sheetTitleOne", "Khay · 1 món", "Tray · 1 item")
+                            : n > 1
+                              ? tfmt("menuTray.sheetTitleMany", { n }) ||
+                                trayCopyFallback("menuTray.sheetTitleMany", "Khay · " + n + " món", "Tray · " + n + " items")
+                              : trayCopyFallback("menuTray.sheetTitle", "Khay của bạn", "Your tray");
+                } else {
+                    sheetTitle.textContent = trayCopyFallback("menuTray.sheetTitle", "Khay của bạn", "Your tray");
+                }
+            }
 
             if (line) {
-                if (n === 0) line.textContent = trayCopyFallback("menuTray.countNone", "Chưa có món trên khay.", "No items on your tray yet.");
+                if (submitted) {
+                    if (state === TRAY_STATE.SUBMITTED_BANK) {
+                        line.textContent = trayCopyFallback(
+                            "checkout.waitingBankTransfer",
+                            "Chờ chuyển khoản",
+                            "Waiting for bank transfer"
+                        );
+                    } else if (state === TRAY_STATE.SUBMITTED_CARD) {
+                        line.textContent = trayCopyFallback(
+                            "checkout.waitingCardPayment",
+                            "Chờ thanh toán bằng thẻ tại quầy",
+                            "Waiting for card payment at counter"
+                        );
+                    } else if (
+                        state === TRAY_STATE.SUBMITTED_CASH ||
+                        state === TRAY_STATE.SUBMITTED_COUNTER ||
+                        state === TRAY_STATE.SUBMITTED_PENDING
+                    ) {
+                        line.textContent = trayCopyFallback(
+                            "checkout.waitingCashPayment",
+                            "Chờ thanh toán tiền mặt tại quầy",
+                            "Waiting for cash payment at counter"
+                        );
+                    } else {
+                        line.textContent = trayCopyFallback(
+                            "menuTray.chipSubmittedNote",
+                            "Bạn có thể giữ màn hình này mở để nhận cập nhật.",
+                            "You can keep this screen open for updates."
+                        );
+                    }
+                } else if (n === 0) line.textContent = trayCopyFallback("menuTray.countNone", "Chưa có món trên khay.", "No items on your tray yet.");
                 else if (n === 1) line.textContent = trayCopyFallback("menuTray.countOne", "Một món trên khay.", "One item on your tray.");
                 else line.textContent = tfmt("menuTray.countMany", { n }) || trayCopyFallback("menuTray.countMany", n + " món trên khay.", n + " items on your tray.");
             }
 
             if (chipTitle) {
                 chipTitle.classList.remove("order-tray-chip__count--settling");
-                if (n === 0) {
+                if (submitted) {
+                    if (state === TRAY_STATE.COMPLETED) {
+                        chipTitle.textContent = trayCopyFallback("menuTray.chipCompleteTitle", "Đơn đã hoàn thành", "Order complete");
+                    } else if (state === TRAY_STATE.PAID) {
+                        chipTitle.textContent = trayCopyFallback("menuTray.chipPaidTitle", "Thanh toán thành công", "Payment successful");
+                    } else {
+                        chipTitle.textContent = trayCopyFallback("menuTray.chipSubmittedTitle", "Đơn đã được gửi", "Order sent");
+                    }
+                } else if (n === 0) {
                     chipTitle.textContent = isSommelierFlowActive()
                         ? trayCopyFallback("menuTray.chipEmptySomm", "Khay đang chờ", "Tray awaiting")
                         : trayCopyFallback("menuTray.chipEmpty", "Khay đang chờ", "Tray awaiting");
@@ -695,12 +1862,52 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 }
             }
             if (chipSub) {
-                chipSub.textContent =
-                    n === 0
-                        ? isSommelierFlowActive()
-                            ? trayCopyFallback("menuTray.chipSubSomm", "Chọn một ly để bắt đầu.", "Choose a drink to begin.")
-                            : trayCopyFallback("menuTray.chipSubEmpty", "Chọn một ly để bắt đầu.", "Choose a drink to begin.")
-                        : trayCopyFallback("menuTray.chipSubFilled", "Chạm để xem khay", "Tap to view tray");
+                if (submitted) {
+                    if (state === TRAY_STATE.COMPLETED) {
+                        chipSub.textContent = trayCopyFallback("menuTray.chipCompleteBody", "Cảm ơn bạn đã ghé Annap.", "Thank you for visiting Annap.");
+                    } else if (state === TRAY_STATE.PAID) {
+                        chipSub.textContent = trayCopyFallback(
+                            "menuTray.chipPreparingShort",
+                            "Đơn đang chuẩn bị",
+                            "Order in preparation"
+                        );
+                    } else if (state === TRAY_STATE.SUBMITTED_BANK) {
+                        chipSub.textContent = trayCopyFallback(
+                            "checkout.waitingBankTransfer",
+                            "Chờ chuyển khoản",
+                            "Waiting for bank transfer"
+                        );
+                    } else if (state === TRAY_STATE.SUBMITTED_CARD) {
+                        chipSub.textContent = trayCopyFallback(
+                            "checkout.waitingCardPayment",
+                            "Chờ thanh toán bằng thẻ tại quầy",
+                            "Waiting for card payment at counter"
+                        );
+                    } else if (
+                        state === TRAY_STATE.SUBMITTED_CASH ||
+                        state === TRAY_STATE.SUBMITTED_COUNTER ||
+                        state === TRAY_STATE.SUBMITTED_PENDING
+                    ) {
+                        chipSub.textContent = trayCopyFallback(
+                            "checkout.waitingCashPayment",
+                            "Chờ thanh toán tiền mặt tại quầy",
+                            "Waiting for cash payment at counter"
+                        );
+                    } else {
+                        chipSub.textContent = trayCopyFallback(
+                            "menuTray.chipSubmittedBody",
+                            "Nhân viên sẽ đến kiểm tra lại đơn và hỗ trợ thanh toán.",
+                            "Staff will come to confirm your order and help with payment."
+                        );
+                    }
+                } else {
+                    chipSub.textContent =
+                        n === 0
+                            ? isSommelierFlowActive()
+                                ? trayCopyFallback("menuTray.chipSubSomm", "Chọn một ly để bắt đầu.", "Choose a drink to begin.")
+                                : trayCopyFallback("menuTray.chipSubEmpty", "Chọn một ly để bắt đầu.", "Choose a drink to begin.")
+                            : trayCopyFallback("menuTray.chipSubFilledShort", "Chạm để mở", "Tap to open");
+                }
             }
             if (chipTotal) {
                 if (n === 0) {
@@ -714,24 +1921,29 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 }
             }
             if (chipStack) {
-                const recent = Array.from(cartItems.values()).slice(-1);
-                if (!recent.length) {
-                    chipStack.innerHTML = '<span class="order-tray-chip__empty-line"></span>';
+                if (submitted) {
+                    chipStack.innerHTML = '<span class="order-tray-chip__seal" aria-hidden="true">A</span>';
                     chipStack.classList.remove("annap-tray-slot-receive");
                 } else {
-                    chipStack.innerHTML = recent
-                        .map((l, i) => {
-                            const initial = escapeHtml(String(l.name || "A").trim().charAt(0).toUpperCase() || "A");
-                            const img = l.imageSrc
-                                ? `<img src="${escapeHtml(l.imageSrc)}" alt="" decoding="async" loading="lazy" />`
-                                : initial;
-                            return `<span class="order-tray-chip__card" style="--tray-card-i:${i}">${img}</span>`;
-                        })
-                        .join("");
-                    if (opts.animateChip && !reducedMotionTray()) {
+                    const recent = Array.from(cartItems.values()).slice(-1);
+                    if (!recent.length) {
+                        chipStack.innerHTML = '<span class="order-tray-chip__empty-line"></span>';
                         chipStack.classList.remove("annap-tray-slot-receive");
-                        void chipStack.offsetWidth;
-                        chipStack.classList.add("annap-tray-slot-receive");
+                    } else {
+                        chipStack.innerHTML = recent
+                            .map((l, i) => {
+                                const initial = escapeHtml(String(l.name || "A").trim().charAt(0).toUpperCase() || "A");
+                                const img = l.imageSrc
+                                    ? `<img src="${escapeHtml(l.imageSrc)}" alt="" decoding="async" loading="lazy" />`
+                                    : initial;
+                                return `<span class="order-tray-chip__card" style="--tray-card-i:${i}">${img}</span>`;
+                            })
+                            .join("");
+                        if (opts.animateChip && !reducedMotionTray()) {
+                            chipStack.classList.remove("annap-tray-slot-receive");
+                            void chipStack.offsetWidth;
+                            chipStack.classList.add("annap-tray-slot-receive");
+                        }
                     }
                 }
             }
@@ -764,6 +1976,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     chipGuest.classList.add("hidden");
                 }
             }
+            updateTraySheetForState(state);
+            updateCheckoutUi();
         }
 
         function addToCart(menuItemId, btn) {
@@ -976,6 +2190,9 @@ function __annapMenuRuntimeJsonSelfCheck() {
 
         function clearCart() {
             GuestInteractionContract.clearCart();
+            GuestInteractionContract.removeGuestOrderSession();
+            traySubmittedStatus = null;
+            resetCheckoutStep();
             linesToCartMap(GuestInteractionContract.getCartLines());
             renderCart();
             const orderResult = document.getElementById("orderResult");
@@ -1005,7 +2222,123 @@ function __annapMenuRuntimeJsonSelfCheck() {
             updateTraySummary();
         }
 
+        function itemNoteKey(line) {
+            return cartLineKey(line);
+        }
+
+        function noteDraftValue(raw) {
+            const s = raw != null ? String(raw) : "";
+            return s.length > 200 ? s.slice(0, 200) : s;
+        }
+
+        function persistLineCustomerNoteDraft(line, rawNote) {
+            const key = itemNoteKey(line);
+            const draft = noteDraftValue(rawNote);
+            const stored = cartItems.get(key);
+            if (stored) stored.customerNote = draft;
+            if (typeof GuestInteractionContract.setLineCustomerNote === "function") {
+                GuestInteractionContract.setLineCustomerNote(line.id, draft, line.guestLabel, { silent: true });
+            }
+            return draft;
+        }
+
+        function commitLineCustomerNote(line, options) {
+            options = options || {};
+            const key = itemNoteKey(line);
+            const stored = cartItems.get(key);
+            const raw = stored && stored.customerNote != null ? String(stored.customerNote) : "";
+            const trimmed = raw.trim() ? raw.trim().slice(0, 200) : "";
+            if (stored) stored.customerNote = trimmed;
+            if (typeof GuestInteractionContract.setLineCustomerNote === "function") {
+                GuestInteractionContract.setLineCustomerNote(line.id, trimmed || null, line.guestLabel, {
+                    silent: options.silent === true
+                });
+            }
+            if (!trimmed && !expandedItemNoteKeys.has(key)) {
+                refreshNotePillForKey(key);
+            } else if (!expandedItemNoteKeys.has(key)) {
+                refreshNotePillForKey(key);
+            }
+            return trimmed;
+        }
+
+        function isNoteEditorFocused() {
+            const active = document.activeElement;
+            return !!(active && active.classList && active.classList.contains("tray-line-note-input"));
+        }
+
+        function syncOpenNoteTextareasFromDom() {
+            document.querySelectorAll(".tray-line-note-input").forEach(function (ta) {
+                const card = ta.closest ? ta.closest("[data-tray-line-key]") : null;
+                if (!card) return;
+                const noteKey = card.getAttribute("data-tray-line-key");
+                if (!noteKey) return;
+                const line = cartItems.get(noteKey);
+                if (!line) return;
+                persistLineCustomerNoteDraft(line, ta.value);
+            });
+        }
+
+        function flushAllNoteDraftsForSubmit() {
+            syncOpenNoteTextareasFromDom();
+            cartItems.forEach(function (line) {
+                commitLineCustomerNote(line, { silent: true });
+            });
+            if (typeof GuestInteractionContract !== "undefined" && typeof GuestInteractionContract.getCartLines === "function") {
+                linesToCartMap(GuestInteractionContract.getCartLines());
+            }
+        }
+
+        function refreshNotePillForKey(noteKey) {
+            const card = document.querySelector('[data-tray-line-key="' + String(noteKey).replace(/"/g, '\\"') + '"]');
+            if (!card) return;
+            const line = cartItems.get(noteKey);
+            if (!line) return;
+            const letter = card.querySelector(".tray-correspondence-card__letter");
+            if (!letter) return;
+            const noteExpanded = expandedItemNoteKeys.has(noteKey);
+            let pill = letter.querySelector(".tray-line-customer-note--pill");
+            const noteText =
+                line.customerNote && String(line.customerNote).trim() ? String(line.customerNote).trim() : "";
+            if (noteText && !noteExpanded) {
+                if (!pill) {
+                    pill = document.createElement("p");
+                    pill.className = "tray-line-customer-note tray-line-customer-note--pill";
+                    const toggle = letter.querySelector(".tray-line-note-toggle");
+                    if (toggle && toggle.nextSibling) letter.insertBefore(pill, toggle);
+                    else letter.appendChild(pill);
+                }
+                pill.textContent =
+                    (tOrder("menuTray.itemNotePreview") || trayCopyFallback("menuTray.itemNotePreview", "Ghi chú:", "Note:")) +
+                    " " +
+                    noteText;
+            } else if (pill) {
+                pill.remove();
+            }
+        }
+
+        function updateNoteCharCount(wrap, length) {
+            if (!wrap) return;
+            let counter = wrap.querySelector(".tray-line-note-count");
+            if (length <= 0) {
+                if (counter) counter.remove();
+                return;
+            }
+            if (!counter) {
+                counter = document.createElement("span");
+                counter.className = "tray-line-note-count";
+                counter.setAttribute("aria-live", "polite");
+                wrap.appendChild(counter);
+            }
+            counter.textContent = String(length) + "/200";
+        }
+
+        function stopNoteEditorEvent(ev) {
+            if (ev) ev.stopPropagation();
+        }
+
         function renderCart() {
+            if (isNoteEditorFocused()) return;
             const el = document.getElementById("cart");
             if (!el) return;
             const allLines = Array.from(cartItems.values());
@@ -1022,6 +2355,12 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 guestCount >= 1;
 
             if (cartItems.size === 0) {
+                const trayState = resolveTrayState();
+                const sess = readSubmittedSession();
+                if (isSubmittedTrayState(trayState) && sess) {
+                    renderSubmittedTraySheet(sess, trayState);
+                    return;
+                }
                 el.className = "order-tray-lines order-tray-lines--correspondence pb-1 text-sm";
                 const emptyMsg = escapeHtml(tOrder("menuTray.emptyBody") || "");
                 el.innerHTML = `<p class="order-tray-empty">${emptyMsg || trayCopyFallback("menuTray.emptyBody", "Thêm một ly từ gợi ý hoặc thực đơn — khay sẽ hiện tại đây.", "Add a cup from a suggestion or the menu — it will appear here.")}</p>`;
@@ -1037,6 +2376,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
             function appendMenuLineRow(line, rowIndex) {
                 const card = document.createElement("article");
                 card.className = "tray-correspondence-card";
+                const noteKey = itemNoteKey(line);
+                card.setAttribute("data-tray-line-key", noteKey);
                 card.style.setProperty("--tray-line-i", String(rowIndex || 0));
 
                 const shadow = document.createElement("div");
@@ -1065,8 +2406,69 @@ function __annapMenuRuntimeJsonSelfCheck() {
 
                 const letter = document.createElement("div");
                 letter.className = "tray-correspondence-card__letter";
+                const noteText = line.customerNote && String(line.customerNote).trim() ? String(line.customerNote).trim() : "";
+                const noteExpanded = expandedItemNoteKeys.has(noteKey);
+                const notePreviewLabel =
+                    tOrder("menuTray.itemNotePreview") || trayCopyFallback("menuTray.itemNotePreview", "Ghi chú:", "Note:");
+                let noteBlock = "";
+                if (noteText && !noteExpanded) {
+                    noteBlock = `<p class="tray-line-customer-note tray-line-customer-note--pill">${escapeHtml(
+                        notePreviewLabel + " " + noteText
+                    )}</p>`;
+                }
                 letter.innerHTML = `<p class="tray-correspondence-card__name">${escapeHtml(line.name)}</p>
-                    <p class="tray-correspondence-card__note">${escapeHtml(descriptorForLine(line))}</p>`;
+                    <p class="tray-correspondence-card__note">${escapeHtml(descriptorForLine(line))}</p>
+                    ${noteBlock}`;
+
+                const noteToggle = document.createElement("button");
+                noteToggle.type = "button";
+                noteToggle.className = "tray-line-note-toggle guest-hit";
+                noteToggle.textContent =
+                    tOrder("menuTray.itemNoteAction") ||
+                    trayCopyFallback("menuTray.itemNoteAction", "Ghi chú", "Note");
+                noteToggle.addEventListener("click", function (ev) {
+                    stopNoteEditorEvent(ev);
+                    if (noteExpanded) {
+                        commitLineCustomerNote(line, { silent: true });
+                        expandedItemNoteKeys.delete(noteKey);
+                    } else {
+                        expandedItemNoteKeys.add(noteKey);
+                    }
+                    renderCart();
+                });
+
+                const noteWrap = document.createElement("div");
+                noteWrap.className = "tray-line-note-wrap";
+                if (noteExpanded) {
+                    const ta = document.createElement("textarea");
+                    ta.className = "tray-line-note-input";
+                    ta.rows = 2;
+                    ta.maxLength = 200;
+                    ta.setAttribute("inputmode", "text");
+                    ta.setAttribute("autocomplete", "off");
+                    ta.setAttribute("autocorrect", "on");
+                    ta.placeholder =
+                        tOrder("menuTray.itemNotePlaceholder") ||
+                        trayCopyFallback("menuTray.itemNotePlaceholder", "Ví dụ: ít đá, ít đường...", "e.g. less ice, less sugar...");
+                    ta.value = line.customerNote != null ? String(line.customerNote) : noteText;
+                    ta.addEventListener("input", function (ev) {
+                        stopNoteEditorEvent(ev);
+                        const draft = persistLineCustomerNoteDraft(line, ta.value);
+                        if (ta.value !== draft) ta.value = draft;
+                        updateNoteCharCount(noteWrap, draft.length);
+                    });
+                    ta.addEventListener("blur", function () {
+                        commitLineCustomerNote(line, { silent: true });
+                        refreshNotePillForKey(noteKey);
+                    });
+                    ["focus", "click", "touchstart", "pointerdown", "mousedown"].forEach(function (evtName) {
+                        ta.addEventListener(evtName, stopNoteEditorEvent);
+                    });
+                    noteWrap.appendChild(ta);
+                    if (ta.value.length > 0) updateNoteCharCount(noteWrap, ta.value.length);
+                }
+                letter.appendChild(noteToggle);
+                if (noteExpanded) letter.appendChild(noteWrap);
 
                 const actions = document.createElement("div");
                 actions.className = "tray-correspondence-card__actions";
@@ -1189,8 +2591,19 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 if (orderResult) orderResult.textContent = tOrder("order.minOne") || "Your tray is empty.";
                 return;
             }
+            if (checkoutStep !== "payment") {
+                handlePrimaryTrayAction();
+                return;
+            }
+            if (!selectedPaymentMethod) {
+                if (orderResult) orderResult.textContent = tOrder("checkout.choosePayment") || "Choose payment method.";
+                return;
+            }
             if (menuOrderSubmitInFlight) return;
             menuOrderSubmitInFlight = true;
+            const prepLabel = getPaymentSubmitLabel(selectedPaymentMethod);
+            const submitPaymentMethod = selectedPaymentMethod;
+            __annapTrayPaymentDevLog("submit start", { paymentMethod: submitPaymentMethod });
             try {
                 if (!menuOrderIdempotencyKey && window.crypto && typeof window.crypto.randomUUID === "function")
                     menuOrderIdempotencyKey = window.crypto.randomUUID();
@@ -1203,20 +2616,24 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 }
 
                 if (btn) btn.setAttribute("disabled", "disabled");
-                const prepLabel = tOrder("menuTray.requestPreparation") || "Send to the 106/1 bar";
                 if (btn) {
                     btn.textContent = tOrder("order.submitting") || "Sending to the 106/1 bar…";
                     btn.classList.remove("order-tray-submit--success", "order-tray-submit--pulse");
                     btn.classList.add("order-tray-submit--preparing");
                 }
 
+                flushAllNoteDraftsForSubmit();
+
                 const items = Array.from(cartItems.values()).map((l) => {
                     const g = (l.guestLabel && String(l.guestLabel).trim()) || "";
-                    return {
+                    const item = {
                         menuItemId: l.id,
                         quantity: l.qty,
                         notes: g ? `Guest: ${g}` : null
                     };
+                    const cn = l.customerNote && String(l.customerNote).trim() ? String(l.customerNote).trim() : "";
+                    if (cn) item.customerNote = cn;
+                    return item;
                 });
 
                 let res;
@@ -1228,20 +2645,23 @@ function __annapMenuRuntimeJsonSelfCheck() {
                             Accept: "application/json",
                             "Idempotency-Key": menuOrderIdempotencyKey
                         },
-                        body: JSON.stringify({ venueTableId: VENUE_TABLE_ID, items, idempotencyKey: menuOrderIdempotencyKey })
+                        body: JSON.stringify({
+                            venueTableId: VENUE_TABLE_ID,
+                            items,
+                            idempotencyKey: menuOrderIdempotencyKey,
+                            paymentMethod: submitPaymentMethod
+                        })
                     });
+                    __annapTrayPaymentDevLog("POST /api/orders status", res.status);
                 } catch (_net) {
-                    if (window.GuestOrderQueue) window.GuestOrderQueue.enqueue(VENUE_TABLE_ID, items, menuOrderIdempotencyKey);
+                    if (window.GuestOrderQueue)
+                        window.GuestOrderQueue.enqueue(VENUE_TABLE_ID, items, menuOrderIdempotencyKey, submitPaymentMethod);
                     if (orderResult)
                         orderResult.textContent =
                             tOrder("order.queuedSoft") ||
                             "The line softened for a moment — we will place this tray when the room is steady again.";
-                    if (btn) {
-                        btn.textContent = prepLabel;
-                        btn.classList.remove("order-tray-submit--preparing");
-                        btn.removeAttribute("disabled");
-                        refreshTableIdentityUi();
-                    }
+                    restoreSubmitButtonState(btn, prepLabel);
+                    refreshTableIdentityUi();
                     return;
                 }
 
@@ -1250,7 +2670,13 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 });
                 if (!res.ok) {
                     const er = String((payload && payload.error) || "").toLowerCase();
-                    let msg = tOrder("order.submitFailed") || "We could not send the tray just now.";
+                    let msg =
+                        tOrder("order.submitFailedRetry") ||
+                        trayCopyFallback(
+                            "order.submitFailedRetry",
+                            "Không gửi được đơn. Vui lòng thử lại hoặc gọi nhân viên.",
+                            "We could not send your order. Please try again or call staff."
+                        );
                     if (res.status === 400) {
                         menuOrderIdempotencyKey = null;
                         if (er.includes("scan") || er.includes("table qr") || er.includes("seat"))
@@ -1261,72 +2687,78 @@ function __annapMenuRuntimeJsonSelfCheck() {
                             msg = tOrder("order.menuChanged") || msg;
                         else if (er.includes("at least one") || er.includes("tray"))
                             msg = tOrder("order.minOne") || msg;
-                    } else if (res.status >= 500 || res.status === 429) {
-                        if (window.GuestOrderQueue) window.GuestOrderQueue.enqueue(VENUE_TABLE_ID, items, menuOrderIdempotencyKey);
+                    } else if (er === "database_migration_required") {
+                        msg =
+                            tOrder("order.serverMaintenance") ||
+                            "Hệ thống đang cập nhật — vui lòng gọi nhân viên để gửi đơn.";
+                    } else if (res.status === 429) {
+                        if (window.GuestOrderQueue)
+                            window.GuestOrderQueue.enqueue(VENUE_TABLE_ID, items, menuOrderIdempotencyKey, submitPaymentMethod);
                         msg =
                             tOrder("order.queuedSoft") ||
                             "The line softened for a moment — we will place this tray when the room is steady again.";
+                    } else if (res.status >= 500) {
+                        msg =
+                            tOrder("order.submitFailedStaff") ||
+                            "Không gửi được đơn, vui lòng gọi nhân viên.";
                     }
+                    __annapTrayPaymentDevLog("submit failed", { status: res.status, error: er || null });
                     if (orderResult) orderResult.textContent = msg;
-                    if (btn) {
-                        btn.textContent = prepLabel;
-                        btn.classList.remove("order-tray-submit--preparing");
-                        btn.removeAttribute("disabled");
-                        refreshTableIdentityUi();
-                    }
+                    restoreSubmitButtonState(btn, prepLabel);
+                    refreshTableIdentityUi();
+                    return;
+                }
+
+                if (!payload || !payload.id || !payload.guestSessionToken) {
+                    __annapTrayPaymentDevLog("submit invalid payload", {
+                        hasPayload: !!payload,
+                        hasOrderId: !!(payload && payload.id),
+                        hasToken: !!(payload && payload.guestSessionToken)
+                    });
+                    if (orderResult)
+                        orderResult.textContent =
+                            tOrder("order.submitFailedRetry") ||
+                            trayCopyFallback(
+                                "order.submitFailedRetry",
+                                "Không gửi được đơn. Vui lòng thử lại hoặc gọi nhân viên.",
+                                "We could not send your order. Please try again or call staff."
+                            );
+                    restoreSubmitButtonState(btn, prepLabel);
+                    refreshTableIdentityUi();
                     return;
                 }
 
                 menuOrderIdempotencyKey = null;
-
-                GuestInteractionContract.writeGuestOrderSession({
-                    orderId: payload.id,
-                    token: payload.guestSessionToken
-                });
-
-                if (orderResult) {
-                    const follow = escapeHtml(tOrder("order.followLink") || "Track your order");
-                    const receiptTime = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-                    const tableLine = (document.getElementById("menu-table-primary") || {}).textContent || "Annap table";
-                    const trackHref = String(
-                        payload.trackUrl ||
-                            `/track/${payload.id}?token=${encodeURIComponent(payload.guestSessionToken || "")}`
-                    ).replace(/"/g, "&quot;");
-                    orderResult.innerHTML = `<div class="order-tray-confirm-card" role="status">
-                        <div class="order-tray-confirm-card__seal" aria-hidden="true">A</div>
-                        <p class="order-tray-confirm-card__kicker">${escapeHtml(tOrder("order.confirmKicker") || "106/1 receipt")}</p>
-                        <p class="order-tray-confirm order-tray-confirm-card__title">${escapeHtml(
-                            tOrder("order.submitted") || "The Annap bar has received your tray."
-                        )}</p>
-                        <p class="order-tray-confirm-card__meta">${escapeHtml(tableLine)} · ${escapeHtml(receiptTime)} · 106/1 Nguyễn Thị Minh Khai</p>
-                        <p class="order-tray-confirm-card__body">${escapeHtml(tOrder("order.confirmBody") || "Your selections are now with the 106/1 bar. We will prepare them with care.")}</p>
-                        <a href="${trackHref}" class="order-tray-confirm-card__link">${follow}</a>
-                    </div>`;
-                    orderResult.classList.add("orderResult--cinematic");
-                }
-                document.body.classList.add("annap-order-confirming");
-                GuestInteractionContract.clearCart();
-                linesToCartMap(GuestInteractionContract.getCartLines());
-                renderCart();
-                updateTraySummary();
-                if (btn) {
-                    btn.removeAttribute("disabled");
-                    btn.textContent = tOrder("menuTray.receivedThanks") || "Received with thanks";
-                    btn.classList.remove("order-tray-submit--preparing");
-                    btn.classList.add("order-tray-submit--success", "order-tray-submit--pulse");
-                    window.setTimeout(() => {
-                        btn.textContent = prepLabel;
-                        btn.classList.remove("order-tray-submit--success", "order-tray-submit--pulse");
-                        refreshTableIdentityUi();
-                    }, 3600);
-                }
-                window.setTimeout(() => {
-                    document.body.classList.remove("annap-order-confirming");
-                    if (orderResult) orderResult.classList.remove("orderResult--cinematic");
-                    setTrayOpen(false);
-                }, 3600);
+                applySubmitSuccessUi(payload, submitPaymentMethod, btn, prepLabel);
             } finally {
                 menuOrderSubmitInFlight = false;
+                if (btn && btn.classList.contains("order-tray-submit--preparing")) {
+                    restoreSubmitButtonState(btn, prepLabel);
+                }
+            }
+        }
+
+        function annapBindCheckoutControls() {
+            if (window._annapCheckoutControlsBound) return;
+            window._annapCheckoutControlsBound = true;
+            document.querySelectorAll(".order-tray-payment-option").forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    const method = btn.getAttribute("data-payment-method");
+                    if (!method) return;
+                    if (method === PAYMENT_METHOD.BANK && bankTransferConfigured === false) return;
+                    selectedPaymentMethod = method;
+                    updatePaymentOptionUi();
+                    scrollCheckoutCtaIntoView();
+                });
+            });
+            const backBtn = document.getElementById("order-tray-checkout-back");
+            if (backBtn) {
+                backBtn.addEventListener("click", function () {
+                    if (checkoutStep === "payment") setCheckoutStep("review");
+                    else resetCheckoutStep();
+                    updateCheckoutUi();
+                    updateTraySummary();
+                });
             }
         }
 
@@ -1344,6 +2776,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 } catch (_g) {}
             }
             __annapTrayLog("[annap] boot menu step 2: tray init");
+            __annapTrayPaymentDevLog("Annap order tray payment flow loaded", { version: TRAY_PAYMENT_FLOW_VERSION });
             try {
                 setTrayOpen(false, { immediate: true });
                 if (trace) try { window.console.log("step: setTrayOpen(false) ok"); } catch (_s0) {}
@@ -1376,6 +2809,15 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 loadCart();
                 renderCart();
                 updateTraySummary();
+                refreshSubmittedTrayStatus()
+                    .then(function () {
+                        updateTraySummary();
+                        renderCart();
+                        if (shouldPollSubmittedTrayStatus()) startTrayStatusPolling();
+                    })
+                    .catch(function () {
+                        /* ignore */
+                    });
                 document.body.classList.add("annap-has-order-tray-dock");
                 if (trace) try { window.console.log("step: cart render + tray summary ok"); } catch (_s4) {}
                 __annapTrayLog("[annap] menu: cart/tray ok");
@@ -1386,6 +2828,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
             try {
                 annapBindMenuCatalogInteractions();
                 annapBindDrinkDetailModal();
+                annapBindCheckoutControls();
+                refreshBankTransferAvailability();
                 if (trace) try { window.console.log("step: catalog interactions + modal chrome bound"); } catch (_s5) {}
                 __annapTrayLog("[annap] menu: catalog interactions bound");
             } catch (e4) {
@@ -1441,15 +2885,29 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 renderCart();
                 const btn = document.getElementById("menuSubmitBtn");
                 if (btn && !btn.classList.contains("order-tray-submit--success"))
-                    btn.textContent = tOrder("menuTray.requestPreparation") || "Request preparation";
+                    btn.textContent = tOrder("checkout.reviewOrder") || "Review order";
             } catch (eI18n) {
                 __annapMenuBootErr("[ANNAP MENU BOOT] luxury:i18n-changed handler failed", eI18n);
             }
         });
 
+        document.addEventListener("visibilitychange", function () {
+            if (document.visibilityState !== "visible" || !readSubmittedSession()) return;
+            refreshSubmittedTrayStatus()
+                .then(function () {
+                    updateTraySummary();
+                    renderCart();
+                    if (shouldPollSubmittedTrayStatus()) startTrayStatusPolling();
+                })
+                .catch(function () {
+                    /* ignore */
+                });
+        });
+
         document.addEventListener("annap:guest-interaction", function (ev) {
             var d = ev && ev.detail;
             if (!d || (d.type !== "cartUpdated" && d.type !== "activeGuestChanged")) return;
+            if (isNoteEditorFocused()) return;
             try {
                 linesToCartMap(GuestInteractionContract.getCartLines());
                 renderCart();
@@ -1471,7 +2929,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             updateTraySummary();
         };
 
-window.__annapMenuSubmitOrder = submitOrder;
+window.__annapMenuSubmitOrder = handlePrimaryTrayAction;
 window.addToCart = addToCart;
 window.openDrinkDetail = openDrinkDetail;
 window.closeDrinkDetail = closeDrinkDetail;

@@ -33,6 +33,9 @@ public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<KiotVietOutboxMessage> KiotVietOutboxMessages => Set<KiotVietOutboxMessage>();
     public DbSet<KiotVietSyncLog> KiotVietSyncLogs => Set<KiotVietSyncLog>();
     public DbSet<KiotVietProductMapping> KiotVietProductMappings => Set<KiotVietProductMapping>();
+    public DbSet<PaymentConfirmation> PaymentConfirmations => Set<PaymentConfirmation>();
+    public DbSet<StaffAccount> StaffAccounts => Set<StaffAccount>();
+    public DbSet<ShiftClose> ShiftCloses => Set<ShiftClose>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -30,6 +30,9 @@ public interface IApplicationDbContext
     DbSet<KiotVietOutboxMessage> KiotVietOutboxMessages { get; }
     DbSet<KiotVietSyncLog> KiotVietSyncLogs { get; }
     DbSet<KiotVietProductMapping> KiotVietProductMappings { get; }
+    DbSet<PaymentConfirmation> PaymentConfirmations { get; }
+    DbSet<StaffAccount> StaffAccounts { get; }
+    DbSet<ShiftClose> ShiftCloses { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

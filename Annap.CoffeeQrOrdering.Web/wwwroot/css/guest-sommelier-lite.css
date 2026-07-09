@@ -1,0 +1,235 @@
+/* Lightweight seated sommelier panel (Phase 1B+). */
+
+.guest-sommelier-lite {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: max(0.5rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+    max(0.75rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+  background: rgba(26, 20, 16, 0.38);
+}
+
+.guest-sommelier-lite[hidden] {
+  display: none !important;
+}
+
+.guest-sommelier-lite__sheet {
+  width: min(100%, 24rem);
+  max-height: min(92dvh, 92vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(212, 184, 150, 0.55);
+  background: rgb(var(--paper, 253 249 244));
+  color: rgb(var(--fg));
+  box-shadow: 0 12px 40px -16px rgba(26, 18, 9, 0.22);
+}
+
+.guest-sommelier-lite__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.5rem;
+  position: sticky;
+  top: 0;
+  background: inherit;
+  z-index: 1;
+}
+
+.guest-sommelier-lite__title {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 1.125rem;
+  line-height: 1.2;
+}
+
+.guest-sommelier-lite__close {
+  flex-shrink: 0;
+  min-height: 44px;
+  min-width: 44px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: rgb(var(--muted));
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.guest-sommelier-lite__close:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+.guest-sommelier-lite__body {
+  padding: 0 1rem 1rem;
+}
+
+.guest-sommelier-lite__capability {
+  margin: 0 0 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(212, 184, 150, 0.45);
+  background: rgba(253, 249, 244, 0.72);
+  color: rgb(var(--muted));
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.guest-sommelier-lite__capability[hidden] {
+  display: none !important;
+}
+
+.guest-sommelier-lite__fieldset {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: 0;
+}
+
+.guest-sommelier-lite__legend {
+  margin-bottom: 0.5rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(var(--muted-2));
+}
+
+.guest-sommelier-lite__choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.guest-sommelier-lite__choice {
+  min-height: 44px;
+  padding: 0.5rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(190, 165, 130, 0.5);
+  background: rgba(253, 249, 244, 0.65);
+  color: rgb(var(--fg));
+  font-size: 0.8125rem;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.guest-sommelier-lite__choice[aria-pressed="true"] {
+  border-color: rgb(var(--accent));
+  background: rgba(var(--accent-rgb, 139 108 72) / 0.12);
+  font-weight: 600;
+}
+
+.guest-sommelier-lite__choice:focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
+}
+
+.guest-sommelier-lite__submit {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.25rem;
+  border: 0;
+  border-radius: 9999px;
+  background: rgb(var(--fg));
+  color: rgb(var(--bg));
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.guest-sommelier-lite__submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.guest-sommelier-lite__status {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgb(var(--muted));
+}
+
+.guest-sommelier-lite__status--error {
+  color: #9a3b2e;
+}
+
+.guest-sommelier-lite__results {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.guest-sommelier-lite__card {
+  padding: 0.875rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(212, 184, 150, 0.45);
+  background: rgba(253, 249, 244, 0.72);
+}
+
+.guest-sommelier-lite__card-name {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 1.05rem;
+  line-height: 1.2;
+}
+
+.guest-sommelier-lite__card-meta {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: rgb(var(--muted));
+}
+
+.guest-sommelier-lite__card-reason {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgb(var(--muted));
+}
+
+.guest-sommelier-lite__card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.guest-sommelier-lite__card-btn {
+  min-height: 44px;
+  padding: 0.5rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(190, 165, 130, 0.55);
+  background: transparent;
+  color: rgb(var(--fg));
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.guest-sommelier-lite__card-btn--primary {
+  background: rgb(var(--fg));
+  color: rgb(var(--bg));
+  border-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guest-sommelier-lite__choice {
+    transition: none;
+  }
+}

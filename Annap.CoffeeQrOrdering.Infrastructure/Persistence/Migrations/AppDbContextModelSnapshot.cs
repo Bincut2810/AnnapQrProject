@@ -949,22 +949,171 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                     b.ToTable("operational_audit_entries", (string)null);
                 });
 
-            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.Order", b =>
+            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.PaymentConfirmation", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("BrewingOwnerStaffName")
+                    b.Property<string>("AccountNumber")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<string>("BankCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid?>("MatchedOrderId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MatchStatus")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Memo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset?>("ProcessedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Provider")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<string>("ProviderTransactionId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.Property<string>("RawPayloadJson")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)");
+
+                    b.Property<DateTimeOffset>("ReceivedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MatchedOrderId");
+
+                    b.HasIndex("Memo");
+
+                    b.HasIndex("ReceivedAtUtc");
+
+                    b.HasIndex("Provider", "ProviderTransactionId")
+                        .IsUnique()
+                        .HasFilter("\"ProviderTransactionId\" IS NOT NULL");
+
+                    b.ToTable("payment_confirmations", (string)null);
+                });
+
+            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.StaffAccount", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("CreatedBy")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastLoginAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PasswordHash")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<string>("Role")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Username")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
+                    b.ToTable("staff_accounts", (string)null);
+                });
+
+            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.Order", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BillNumber")
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.Property<string>("BrewingOwnerStaffName")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTimeOffset?>("CompletedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CompletedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid?>("CompletedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("CustomerNote")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
                     b.Property<string>("GuestSessionToken")
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)");
+
+                    b.Property<DateTimeOffset?>("PaidAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PaymentConfirmedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid?>("PaymentConfirmedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("PaymentMethod")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
 
                     b.Property<string>("ServingOwnerStaffName")
                         .HasMaxLength(120)
@@ -1000,6 +1149,8 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                     b.HasIndex("GuestSessionToken")
                         .IsUnique();
 
+                    b.HasIndex("PaymentConfirmedByAccountId");
+
                     b.HasIndex("SubmitIdempotencyKey")
                         .IsUnique()
                         .HasFilter("\"SubmitIdempotencyKey\" IS NOT NULL");
@@ -1012,7 +1163,7 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
 
                     b.ToTable("orders", null, t =>
                         {
-                            t.HasCheckConstraint("CK_orders_Status_Valid", "\"Status\" IN (0, 1, 2, 3, 4, 5, 6)");
+                            t.HasCheckConstraint("CK_orders_Status_Valid", "\"Status\" IN (0, 1, 2, 3, 4, 5, 6, 7)");
                         });
                 });
 
@@ -1033,8 +1184,27 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
+                    b.Property<string>("CustomerNote")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("PreparedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("PreparedBy")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid?>("PreparedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("PreparedQuantity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("Quantity")
                         .HasColumnType("integer");
@@ -1052,7 +1222,76 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                     b.ToTable("order_items", null, t =>
                         {
                             t.HasCheckConstraint("CK_order_items_Quantity_Positive", "\"Quantity\" > 0");
+                            t.HasCheckConstraint("CK_order_items_PreparedQuantity_Range", "\"PreparedQuantity\" >= 0 AND \"PreparedQuantity\" <= \"Quantity\"");
                         });
+                });
+
+            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.ShiftClose", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("BankTransferAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("BankTransferOrders")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("CashOrCardAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("CashOrCardOrders")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("ClosedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ClosedBy")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<Guid?>("ClosedByAccountId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTimeOffset>("OpenedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("SnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<decimal>("TotalGrossAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("TotalOrders")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UnknownPaymentAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)");
+
+                    b.Property<int>("UnknownPaymentOrders")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClosedAtUtc");
+
+                    b.HasIndex("ClosedByAccountId");
+
+                    b.ToTable("shift_closes", (string)null);
                 });
 
             modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.SommelierSuggestionFeedback", b =>

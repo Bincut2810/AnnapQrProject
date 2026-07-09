@@ -1,0 +1,33 @@
+@model Annap.CoffeeQrOrdering.Web.Pages.IndexModel
+<link rel="stylesheet" href="~/css/guest-arrival-slim.css" asp-append-version="true" />
+
+<div class="guest-arrival-slim guest-arrival-slim--notice" role="alert">
+    <header class="guest-arrival-slim__head">
+        <p class="guest-arrival-slim__brand font-display" data-i18n="home.brand">Annap Coffee Atelier</p>
+        <div class="guest-arrival-slim__lang guest-lang-register flex min-h-11 items-center gap-0 border border-[rgba(190,165,130,0.42)] bg-[rgba(253,249,244,0.4)] p-px"
+             role="group"
+             aria-label="Language">
+            <button type="button" data-lang-set="en" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]" data-i18n="langSwitcher.en">EN</button>
+            <button type="button" data-lang-set="vi" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]" data-i18n="langSwitcher.vi">VI</button>
+        </div>
+    </header>
+
+    <div class="guest-arrival-slim__body">
+        @if (Model.QrScanInvalid)
+        {
+            <h1 class="guest-arrival-slim__title font-display" data-i18n="guest.arrival.qrInvalidTitle">Không nhận diện được bàn</h1>
+            <p class="guest-arrival-slim__lead" data-i18n="order.needTableScan">Vui lòng quét mã QR tại bàn để gọi món.</p>
+        }
+        else
+        {
+            <h1 class="guest-arrival-slim__title font-display" data-i18n="guest.arrival.handoffInvalidTitle">Liên kết bàn không còn hiệu lực</h1>
+            <p class="guest-arrival-slim__lead" data-i18n="order.needTableScan">Vui lòng quét mã QR tại bàn để gọi món.</p>
+        }
+        <a class="guest-arrival-slim__cta guest-arrival-slim__cta--secondary guest-hit"
+           asp-page="/Menu/Index"
+           data-i18n="nav.menu">Xem thực đơn</a>
+        <p class="guest-arrival-slim__browse-note text-xs leading-relaxed text-[rgb(var(--muted))]" data-i18n="guest.arrival.browseOnlyNote">
+            Bạn có thể xem thực đơn, nhưng cần quét QR tại bàn để gửi đơn.
+        </p>
+    </div>
+</div>

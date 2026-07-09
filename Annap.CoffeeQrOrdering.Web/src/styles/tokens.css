@@ -52,19 +52,27 @@
   --rule-medium: rgba(139, 107, 71, 0.3);
 
   /* ============================================
-     TYPOGRAPHY — Registers (Playfair + EB Garamond)
+     TYPOGRAPHY — Specialty coffee hybrid stack
+     Display: guest brand / editorial (Fraunces)
+     UI: operational sans (Inter + system)
+     Code: mono for T01, bills, transfer memo
   ============================================ */
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", "Newsreader", Georgia, "Times New Roman", serif;
+  --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-code: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-number: var(--font-code);
 
-  --font-display: "Playfair Display", Georgia, "Times New Roman", serif;
-  --font-narrative: "EB Garamond", Georgia, "Times New Roman", serif;
-  --font-functional: var(--font-sans);
+  /* Legacy aliases */
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-code);
+  --font-narrative: var(--font-ui);
+  --font-functional: var(--font-ui);
 
-  --text-display: clamp(28px, 7vw, 44px);
-  --text-title: clamp(20px, 5vw, 28px);
+  --text-display: clamp(1.875rem, 5.5vw, 3.5rem);
+  --text-title: clamp(1.35rem, 4vw, 2.25rem);
   --text-narrative: 1rem;
-  --text-functional: 0.625rem;
-  --text-ghost: 0.5625rem;
+  --text-functional: 0.75rem;
+  --text-ghost: 0.6875rem;
 
   --leading-display: 1.15;
   --leading-narrative: 1.8;
@@ -72,8 +80,8 @@
 
   --tracking-display: 0.02em;
   --tracking-narrative: 0.01em;
-  --tracking-functional: 0.14em;
-  --tracking-ghost: 0.16em;
+  --tracking-functional: 0.04em;
+  --tracking-ghost: 0.05em;
 
   /* ============================================
      SPACING — Editorial rhythm

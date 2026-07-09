@@ -100,6 +100,7 @@ else
         await AnnapBootstrapExtensions.TryEnsureHospitalityCatalogBootstrapAsync(app, CancellationToken.None);
         await AnnapBootstrapExtensions.TryEnsureVenueTablesAsync(app, CancellationToken.None);
         prodBootstrapLogger.LogInformation("Production database bootstrap finished.");
+        await PaymentWorkflowSchemaStartupExtensions.ValidatePaymentWorkflowSchemaAsync(app, CancellationToken.None);
     }
     catch (Exception ex)
     {

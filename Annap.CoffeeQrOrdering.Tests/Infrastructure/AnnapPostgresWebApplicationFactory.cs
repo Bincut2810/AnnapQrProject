@@ -9,7 +9,7 @@ using Testcontainers.PostgreSql;
 
 namespace Annap.CoffeeQrOrdering.Tests.Infrastructure;
 
-public sealed class AnnapPostgresWebApplicationFactory : WebApplicationFactory<WebAppEntryPoint>, IAsyncLifetime
+public class AnnapPostgresWebApplicationFactory : WebApplicationFactory<WebAppEntryPoint>, IAsyncLifetime
 {
     private readonly PostgreSqlContainer _postgres = new PostgreSqlBuilder()
         .WithImage("pgvector/pgvector:pg16")
@@ -35,7 +35,11 @@ public sealed class AnnapPostgresWebApplicationFactory : WebApplicationFactory<W
         await base.DisposeAsync();
     }
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    public string GetPostgresConnectionString() => _postgres.GetConnectionString();
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder) => ConfigureTestWebHost(builder);
+
+    protected virtual void ConfigureTestWebHost(IWebHostBuilder builder)
     {
         // Cookie auth uses SecurePolicy="Always" for non-dev environments.
         // For HTTP-based test server we want Development so the auth cookie is sendable.
@@ -49,7 +53,19 @@ public sealed class AnnapPostgresWebApplicationFactory : WebApplicationFactory<W
                 ["Database:ApplyMigrationsOnStartup"] = "false",
                 ["StaffAuth:UserName"] = "test-host",
                 ["StaffAuth:Password"] = "test-staff-secret-16",
-                ["KiotViet:IsEnabled"] = "false"
+                ["StaffAuth:CheckoutPassword"] = "test-checkout-secret-16",
+                ["StaffAuth:BaristaPassword"] = "test-barista-secret-16",
+                ["KiotViet:IsEnabled"] = "false",
+                ["BankTransfer:Enabled"] = "true",
+                ["BankTransfer:Provider"] = "VietQR",
+                ["BankTransfer:BankBin"] = "970416",
+                ["BankTransfer:BankName"] = "ACB",
+                ["BankTransfer:AccountNumber"] = "7385268",
+                ["BankTransfer:AccountName"] = "HO KINH DOANH ANNAP",
+                ["BankTransfer:DescriptionTemplate"] = "ANNAP {Reference}",
+                ["BankTransfer:QrImageUrlTemplate"] = "https://img.vietqr.io/image/{bankBin}-{accountNumber}-compact2.png?amount={amount}&addInfo={memo}&accountName={accountName}",
+                ["BankTransfer:Webhook:DevWebhookEnabled"] = "false",
+                ["BankTransfer:Webhook:Secret"] = "test-webhook-secret-16"
             });
         });
 

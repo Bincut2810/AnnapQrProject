@@ -3,7 +3,7 @@
     --ah-paper: rgba(245, 240, 232, 0.06);
     --ah-line: rgba(255, 255, 255, 0.09);
     --ah-gold: rgba(198, 169, 124, 0.35);
-    font-family: "Outfit", system-ui, sans-serif;
+    font-family: var(--font-ui);
 }
 
 .ah-wrap {
@@ -28,13 +28,13 @@
 
 .ah-hero__kicker {
     font-size: 0.62rem;
-    letter-spacing: 0.28em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: rgb(var(--muted-2));
 }
 
 .ah-hero__title {
-    font-family: "Cormorant Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.65rem, 3.2vw, 2.35rem);
     font-weight: 400;
     line-height: 1.15;
@@ -66,7 +66,7 @@
 
 .ah-hero-aside dt {
     font-size: 0.58rem;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: rgb(var(--muted-2));
 }
@@ -85,14 +85,14 @@
 
 .ah-section__label {
     font-size: 0.58rem;
-    letter-spacing: 0.26em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: rgb(var(--muted-2));
 }
 
 .ah-section__title {
     margin-top: 0.45rem;
-    font-family: "Cormorant Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.35rem;
     font-weight: 400;
     color: rgb(var(--fg));
@@ -107,6 +107,10 @@
     .ah-grid-ops {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+}
+
+.ah-grid-quick {
+    margin-top: 1.35rem;
 }
 
 .ah-panel {
@@ -128,14 +132,14 @@
 
 .ah-panel__eyebrow {
     font-size: 0.58rem;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: rgb(var(--muted-2));
 }
 
 .ah-panel__title {
     margin-top: 0.5rem;
-    font-family: "Cormorant Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.25rem;
     font-weight: 400;
     color: rgb(var(--fg));
@@ -258,7 +262,7 @@
 
 .ah-stat dt {
     font-size: 0.58rem;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
     color: rgb(var(--muted-2));
 }

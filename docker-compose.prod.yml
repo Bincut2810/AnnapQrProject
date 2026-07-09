@@ -34,6 +34,8 @@ services:
       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-annap_qr_ordering};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}"
       StaffAuth__UserName: ${STAFF_USER:-host}
       StaffAuth__Password: ${STAFF_PASSWORD:?STAFF_PASSWORD is required}
+      StaffAuth__CheckoutPassword: ${STAFF_CHECKOUT_PASSWORD:?STAFF_CHECKOUT_PASSWORD is required}
+      StaffAuth__BaristaPassword: ${STAFF_BARISTA_PASSWORD:?STAFF_BARISTA_PASSWORD is required}
       Database__ApplyMigrationsOnStartup: ${APPLY_MIGRATIONS_ON_STARTUP:-true}
     depends_on:
       postgres:

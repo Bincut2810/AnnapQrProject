@@ -1466,16 +1466,23 @@
             }
             var taste = geCupMomentTastingLine(hero);
             var notes = geCupMomentNotesLine(hero);
-            var tasteLine = isSpecialty ? whisperLine : taste || notes || "";
             var defaultReason = geHouseT(
                 "ge.host.serveLine",
-                "Quầy mở nguồn này cho bàn bạn tối nay.",
-                "The bar opens this origin for your table tonight."
+                "Annap chọn cho bạn.",
+                "Annap chooses for you."
             );
             var reasonText =
                 config.reasonText != null && String(config.reasonText).trim()
                     ? String(config.reasonText).trim()
                     : config.serveLine || defaultReason;
+            var tasteLine = "";
+            if (isSpecialty) {
+                tasteLine = whisperLine;
+            } else if (notes && notes !== reasonText) {
+                tasteLine = notes;
+            } else if (taste && taste !== reasonText) {
+                tasteLine = taste;
+            }
             var ctaLabel =
                 config.ctaLabel ||
                 (isSpecialty
@@ -1492,8 +1499,8 @@
                 config.altSectionTitle ||
                 geFlowT(
                     "ge.cupMoment.altSectionTitle",
-                    "Hoặc thử một hướng khác",
-                    "Or try another direction"
+                    "Nếu bạn muốn đổi hướng",
+                    "If you want another direction"
                 );
             var altAddLabel =
                 config.altAddLabel ||
@@ -1506,6 +1513,19 @@
                     (isSpecialty ? " ge-rec-result--specialty" : "") +
                     '">'
             );
+            if (!isSpecialty) {
+                parts.push(
+                    '<p class="ge-rec-result__kicker ge-cup-moment__kicker ge-cup-moment__kicker--held">' +
+                        geEsc(
+                            geFlowT(
+                                "ge.cupMoment.namingKicker",
+                                "Annap chọn cho bạn",
+                                "Annap chooses for you"
+                            )
+                        ) +
+                        "</p>"
+                );
+            }
             if (isSpecialty) {
                 parts.push(
                     '<p class="ge-rec-result__kicker ge-cup-moment__kicker ge-cup-moment__kicker--held">' +
@@ -1845,22 +1865,22 @@
             if (qid.indexOf("q1") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.mood",
-                    "Tối nay",
-                    "Tonight"
+                    "Cảm giác",
+                    "Feeling"
                 );
             }
             if (qid.indexOf("q2") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.base",
-                    "Ly",
-                    "Cup"
+                    "Kiểu ly",
+                    "Cup style"
                 );
             }
             if (qid.indexOf("q3") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.sweet",
-                    "Độ ngọt",
-                    "Sweetness"
+                    "Vị sữa",
+                    "Milk tone"
                 );
             }
             if (qid.indexOf("q_sc_flavor") === 0) {
@@ -1880,12 +1900,12 @@
             if (qid.indexOf("q4") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.caffeine",
-                    "Caffeine",
-                    "Caffeine"
+                    "Nhiệt độ",
+                    "Temperature"
                 );
             }
-            var fallbacksVi = ["Mood", "Nền vị", "Độ ngọt", "Caffeine"];
-            var fallbacksEn = ["Mood", "Base", "Sweetness", "Caffeine"];
+            var fallbacksVi = ["Cảm giác", "Kiểu ly", "Vị sữa", "Nhiệt độ"];
+            var fallbacksEn = ["Feeling", "Cup style", "Milk tone", "Temperature"];
             var fb = geGuestLangVi() ? fallbacksVi : fallbacksEn;
             return fb[index] || fb[0] || "";
         }
@@ -2004,13 +2024,13 @@
             var hideTitle = sommSpecialtyPath;
             var noteTitle = geFlowT(
                 "ge.sommelier.tasting.note.title",
-                "Ghi chú nếm riêng",
-                "Private tasting note"
+                "Đang viết lá thư vị giác của bạn",
+                "Writing your tasting letter"
             );
             var writingLine = geFlowT(
                 "ge.sommelier.tasting.note.writing",
-                "Quầy đang ghi lại khẩu vị của bạn",
-                "The bar is noting your palate"
+                "Annap đang chọn một món hợp với ghi chú này.",
+                "Annap is choosing a cup to match this note."
             );
             var noteRows = sommAnswerNoteRows();
             var softLine = sommLatestNoteSoftLine();
@@ -2704,13 +2724,19 @@
                             !!(pack.j && pack.j.isSpecialtyCoffee);
                         var parts = [];
                         if (res.length > 0) {
+                            var lead = res[0];
+                            var leadExplain =
+                                lead.emotionalExplanation ||
+                                lead.EmotionalExplanation ||
+                                "";
                             var reasonText = isSpecialtyResult
                                 ? ""
-                                : reflection ||
+                                : leadExplain ||
+                                  reflection ||
                                   geHouseT(
                                       "ge.host.serveLine",
-                                      "Quầy mở nguồn này cho bàn bạn tối nay.",
-                                      "The bar opens this origin for your table tonight."
+                                      "Annap chọn cho bạn.",
+                                      "Annap chooses for you."
                                   );
                             parts.push(
                                 geBuildCupMomentHtml({
@@ -2752,7 +2778,7 @@
                         var rb = document.createElement("button");
                         rb.type = "button";
                         rb.className = "ge-restart ge-restart--sommelier guest-hit";
-                        rb.textContent = geFlowT("ge.sommelier.beginAgain", "Bắt đầu lại", "Begin again");
+                        rb.textContent = geFlowT("ge.sommelier.beginAgain", "Viết lại gu", "Rewrite my taste");
                         rb.addEventListener("click", function () {
                             answers = [];
                             stepIdx = 0;
@@ -3006,8 +3032,8 @@
                     addAttr: "data-ge-disc-add",
                     reasonText: geHouseT(
                         "ge.host.serveLine",
-                        "Phù hợp với tâm trạng hôm nay của bạn.",
-                        "A good match for your mood today."
+                        "Annap chọn cho bạn.",
+                        "Annap chooses for you."
                     ),
                     ctaLabel: geFlowT(
                         "ge.host.trayInvite",

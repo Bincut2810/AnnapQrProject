@@ -148,4 +148,69 @@ public static class ExperienceCatalogBootstrapper
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Development-only: refresh guided question prompts and option labels from built-in defaults.
+    /// Production copy remains admin/CMS controlled.
+    /// </summary>
+    public static async Task SyncGuidedDisplayCopyInDevelopmentAsync(
+        IApplicationDbContext db,
+        bool isDevelopment,
+        CancellationToken cancellationToken = default)
+    {
+        if (!isDevelopment)
+            return;
+
+        var setKey = GuidedSommelierCatalog.QuestionSetId;
+        var defaults = GuidedSommelierCatalog.Questions
+            .Concat(GuidedSommelierCatalog.SpecialtyCoffeeDiscoveryQuestions)
+            .ToList();
+
+        var dbQuestions = await db.ExperienceGuidedQuestions
+            .Where(q => q.SetKey == setKey)
+            .ToListAsync(cancellationToken);
+
+        if (dbQuestions.Count == 0)
+            return;
+
+        var qMap = dbQuestions.ToDictionary(q => q.ExternalKey, q => q.Id, StringComparer.OrdinalIgnoreCase);
+        var now = DateTimeOffset.UtcNow;
+
+        foreach (var q in defaults)
+        {
+            if (!qMap.TryGetValue(q.QuestionId, out var qid))
+                continue;
+
+            var dbQ = dbQuestions.First(x => x.Id == qid);
+            dbQ.Prompt = q.Prompt;
+            dbQ.UpdatedAtUtc = now;
+
+            var dbOpts = await db.ExperienceGuidedOptions
+                .Where(o => o.QuestionId == qid)
+                .ToListAsync(cancellationToken);
+
+            foreach (var o in q.Options)
+            {
+                var dbO = dbOpts.FirstOrDefault(x =>
+                    string.Equals(x.ExternalKey, o.OptionId, StringComparison.OrdinalIgnoreCase));
+                if (dbO is null)
+                    continue;
+                dbO.Label = o.Label;
+                dbO.Subline = o.EmotionalFragment;
+                dbO.IsEnabled = true;
+                dbO.UpdatedAtUtc = now;
+            }
+
+            var defaultOptionIds = q.Options.Select(o => o.OptionId).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            foreach (var dbO in dbOpts)
+            {
+                if (defaultOptionIds.Contains(dbO.ExternalKey))
+                    continue;
+                dbO.IsEnabled = false;
+                dbO.UpdatedAtUtc = now;
+            }
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+    }
 }

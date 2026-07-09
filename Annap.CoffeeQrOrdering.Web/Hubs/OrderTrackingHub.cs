@@ -1,4 +1,5 @@
 using Annap.CoffeeQrOrdering.Infrastructure.Persistence;
+using Annap.CoffeeQrOrdering.Web.Security;
 using Annap.CoffeeQrOrdering.Web.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -31,7 +32,13 @@ public sealed class OrderTrackingHub(IServiceScopeFactory scopeFactory, HubConne
 
     public async Task JoinStaffBoard()
     {
-        if (Context.User?.Identity?.IsAuthenticated != true || !Context.User.IsInRole("Staff"))
+        if (Context.User?.Identity?.IsAuthenticated != true)
+            throw new HubException("Staff sign-in required.");
+
+        var canJoin = Context.User.IsInRole(StaffRoleNames.Admin)
+            || Context.User.IsInRole(StaffRoleNames.Checkout)
+            || Context.User.IsInRole(StaffRoleNames.Barista);
+        if (!canJoin)
             throw new HubException("Staff sign-in required.");
 
         await Groups.AddToGroupAsync(Context.ConnectionId, "staff-board");

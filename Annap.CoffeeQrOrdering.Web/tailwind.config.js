@@ -9,11 +9,13 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['"DM Serif Display"', "Georgia", "Times New Roman", "serif"],
-        sans: ['"Outfit"', "ui-sans-serif", "system-ui", "Segoe UI", "sans-serif"],
-        narrative: ['"Crimson Pro"', "Georgia", "Times New Roman", "serif"],
-        "annap-correspond-display": ['"Playfair Display"', "Georgia", "serif"],
-        "annap-correspond-narrative": ['"EB Garamond"', "Georgia", "serif"],
+        sans: ["var(--font-ui)"],
+        display: ["var(--font-display)"],
+        narrative: ["var(--font-ui)"],
+        mono: ["var(--font-code)"],
+        number: ["var(--font-code)"],
+        "annap-correspond-display": ["var(--font-display)"],
+        "annap-correspond-narrative": ["var(--font-ui)"],
       },
       colors: {
         annap: {

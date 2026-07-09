@@ -166,9 +166,11 @@
     margin-left: auto;
     margin-right: auto;
     text-align: center;
-    font-size: clamp(1.95rem, 7vw, 2.65rem);
+    font-family: var(--font-display);
+    font-size: clamp(1.875rem, 7vw, 2.75rem);
     line-height: 1.12;
-    font-weight: 400;
+    font-weight: 500;
+    letter-spacing: -0.02em;
 }
 
 .ge-ritual-lead {
@@ -200,7 +202,7 @@
 .ge-ritual-invitation__line {
     margin: 0 auto 1.15rem;
     max-width: 17rem;
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.05rem;
     font-style: italic;
     line-height: 1.45;
@@ -234,17 +236,17 @@
     display: block;
     font-size: 0.62rem;
     font-weight: 600;
-    letter-spacing: 0.32em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
 }
 
 .ge-ritual-begin__sub {
     display: block;
     margin-top: 0.35rem;
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.95rem;
-    font-style: italic;
-    letter-spacing: 0.04em;
+    font-style: normal;
+    letter-spacing: 0.01em;
     color: rgba(42, 102, 85, 0.75);
 }
 
@@ -389,7 +391,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 }
 
 .ge-annap-lockup__word {
-    font-family: "Outfit", "Nunito Sans", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 42px;
     font-weight: 500;
     letter-spacing: -1px;
@@ -426,10 +428,10 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 
 .ge-hero-title {
     margin-top: 1.75rem;
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
-    font-weight: 400;
-    font-size: clamp(2rem, 7.2vw, 2.75rem);
-    line-height: 1.05;
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.875rem, 7.2vw, 3.5rem);
+    line-height: 1.08;
     letter-spacing: -0.02em;
     text-align: center;
     color: rgb(var(--fg));
@@ -510,7 +512,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 .ge-origin-ledger__line {
     display: block;
     margin-top: 0.22rem;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.68rem;
     font-style: italic;
     line-height: 1.18;
@@ -626,7 +628,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 
 .ge-homepage-empty__title {
     margin: 0.85rem 0 0;
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.35rem, 4.5vw, 1.65rem);
     font-weight: 400;
     line-height: 1.2;
@@ -689,7 +691,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 .ge-choice-path {
     display: block;
     padding-right: 3rem;
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.78rem;
     font-style: italic;
     letter-spacing: 0.04em;
@@ -899,7 +901,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 }
 
 .ge-panel-title {
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.65rem;
     font-weight: 400;
     letter-spacing: -0.02em;
@@ -977,7 +979,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
     justify-content: center;
     min-height: 100%;
     background: linear-gradient(145deg, rgba(253, 249, 244, 0.92), #ebe4d6);
-    font-family: "Playfair Display", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 2rem;
     font-style: italic;
     color: rgba(26, 20, 16, 0.55);
@@ -1000,7 +1002,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 }
 
 .ge-sig-name {
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.35rem;
     font-weight: 500;
     color: rgb(var(--fg));
@@ -1118,7 +1120,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 }
 
 .ge-sommelier-q {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 1.2rem;
     font-weight: 500;
     line-height: 1.45;
@@ -1211,7 +1213,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 .ge-result-card--comfort-coffee .ge-result-name::after {
     display: block;
     margin-top: 0.28rem;
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.52rem;
     font-style: normal;
     font-weight: 600;
@@ -1445,7 +1447,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 
 .ge-somm-rite__line {
     position: relative;
-    font-family: "DM Serif Display", Georgia, ui-serif, serif;
+    font-family: var(--font-ui);
     font-size: 1.15rem;
     line-height: 1.45;
     color: rgb(var(--fg));
@@ -1455,7 +1457,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 .ge-somm-rite__whisper {
     position: relative;
     margin: 0.85rem 0 0;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-style: italic;
     font-size: 0.82rem;
     color: rgb(var(--muted));
@@ -1538,7 +1540,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 
 .ge-somm-loading p {
     margin: 0;
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-style: italic;
     font-size: 0.95rem;
     letter-spacing: 0.02em;
@@ -1573,7 +1575,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 
 .ge-result-name {
     margin-top: 0;
-    font-family: "DM Serif Display", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.35rem;
     color: rgb(var(--fg));
 }
@@ -1593,7 +1595,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
     border: 1px solid rgba(196, 168, 130, 0.28);
     border-radius: 999px;
     background: rgba(253, 249, 244, 0.54);
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 0.7rem;
     font-style: italic;
     line-height: 1;
@@ -1740,7 +1742,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 }
 
 .ge-result-compat__pct {
-    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-family: var(--font-ui);
     font-style: italic;
     font-weight: 400;
     font-size: 2.25rem;
@@ -1751,7 +1753,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 }
 
 .ge-result-compat__unit {
-    font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+    font-family: var(--font-ui);
     font-style: italic;
     font-size: 1rem;
     color: rgb(var(--accent));
@@ -1777,7 +1779,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 }
 
 .ge-result-compat__affirm {
-    font-family: "EB Garamond", Georgia, serif;
+    font-family: var(--font-ui);
     font-style: italic;
     font-size: 0.8125rem;
     line-height: 1.5;
@@ -1889,7 +1891,7 @@ html.annap-guest-no-motion .ge-result-compat__bar span {
 
 .ge-disc-intake-title {
     margin: 0.65rem 0 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.35rem;
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -2003,7 +2005,7 @@ html.annap-guest-no-motion .ge-result-compat__bar span {
 }
 
 .ge-mood-card__title {
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.02rem;
     font-weight: 400;
     letter-spacing: 0.01em;
@@ -2114,7 +2116,7 @@ html.annap-guest-no-motion .ge-result-compat__bar span {
 
 .ge-disc-compat__line {
     margin: 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.85rem;
     font-weight: 400;
     line-height: 1;
@@ -2135,7 +2137,7 @@ html.annap-guest-no-motion .ge-result-compat__bar span {
 
 .ge-disc-compat__word {
     margin-left: 0.35rem;
-    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.52rem;
     font-weight: 500;
     letter-spacing: 0.22em;
@@ -2258,7 +2260,7 @@ html.annap-guest-no-motion .ge-result-compat__bar span {
 
 .ge-disc-rec__name {
     margin: 0.55rem 0 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.05rem;
     font-weight: 400;
     color: rgb(var(--fg));
@@ -2511,7 +2513,7 @@ html.annap-guest-no-motion .ge-disc-rec {
     max-width: 20rem;
     margin-left: auto;
     margin-right: auto;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: clamp(1.05rem, 4.2vw, 1.28rem);
     font-weight: 400;
     line-height: 1.45;
@@ -2637,7 +2639,7 @@ html.annap-guest-no-motion .ge-disc-rec {
 
 .ge-house-hero__name {
     margin: 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: clamp(2rem, 8vw, 2.75rem);
     font-weight: 400;
     letter-spacing: -0.02em;
@@ -2655,7 +2657,7 @@ html.annap-guest-no-motion .ge-disc-rec {
 
 .ge-house-hero__mood {
     margin: 0.85rem 0 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.02rem;
     font-style: italic;
     font-weight: 400;
@@ -2801,7 +2803,7 @@ html.annap-guest-no-motion .ge-disc-rec {
 
 .ge-house-alt-row__name {
     margin: 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.05rem;
     color: rgb(var(--fg));
 }
@@ -2957,7 +2959,7 @@ html.annap-guest-no-motion .ge-disc-rec {
 
 .ge-reveal-name {
     margin: 0;
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: clamp(1.65rem, 5.5vw, 2.05rem);
     font-weight: 400;
     letter-spacing: -0.02em;
@@ -2981,7 +2983,7 @@ html.annap-guest-no-motion .ge-disc-rec {
 
 .ge-reveal-quote p {
     margin: 0;
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.05rem;
     font-style: italic;
     font-weight: 400;
@@ -3134,7 +3136,7 @@ html.annap-guest-no-motion .ge-disc-rec {
     border: 1px solid rgba(255, 255, 255, 0.14);
     background: rgba(255, 255, 255, 0.05);
     color: rgb(var(--fg));
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
     font-size: 1.2rem;
     font-weight: 500;
     line-height: 1;
@@ -3421,7 +3423,7 @@ html.annap-guest-no-motion .ge-disc-rec {
 .ge-letter-desk__title {
     position: relative;
     margin: 0.45rem 0 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.15rem;
     font-weight: 400;
     line-height: 1.25;
@@ -3541,7 +3543,7 @@ html.annap-guest-no-motion .ge-disc-rec {
 
 .ge-env__label {
     display: block;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 0.82rem;
     line-height: 1.2;
     font-weight: 400;
@@ -3636,11 +3638,14 @@ body.guest-app #guest-experience-root .ge-back:hover {
 }
 
 body.guest-app #guest-experience-root .ge-hero-title,
-body.guest-app #guest-experience-root .ge-ritual-title,
+body.guest-app #guest-experience-root .ge-ritual-title {
+    font-family: var(--font-display);
+}
+
 body.guest-app #guest-experience-root .ge-host-prompt,
 body.guest-app #guest-experience-root .ge-cup-moment__name,
 body.guest-app #guest-experience-root .ge-sig-name {
-    font-family: "DM Serif Display", Georgia, ui-serif, serif;
+    font-family: var(--font-ui);
 }
 
 body.guest-app #guest-experience-root.ge-root {
@@ -3732,7 +3737,7 @@ body.guest-app #guest-experience-root .ge-disc-chip.is-selected {
 body.guest-app #guest-experience-root .ge-count-chip {
     border-color: rgba(26, 20, 16, 0.12);
     background: rgba(253, 249, 244, 0.9);
-    font-family: "DM Serif Display", Georgia, ui-serif, serif;
+    font-family: var(--font-ui);
 }
 
 body.guest-app #guest-experience-root .ge-count-chip.is-selected {
@@ -4228,7 +4233,7 @@ html.annap-guest-no-motion .ge-choice-stack--rebalancing .ge-choice {
 
 .ge-host-prompt {
     margin: 0 0 0.55rem;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: clamp(1.45rem, 5.2vw, 1.95rem);
     font-weight: 400;
     line-height: 1.28;
@@ -4261,7 +4266,7 @@ html.annap-guest-no-motion .ge-choice-stack--rebalancing .ge-choice {
 
 .ge-host-pause {
     margin: 0.5rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.9375rem;
     font-style: normal;
     font-weight: 400;
@@ -4290,7 +4295,7 @@ html.annap-guest-no-motion .ge-choice-stack--rebalancing .ge-choice {
 
 .ge-somm-reflection__body {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.9375rem;
     font-style: normal;
     font-weight: 400;
@@ -4333,7 +4338,7 @@ html.annap-guest-no-motion .ge-choice-stack--rebalancing .ge-choice {
 
 .ge-cup-moment__name {
     margin: 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: clamp(1.55rem, 5.8vw, 2rem);
     font-weight: 400;
     letter-spacing: -0.02em;
@@ -4343,7 +4348,7 @@ html.annap-guest-no-motion .ge-choice-stack--rebalancing .ge-choice {
 
 .ge-cup-moment__price {
     margin: 0.45rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.9375rem;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -4354,7 +4359,7 @@ html.annap-guest-no-motion .ge-choice-stack--rebalancing .ge-choice {
 
 .ge-cup-moment__taste {
     margin: 0.75rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.9375rem;
     font-weight: 400;
     line-height: 1.6;
@@ -4511,7 +4516,7 @@ html.annap-guest-no-motion .ge-cup-moment__serve--held {
 /* Phase 3.1 — café notices the table */
 .ge-table-notice {
     margin: 0.35rem 0 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.05rem;
     font-weight: 400;
     line-height: 1.45;
@@ -4555,7 +4560,7 @@ html.annap-guest-no-motion .ge-cup-moment__serve--held {
 
 .ge-cup-moment__serve {
     margin: 0.85rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-style: normal;
     font-weight: 400;
@@ -4617,7 +4622,7 @@ html.annap-guest-no-motion .ge-cup-moment__serve--held {
 
 .ge-host-ack {
     margin: 0.85rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.9375rem;
     font-style: normal;
     font-weight: 400;
@@ -4741,7 +4746,7 @@ html.annap-guest-no-motion #ge-panel-discovery {
 
 .ge-rec-result__brand {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.625rem;
     font-weight: 600;
     letter-spacing: 0.16em;
@@ -4758,7 +4763,7 @@ html.annap-guest-no-motion #ge-panel-discovery {
 
 .ge-rec-reason__text {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.55;
@@ -4840,7 +4845,7 @@ html.annap-guest-no-motion #ge-panel-discovery {
 
 .ge-rec-alts__title {
     margin: 0 0 0.65rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -4869,7 +4874,7 @@ html.annap-guest-no-motion #ge-panel-discovery {
 }
 
 .ge-rec-alt-row__name {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.3;
@@ -4945,7 +4950,7 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 
 .ge-somm-tasting__brand {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.625rem;
     font-weight: 600;
     letter-spacing: 0.16em;
@@ -4964,7 +4969,7 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 
 .ge-somm-tasting__title {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 1.125rem;
     font-weight: 600;
     line-height: 1.35;
@@ -4973,7 +4978,7 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 
 .ge-somm-tasting__support {
     margin: 0.45rem 0 0.85rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.55;
@@ -5010,7 +5015,7 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 }
 
 .ge-somm-tasting__step-num {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -5022,7 +5027,7 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 }
 
 .ge-somm-tasting__step-label {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 500;
     line-height: 1.35;
@@ -5058,7 +5063,7 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 
 .ge-somm-tasting__chip {
     padding: 0.28rem 0.55rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     font-weight: 500;
     line-height: 1.3;
@@ -5070,7 +5075,7 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 
 .ge-somm-tasting__helper {
     margin: 0.75rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     font-weight: 400;
     line-height: 1.45;
@@ -5079,7 +5084,7 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 
 .ge-somm-tasting--error .ge-somm-tasting__error-msg {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.9375rem;
     font-weight: 400;
     line-height: 1.55;
@@ -5222,7 +5227,7 @@ body.guest-app.ge-sommelier-flow .annap-root-surface > footer {
 /* UX-S5B — personalised sommelier waiting ritual */
 .ge-somm-tasting--ritual .ge-somm-tasting__eyebrow {
     margin: 0 0 0.5rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -5236,7 +5241,7 @@ body.guest-app.ge-sommelier-flow .annap-root-surface > footer {
 
 .ge-somm-tasting--ritual .ge-somm-tasting__personal {
     margin: 0.45rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.5;
@@ -5268,7 +5273,7 @@ body.guest-app.ge-sommelier-flow .annap-root-surface > footer {
     position: absolute;
     inset: 0;
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 500;
     line-height: 1.4;
@@ -5381,7 +5386,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 .ge-ritual-hero .ge-ritual-script-kicker {
     margin-top: clamp(0.85rem, 3vh, 1.35rem);
     max-width: none;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.625rem;
     font-weight: 600;
     font-style: normal;
@@ -5399,7 +5404,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 .ge-ritual-hero .ge-ritual-lead {
     max-width: 17.5rem;
     margin-top: 0.65rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     line-height: 1.55;
     opacity: 1;
@@ -5413,7 +5418,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 .ge-ritual-hero__cta .ge-ritual-invitation__line {
     margin-bottom: 0.85rem;
     max-width: 16rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-style: normal;
     font-weight: 400;
@@ -5438,7 +5443,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 }
 
 .ge-ritual-hero__cta .ge-ritual-begin__label {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 600;
     letter-spacing: 0.06em;
@@ -5447,7 +5452,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 }
 
 .ge-ritual-hero__cta .ge-ritual-begin__sub {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     font-style: normal;
     font-weight: 400;
@@ -5458,7 +5463,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 .ge-ritual-framing {
     margin: 0.65rem auto 0;
     max-width: 16rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.6875rem;
     font-weight: 400;
     line-height: 1.45;
@@ -5484,7 +5489,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
     justify-content: center;
     min-height: 2.75rem;
     padding: 0.35rem 0.75rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -5548,7 +5553,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 
 .ge-somm-note__brand {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.625rem;
     font-weight: 600;
     letter-spacing: 0.16em;
@@ -5597,7 +5602,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 }
 
 .ge-somm-note__field {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.08em;
@@ -5615,7 +5620,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 }
 
 .ge-somm-note__value {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.8125rem;
     font-weight: 500;
     line-height: 1.3;
@@ -5662,7 +5667,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 
 .ge-somm-note__line {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-weight: 500;
     line-height: 1.45;
@@ -5706,7 +5711,7 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 
 .ge-somm-note__helper {
     margin: 0.65rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.6875rem;
     font-weight: 400;
     line-height: 1.4;
@@ -5811,7 +5816,7 @@ html.annap-guest-no-motion .ge-somm-note__ink span {
 }
 
 #ge-panel-sommelier .ge-somm-progress__step {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.12em;
@@ -5820,7 +5825,7 @@ html.annap-guest-no-motion .ge-somm-note__ink span {
 }
 
 #ge-panel-sommelier .ge-somm-progress__hint {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.6875rem;
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -5894,7 +5899,7 @@ html.annap-guest-no-motion .ge-somm-note__ink span {
 /* Part D — result reveal: curated badge + shelf */
 #ge-sommelier-results .ge-rec-card__badge {
     margin: 0 0 0.45rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -5999,7 +6004,7 @@ html.annap-guest-no-motion body.somm-waiting-quiet-tray .order-tray-root--dock:n
 
 .ge-landing--ritual .ge-ritual-table--quiet {
     margin-top: 0.25rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.6875rem;
     font-weight: 500;
     letter-spacing: 0.06em;
@@ -6011,7 +6016,7 @@ html.annap-guest-no-motion body.somm-waiting-quiet-tray .order-tray-root--dock:n
 .ge-landing--ritual .ge-table-notice--quiet {
     margin-top: 0.2rem;
     max-width: 15rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.6875rem;
     font-weight: 400;
     line-height: 1.45;
@@ -6090,7 +6095,7 @@ body.ge-sommelier-flow #ge-panel-sommelier.ge-panel--sommelier .ge-panel-head--q
 }
 
 #ge-panel-sommelier .ge-host-choice {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     letter-spacing: 0.015em;
 }
@@ -6110,7 +6115,7 @@ body.ge-sommelier-flow #ge-panel-sommelier.ge-panel--sommelier .ge-panel-head--q
 /* Loading: private tasting note */
 .ge-somm-note__title {
     margin: 0;
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 1.125rem;
     font-weight: 400;
     font-style: italic;
@@ -6246,7 +6251,7 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 
 #ge-sommelier-results .ge-rec-card__reason {
     margin: 0.5rem 0 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-weight: 400;
     font-style: normal;
@@ -6271,7 +6276,7 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 
 #ge-sommelier-results .ge-rec-result--reveal .ge-rec-card__price {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 1.0625rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
@@ -6376,7 +6381,7 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 
 body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__total--empty,
 .order-tray-root--empty .order-tray-chip__total--empty {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-style: normal;
     font-size: 0.75rem;
     font-weight: 500;
@@ -6397,7 +6402,7 @@ body.ge-sommelier-flow .order-tray-chip--has-items .order-tray-chip__side {
 }
 
 body.ge-sommelier-flow .order-tray-chip--has-items .order-tray-chip__total {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-style: normal;
     font-size: 0.875rem;
     font-weight: 600;
@@ -6598,7 +6603,7 @@ body.ge-sommelier-flow #ge-panel-sommelier .ge-panel-head--quiet .ge-back {
 }
 
 #ge-sommelier-results .ge-rec-alts--shelf .ge-rec-alt-row__name {
-    font-family: var(--font-display, "Cormorant Garamond", serif);
+    font-family: var(--font-ui);
     font-size: 0.9375rem;
     font-weight: 400;
     line-height: 1.25;
@@ -6668,7 +6673,7 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
     transform: none;
 }
 .ge-cup-moment--specialty .ge-rec-card__name {
-    font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+    font-family: var(--font-ui);
 }
 
 /* Phase 7.8S — specialty coffee calibration */
@@ -6709,7 +6714,7 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 
 .ge-calibration-turn__host {
     margin: 0 0 0.95rem;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.5;
@@ -6754,7 +6759,7 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 }
 
 .ge-calibration-card__title {
-    font-family: var(--font-display, "Cormorant Garamond", ui-serif, Georgia, serif);
+    font-family: var(--font-display, var(--font-ui));
     font-size: clamp(1rem, 4vw, 1.15rem);
     font-weight: 500;
     letter-spacing: -0.01em;
@@ -6763,7 +6768,7 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 }
 
 .ge-calibration-card__note {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.75rem;
     font-weight: 400;
     line-height: 1.4;
@@ -6815,7 +6820,7 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 
 .ge-recognition-turn__line {
     margin: 0;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.875rem;
     font-weight: 400;
     letter-spacing: 0.02em;
@@ -6846,4 +6851,373 @@ html.annap-guest-no-motion .ge-calibration-card.is-chosen {
 
 html.annap-guest-no-motion .ge-calibration-card.is-muted {
     opacity: 0.48;
+}
+
+/* —— Ritual letter mobile polish (sommelier journey) —— */
+body:has(#guest-experience-root) .guest-masthead__sheet {
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.42),
+        0 4px 18px -10px rgba(26, 18, 9, 0.1);
+}
+
+body:has(#guest-experience-root) .guest-masthead .px-4 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+body:has(#guest-experience-root) .guest-masthead__nav {
+    padding-top: 0.5rem;
+}
+
+@media (max-width: 30rem) {
+    body:has(#guest-experience-root) .guest-masthead__mark {
+        font-size: 0.68rem;
+        letter-spacing: 0.12em;
+    }
+}
+
+.ge-ritual-invitation-card {
+    border: 1px solid rgba(190, 165, 130, 0.42);
+    border-radius: 1rem;
+    background: linear-gradient(180deg, rgba(253, 249, 244, 0.92), rgba(248, 242, 234, 0.88));
+    box-shadow: 0 10px 28px -18px rgba(42, 32, 20, 0.22);
+    padding: 0.35rem;
+}
+
+.ge-ritual-begin {
+    border-radius: 0.85rem;
+    min-height: 3.25rem;
+    background: rgb(var(--fg));
+    color: rgb(var(--paper, 253 249 244));
+}
+
+.ge-ritual-title {
+    font-size: clamp(1.55rem, 5.4vw, 2.15rem);
+    line-height: 1.18;
+    max-width: 16ch;
+    margin-inline: auto;
+}
+
+.ge-ritual-script-kicker {
+    letter-spacing: 0.22em;
+    font-size: 0.68rem;
+}
+
+#ge-panel-sommelier .ge-host-prompt {
+    font-size: clamp(1.05rem, 4.2vw, 1.25rem);
+    line-height: 1.45;
+    max-width: 22ch;
+}
+
+#ge-panel-sommelier .ge-host-choice,
+#ge-panel-sommelier .ge-opt {
+    min-height: 3rem;
+    font-size: 1rem;
+    line-height: 1.35;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(190, 165, 130, 0.45);
+    background: rgba(253, 249, 244, 0.88);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset;
+}
+
+#ge-panel-sommelier .ge-host-choice.is-chosen,
+#ge-panel-sommelier .ge-opt[aria-pressed="true"] {
+    border-color: rgba(122, 88, 52, 0.55);
+    background: rgba(248, 236, 220, 0.95);
+    color: rgb(var(--fg));
+    box-shadow: 0 0 0 1px rgba(122, 88, 52, 0.12);
+}
+
+#ge-panel-sommelier .ge-host-choice:focus-visible,
+#ge-panel-sommelier .ge-opt:focus-visible {
+    outline: 2px solid rgba(122, 88, 52, 0.55);
+    outline-offset: 2px;
+}
+
+.ge-somm-note__title {
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    color: rgb(var(--fg));
+}
+
+.ge-somm-note__card {
+    border: 1px solid rgba(190, 165, 130, 0.45);
+    background: rgba(253, 249, 244, 0.94);
+    border-radius: 1rem;
+    padding: 1rem 1.05rem;
+}
+
+.ge-somm-note__field {
+    color: rgb(var(--fg));
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.82;
+}
+
+.ge-somm-note__value {
+    color: rgb(var(--fg));
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+.ge-somm-note__line {
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: rgb(var(--muted));
+}
+
+.ge-rec-result__kicker {
+    margin: 0 0 0.65rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgb(var(--muted));
+}
+
+.ge-rec-card__name {
+    font-size: clamp(1.2rem, 4.8vw, 1.45rem);
+    line-height: 1.2;
+}
+
+.ge-rec-card__reason {
+    font-size: 0.98rem;
+    line-height: 1.55;
+    color: rgb(var(--muted));
+}
+
+.ge-rec-card__poster img {
+    border-radius: 0.85rem;
+}
+
+body.ge-sommelier-flow #guest-experience-root {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+body.ge-sommelier-flow .order-tray-root--empty #order-tray-chip {
+    opacity: 0.72;
+    min-height: 3.25rem;
+    background: rgba(253, 249, 244, 0.78);
+    border-color: rgba(190, 165, 130, 0.28);
+    box-shadow: 0 4px 16px -12px rgba(26, 18, 9, 0.16);
+}
+
+body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__kicker,
+body.ge-sommelier-flow .order-tray-root--empty #order-tray-chip-sub {
+    font-size: 0.72rem;
+    opacity: 0.72;
+}
+
+body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__total--empty {
+    font-size: 0.82rem;
+    opacity: 0.55;
+}
+
+body.ge-sommelier-flow .ge-restart--sommelier {
+    margin-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (max-width: 24rem) {
+    #ge-panel-sommelier .ge-host-choices {
+        gap: 0.55rem;
+    }
+
+    .ge-somm-note__card {
+        padding: 0.85rem 0.9rem;
+    }
+}
+
+html.annap-guest-no-motion .ge-somm-note__row,
+html.annap-guest-no-motion .ge-rec-card--reveal {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* —— Ritual sommelier mobile refinements (letter / atelier) —— */
+
+html.annap-compact-guest-header .guest-masthead--compact {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+}
+
+html.annap-compact-guest-header .guest-masthead--compact .guest-masthead__sheet {
+    border-radius: 0.35rem;
+    box-shadow: 0 4px 18px -14px rgba(26, 18, 9, 0.14);
+}
+
+html.annap-compact-guest-header .guest-masthead--compact .postal-airmail-edge {
+    display: none;
+}
+
+html.annap-compact-guest-header .guest-masthead--compact .guest-masthead__sheet > div:last-child {
+    padding-top: 0.45rem;
+    padding-bottom: 0.45rem;
+}
+
+html.annap-compact-guest-header .guest-masthead--compact .guest-masthead__mark {
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+}
+
+html.annap-compact-guest-header .guest-masthead--compact .guest-masthead__nav {
+    border-top: 0;
+    padding-top: 0;
+    gap: 0.15rem 0.35rem;
+}
+
+html.annap-compact-guest-header .guest-main {
+    padding-top: max(0.35rem, env(safe-area-inset-top));
+}
+
+body.guest-app:has(#guest-experience-root) .ge-ritual-hero {
+    padding-top: 0.35rem;
+}
+
+body.guest-app:has(#guest-experience-root) .ge-ritual-title {
+    font-size: clamp(1.45rem, 5.6vw, 2rem);
+    line-height: 1.22;
+    max-width: 16ch;
+    margin-inline: auto;
+}
+
+body.guest-app:has(#guest-experience-root) .ge-ritual-script-kicker {
+    letter-spacing: 0.18em;
+    font-size: 0.625rem;
+}
+
+body.guest-app:has(#guest-experience-root) .ge-ritual-invitation-card {
+    border-radius: 0.85rem;
+    border: 1px solid rgba(190, 165, 130, 0.42);
+    background:
+        linear-gradient(180deg, rgba(255, 252, 247, 0.98) 0%, rgba(248, 242, 232, 0.94) 100%);
+    box-shadow: 0 3px 16px -12px rgba(26, 18, 9, 0.2);
+    padding: 0.35rem;
+}
+
+body.guest-app:has(#guest-experience-root) .ge-ritual-begin {
+    min-height: 3.25rem;
+    border-radius: 0.7rem;
+}
+
+#ge-panel-sommelier .ge-host-turn--dialog {
+    border-left: 2px solid rgba(168, 132, 88, 0.38);
+    padding-left: 0.85rem;
+    margin-left: 0.15rem;
+}
+
+#ge-panel-sommelier .ge-host-prompt {
+    font-family: var(--font-ui);
+    font-size: clamp(1.05rem, 4.6vw, 1.28rem);
+    line-height: 1.38;
+    color: rgb(var(--fg));
+    margin-bottom: 0.85rem;
+}
+
+#ge-panel-sommelier .ge-opt.ge-host-choice {
+    min-height: 2.75rem;
+    padding: 0.72rem 0.9rem;
+    font-size: 1rem;
+    line-height: 1.35;
+    text-align: left;
+    border-radius: 0.65rem;
+    border: 1px solid rgba(190, 165, 130, 0.45);
+    background: rgba(255, 252, 247, 0.92);
+    color: rgb(var(--fg));
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+#ge-panel-sommelier .ge-opt.ge-host-choice.is-chosen,
+#ge-panel-sommelier .ge-opt.ge-host-choice[aria-pressed="true"] {
+    border-color: rgba(122, 88, 52, 0.62);
+    background: rgba(248, 236, 220, 0.96);
+    color: rgb(var(--fg));
+    box-shadow: 0 0 0 1px rgba(122, 88, 52, 0.12);
+}
+
+#ge-panel-sommelier .ge-opt.ge-host-choice:focus-visible {
+    outline: 2px solid rgba(122, 88, 52, 0.55);
+    outline-offset: 2px;
+}
+
+.ge-somm-note__title {
+    font-family: var(--font-ui);
+    font-size: 1.02rem;
+    line-height: 1.3;
+    color: rgb(var(--fg));
+    text-align: center;
+    margin-bottom: 0.35rem;
+}
+
+.ge-somm-note__field {
+    font-size: 0.72rem;
+    color: rgba(62, 48, 38, 0.72);
+    letter-spacing: 0.1em;
+}
+
+.ge-somm-note__value {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: rgb(var(--fg));
+}
+
+.ge-somm-note__line,
+.ge-somm-note__line--soft {
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: rgba(62, 48, 38, 0.82);
+}
+
+.ge-rec-result__kicker {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(62, 48, 38, 0.68);
+}
+
+.ge-rec-card__name {
+    font-size: clamp(1.2rem, 4.8vw, 1.45rem);
+    line-height: 1.2;
+}
+
+.ge-rec-card__reason {
+    font-size: 0.98rem;
+    line-height: 1.5;
+    color: rgba(62, 48, 38, 0.88);
+}
+
+.ge-rec-card__poster img {
+    border-radius: 0.55rem;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+}
+
+.ge-rec-alts__title {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(62, 48, 38, 0.68);
+}
+
+body.guest-app:has(#guest-experience-root):not(.ge-sommelier-flow) .order-tray-root--empty #order-tray-chip {
+    opacity: 0.62;
+    transform: scale(0.97);
+    transform-origin: center bottom;
+}
+
+body.guest-app:has(#guest-experience-root):not(.ge-sommelier-flow) .order-tray-root--empty .order-tray-chip__kicker,
+body.guest-app:has(#guest-experience-root):not(.ge-sommelier-flow) .order-tray-root--empty #order-tray-chip-sub {
+    opacity: 0.5;
+}
+
+@media (max-width: 24rem) {
+    html.annap-compact-guest-header .guest-masthead--compact .guest-masthead__nav a {
+        padding-inline: 0.35rem;
+        font-size: 0.68rem;
+    }
+
+    #ge-panel-sommelier .ge-opt.ge-host-choice {
+        font-size: 1.02rem;
+        min-height: 2.85rem;
+    }
 }

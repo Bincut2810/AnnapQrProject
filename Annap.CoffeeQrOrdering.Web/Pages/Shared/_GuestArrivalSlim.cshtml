@@ -1,0 +1,117 @@
+@model Annap.CoffeeQrOrdering.Web.Pages.IndexModel
+@using Annap.CoffeeQrOrdering.Web.Internal
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment HostEnvironment
+@{
+    var vt = Model.VenueTableId;
+    var menuHref = vt is Guid g ? $"/Menu/Index?vt={g:D}" : "/Menu/Index";
+    var sommUi = Model.SommelierLiteUiState;
+}
+@if (HostEnvironment.IsDevelopment())
+{
+    <!-- SommelierLite: seated=@Model.HasSeatedTable menuFirst=@Model.MenuFirstArrival slimArrival=@Model.ShowSlimArrival cmsEnabled=@Model.IsSommelierEnabled liteCompatible=@Model.IsSommelierLiteCompatible state=@sommUi showCta=@Model.ShowSlimSommelier reason=@(Model.SommelierLiteIncompatibleReason ?? "none") -->
+}
+<link rel="stylesheet" href="~/css/guest-arrival-slim.css" asp-append-version="true" />
+@if (Model.ShowSlimSommelier)
+{
+    <link rel="stylesheet" href="~/css/guest-sommelier-lite.css" asp-append-version="true" />
+}
+
+<div id="guest-arrival-slim"
+     class="guest-arrival-slim"
+     data-vt="@(vt?.ToString("D") ?? "")"
+     data-table-label="@(Model.TableGuestLabel ?? "")"
+     data-somm-lite-compatible="@(Model.IsSommelierLiteCompatible ? "true" : "false")">
+    <header class="guest-arrival-slim__head">
+        <p class="guest-arrival-slim__brand font-display" data-i18n="home.brand">Annap Coffee Atelier</p>
+        @if (!string.IsNullOrWhiteSpace(Model.TableGuestLabel))
+        {
+            <p class="guest-arrival-slim__table" aria-live="polite">
+                <span class="guest-arrival-slim__table-kicker" data-i18n="menu.tableLabel">Bàn</span>
+                <span class="guest-arrival-slim__table-name">@Model.TableGuestLabel</span>
+            </p>
+        }
+        <div class="guest-arrival-slim__lang guest-lang-register flex min-h-11 items-center gap-0 border border-[rgba(190,165,130,0.42)] bg-[rgba(253,249,244,0.4)] p-px"
+             role="group"
+             aria-label="Language">
+            <button type="button" data-lang-set="en" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]" data-i18n="langSwitcher.en">EN</button>
+            <button type="button" data-lang-set="vi" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]" data-i18n="langSwitcher.vi">VI</button>
+        </div>
+    </header>
+
+    <div class="guest-arrival-slim__body">
+        <h1 class="guest-arrival-slim__title font-display" data-i18n="guest.arrival.slimTitle">Chào mừng đến bàn của bạn</h1>
+        <p class="guest-arrival-slim__lead" data-i18n="guest.arrival.slimLead">Mở thực đơn để chọn món — quầy bar sẽ nhận đơn từ bàn này.</p>
+        <div class="guest-arrival-slim__actions">
+            <a class="guest-arrival-slim__cta guest-hit"
+               id="guest-arrival-menu-cta"
+               href="@menuHref"
+               data-guest-vt-link="1"
+               data-i18n="guest.arrival.slimMenuCta">Mở thực đơn</a>
+            @if (Model.ShowSlimSommelier)
+            {
+                <button type="button"
+                        class="guest-arrival-slim__cta guest-arrival-slim__cta--secondary guest-hit"
+                        id="guest-arrival-somm-open"
+                        data-i18n="guest.arrival.slimSommelierCta">
+                    Nhờ AI gợi ý món
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@if (Model.ShowSlimSommelier)
+{
+    <script type="application/json" id="guest-sommelier-lite-boot">@Html.Raw(Model.SommelierLiteBootJson)</script>
+    <div id="guest-sommelier-lite" class="guest-sommelier-lite" hidden>
+        <div class="guest-sommelier-lite__sheet" role="dialog" aria-modal="true" aria-labelledby="guest-sommelier-lite-title">
+            <header class="guest-sommelier-lite__head">
+                <h2 id="guest-sommelier-lite-title" class="guest-sommelier-lite__title" data-i18n="guest.sommelierLite.title">Gợi ý từ AI</h2>
+                <button type="button" class="guest-sommelier-lite__close guest-hit" data-somm-close aria-label="Close">&times;</button>
+            </header>
+            <div class="guest-sommelier-lite__body">
+                <p class="guest-sommelier-lite__capability" data-somm-capability-notice hidden data-i18n="guest.sommelierLite.incompatibleSheet">
+                    Tôi cần thêm một chút dữ liệu để gợi ý chính xác. Bạn vẫn có thể mở thực đơn hoặc thử lại sau.
+                </p>
+                <form id="guest-sommelier-lite-form">
+                    <fieldset class="guest-sommelier-lite__fieldset">
+                        <legend class="guest-sommelier-lite__legend" data-i18n="guest.sommelierLite.tasteLegend">Vị bạn muốn</legend>
+                        <div class="guest-sommelier-lite__choices" role="group">
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="taste" data-somm-value="sweet" aria-pressed="false" data-i18n="guest.sommelierLite.tasteSweet">Ngọt dịu</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="taste" data-somm-value="balanced" aria-pressed="false" data-i18n="guest.sommelierLite.tasteBalanced">Cân bằng</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="taste" data-somm-value="strong" aria-pressed="false" data-i18n="guest.sommelierLite.tasteStrong">Đậm</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="taste" data-somm-value="refreshing" aria-pressed="false" data-i18n="guest.sommelierLite.tasteRefreshing">Tươi mát</button>
+                        </div>
+                    </fieldset>
+                    <fieldset class="guest-sommelier-lite__fieldset">
+                        <legend class="guest-sommelier-lite__legend" data-i18n="guest.sommelierLite.milkLegend">Sữa</legend>
+                        <div class="guest-sommelier-lite__choices" role="group">
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="milk" data-somm-value="yes" aria-pressed="false" data-i18n="guest.sommelierLite.milkYes">Có</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="milk" data-somm-value="no" aria-pressed="false" data-i18n="guest.sommelierLite.milkNo">Không</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="milk" data-somm-value="either" aria-pressed="false" data-i18n="guest.sommelierLite.milkEither">Tùy</button>
+                        </div>
+                    </fieldset>
+                    <fieldset class="guest-sommelier-lite__fieldset">
+                        <legend class="guest-sommelier-lite__legend" data-i18n="guest.sommelierLite.caffeineLegend">Caffeine</legend>
+                        <div class="guest-sommelier-lite__choices" role="group">
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="caffeine" data-somm-value="yes" aria-pressed="false" data-i18n="guest.sommelierLite.caffeineYes">Có</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="caffeine" data-somm-value="low" aria-pressed="false" data-i18n="guest.sommelierLite.caffeineLow">Ít</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="caffeine" data-somm-value="no" aria-pressed="false" data-i18n="guest.sommelierLite.caffeineNo">Không</button>
+                        </div>
+                    </fieldset>
+                    <fieldset class="guest-sommelier-lite__fieldset">
+                        <legend class="guest-sommelier-lite__legend" data-i18n="guest.sommelierLite.tempLegend">Nhiệt độ</legend>
+                        <div class="guest-sommelier-lite__choices" role="group">
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="temperature" data-somm-value="iced" aria-pressed="false" data-i18n="guest.sommelierLite.tempIced">Lạnh</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="temperature" data-somm-value="hot" aria-pressed="false" data-i18n="guest.sommelierLite.tempHot">Nóng</button>
+                            <button type="button" class="guest-sommelier-lite__choice guest-hit" data-somm-group="temperature" data-somm-value="either" aria-pressed="false" data-i18n="guest.sommelierLite.tempEither">Tùy</button>
+                        </div>
+                    </fieldset>
+                    <button type="submit" class="guest-sommelier-lite__submit guest-hit" data-somm-submit disabled data-i18n="guest.sommelierLite.submit">Gợi ý cho tôi</button>
+                </form>
+                <p class="guest-sommelier-lite__status" data-somm-status hidden></p>
+                <div class="guest-sommelier-lite__results" data-somm-results hidden></div>
+            </div>
+        </div>
+    </div>
+}

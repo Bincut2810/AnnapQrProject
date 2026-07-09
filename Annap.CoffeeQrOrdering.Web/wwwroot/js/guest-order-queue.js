@@ -98,6 +98,10 @@
                 queueWarn("[annap] order queue flush: skipped job without idempotency key");
                 continue;
             }
+            const paymentMethod =
+                job.paymentMethod && String(job.paymentMethod).trim()
+                    ? String(job.paymentMethod).trim()
+                    : "Cash";
             try {
                 const ac = new AbortController();
                 const flushTo = setTimeout(function () {
@@ -112,7 +116,12 @@
                             Accept: "application/json",
                             "Idempotency-Key": idem
                         },
-                        body: JSON.stringify({ venueTableId: job.venueTableId, items: job.items, idempotencyKey: idem }),
+                        body: JSON.stringify({
+                            venueTableId: job.venueTableId,
+                            items: job.items,
+                            idempotencyKey: idem,
+                            paymentMethod: paymentMethod
+                        }),
                         signal: ac.signal
                     });
                 } finally {
@@ -122,10 +131,10 @@
                     notify("A held tray just found the floor again — your order went through.");
                     continue;
                 }
-                remaining.push({ ...job, idempotencyKey: idem });
+                remaining.push({ ...job, idempotencyKey: idem, paymentMethod: paymentMethod });
             } catch (e) {
                 queueWarn("[annap] order queue flush: job failed (will retry)", e);
-                remaining.push({ ...job, idempotencyKey: idem });
+                remaining.push({ ...job, idempotencyKey: idem, paymentMethod: paymentMethod });
             }
         }
         writeQueue(remaining);
@@ -143,15 +152,20 @@
          * @param {string} venueTableId
          * @param {object[]} items
          * @param {string} [idempotencyKey] stable key so retries / flush dedupe with server
+         * @param {string} [paymentMethod] Cash | Card | BankTransfer
          */
-        enqueue(venueTableId, items, idempotencyKey) {
+        enqueue(venueTableId, items, idempotencyKey, paymentMethod) {
             const idem = idempotencyKey && String(idempotencyKey).trim() ? String(idempotencyKey).trim() : "";
             if (!idem) {
                 queueWarn("[annap] order queue enqueue: idempotency key required — job not queued");
                 return;
             }
+            const method =
+                paymentMethod && String(paymentMethod).trim()
+                    ? String(paymentMethod).trim()
+                    : "Cash";
             const q = readQueue().filter((j) => j.idempotencyKey !== idem);
-            q.push({ venueTableId, items, idempotencyKey: idem, at: Date.now() });
+            q.push({ venueTableId, items, idempotencyKey: idem, paymentMethod: method, at: Date.now() });
             writeQueue(q);
             notify("The line softened for a moment — we will place this tray when the room is steady again.");
         },

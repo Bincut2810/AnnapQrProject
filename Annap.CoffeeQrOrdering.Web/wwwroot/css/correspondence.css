@@ -1,4 +1,4 @@
-﻿/**
+/**
  * ANNAP Correspondence Layer â€” letter experience CSS.
  * Activates via html.annap-correspond-ui (paper world).
  * Seated chrome suppressed via html.annap-seated-guest.
@@ -153,8 +153,9 @@ html.annap-correspond-ui.annap-seated-guest body::after {
 html.annap-correspond-ui h1,
 html.annap-correspond-ui h2,
 html.annap-correspond-ui h3 {
-  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
-  font-style: italic;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 500;
 }
 
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -177,6 +178,10 @@ html.annap-seated-guest .guest-main {
   max-width: 100%;
   padding-left: 1rem;
   padding-right: 1rem;
+}
+
+html.annap-seated-guest .guest-main--seated {
+  padding-top: max(0.5rem, env(safe-area-inset-top));
 }
 
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -320,16 +325,16 @@ html.annap-correspond-ui .menu-browse > header h1 {
 }
 
 html.annap-correspond-ui .menu-browse > header > p:first-of-type {
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.575rem;
   font-weight: 500;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink-tertiary, #c4a882);
 }
 
 html.annap-correspond-ui .menu-browse > header p.leading-\[1\.7\] {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1.0625rem;
   font-style: italic;
   line-height: 1.72;
@@ -371,19 +376,19 @@ html.annap-correspond-ui .menu-chapter-hero .menu-editorial-card__name {
 
 html.annap-correspond-ui .menu-cat-section h2,
 html.annap-correspond-ui .menu-chapter-head .menu-cat-heading {
-  font-family: "Playfair Display", Georgia, serif;
-  font-style: italic;
-  font-weight: 400;
+  font-family: var(--font-display);
+  font-style: normal;
+  font-weight: 500;
   letter-spacing: -0.02em;
-  font-size: clamp(1.35rem, 4.5vw, 1.85rem);
+  font-size: clamp(1.5rem, 4.5vw, 2.25rem);
   color: var(--ink-deep, #1a1209);
 }
 
 html.annap-correspond-ui .menu-cat-section > div > p {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.9375rem;
-  font-style: italic;
-  line-height: 1.7;
+  font-style: normal;
+  line-height: 1.55;
   color: var(--ink-secondary, #8b6b47);
 }
 
@@ -487,10 +492,10 @@ html.annap-correspond-ui .letter-entry.menu-tasting-entry--hero .letter-entry__i
 
 /* â”€â”€ Ribbon badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.annap-correspond-ui .letter-entry__ribbon {
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.525rem;
   font-weight: 500;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink-tertiary, #c4a882);
   margin-bottom: 0.35rem;
@@ -498,7 +503,7 @@ html.annap-correspond-ui .letter-entry__ribbon {
 
 /* â”€â”€ Item name â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.annap-correspond-ui .letter-entry__name {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-weight: 400;
   font-size: clamp(1.35rem, 5vw, 1.85rem);
@@ -511,7 +516,7 @@ html.annap-correspond-ui .letter-entry__name {
 
 /* â”€â”€ Tagline / mood â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.annap-correspond-ui .letter-entry__desc {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.9375rem;
   font-style: italic;
   line-height: 1.58;
@@ -530,7 +535,7 @@ html.annap-correspond-ui .letter-entry__meta {
 
 /* Price */
 html.annap-correspond-ui .letter-entry__price {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 1.2rem;
   color: var(--wax-seal, #c4a882);
@@ -539,10 +544,10 @@ html.annap-correspond-ui .letter-entry__price {
 
 /* Add button â€” ink CTA */
 html.annap-correspond-ui .letter-entry__invitation {
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 0.65rem 1.25rem !important;
   min-height: 2.75rem;
@@ -573,7 +578,7 @@ html.annap-correspond-ui .letter-entry__invitation.opacity-45 {
 
 /* Discover / Details link */
 html.annap-correspond-ui .letter-entry__discover {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.875rem;
   font-style: italic;
   letter-spacing: 0.04em;
@@ -610,7 +615,7 @@ html.annap-correspond-ui .letter-entry__notes-label {
 }
 
 html.annap-correspond-ui .letter-entry__notes-text {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.9375rem;
   line-height: 1.72;
   color: var(--ink-secondary, #8b6b47);
@@ -619,7 +624,7 @@ html.annap-correspond-ui .letter-entry__notes-text {
 
 /* Story block */
 html.annap-correspond-ui .letter-entry__story-text {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 1rem;
   line-height: 1.7;
@@ -650,11 +655,11 @@ html.annap-correspond-ui .letter-entry__story-text {
 }
 
 .letter-chapter-break__glyph {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: normal;
   font-size: 0.72rem;
   color: var(--wax-seal, #c4a882);
-  letter-spacing: 0.22em;
+  letter-spacing: 0.04em;
   white-space: nowrap;
   flex-shrink: 0;
   opacity: 0.42;
@@ -686,14 +691,14 @@ html.annap-correspond-ui #order-tray-chip {
 }
 
 html.annap-correspond-ui #order-tray-chip-title {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 1.0625rem;
   color: var(--ink-deep, #1a1209);
 }
 
 html.annap-correspond-ui #order-tray-chip-sub {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 0.875rem;
   color: var(--ink-secondary, #8b6b47);
@@ -731,7 +736,7 @@ html.annap-correspond-ui .order-tray-root--empty #order-tray-chip {
 
 /* UX-S4B — sommelier empty tray: readable total + compact dock (all viewports) */
 body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__total {
-  font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-ui);
   font-style: normal;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -797,7 +802,7 @@ body.ge-sommelier-flow .order-tray-chip--has-items #order-tray-chip-sub {
 
 body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__total--empty,
 .order-tray-root--empty .order-tray-chip__total--empty {
-  font-family: Outfit, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-ui);
   font-style: normal;
   font-size: 0.75rem;
   font-weight: 500;
@@ -842,7 +847,7 @@ body.ge-sommelier-flow .order-tray-root--empty .order-tray-chevron {
     inset 0 1px 0 rgba(255, 255, 255, 0.68);
   overflow: hidden;
   color: rgba(91, 65, 38, 0.72);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.86rem;
   font-style: italic;
   transform: rotate(calc(-7deg + var(--tray-card-i, 0) * 6deg));
@@ -875,7 +880,7 @@ body.ge-sommelier-flow .order-tray-root--empty .order-tray-chevron {
 }
 
 .order-tray-chip__total {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.88rem;
   font-style: italic;
   line-height: 1;
@@ -995,13 +1000,13 @@ html.annap-correspond-ui #order-tray-backdrop:not(.is-visible) {
 }
 
 html.annap-correspond-ui #order-tray-subtotal {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   color: var(--ink-deep, #1a1209);
 }
 
 html.annap-correspond-ui #trayCountLine {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.8rem;
   color: var(--ink-secondary, #8b6b47);
 }
@@ -1015,7 +1020,7 @@ html.annap-correspond-ui #trayCountLine {
   border: 1px solid rgba(140, 35, 24, 0.25);
   border-radius: 50%;
   color: rgba(140, 35, 24, 0.62);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1rem;
   font-style: italic;
   transform: rotate(-7deg);
@@ -1035,7 +1040,7 @@ html.annap-correspond-ui #trayCountLine {
   background: rgba(253, 249, 244, 0.58);
   color: rgba(91, 65, 38, 0.72);
   text-align: center;
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.95rem;
   font-style: italic;
 }
@@ -1081,7 +1086,7 @@ html.annap-correspond-ui #trayCountLine {
   background:
     radial-gradient(circle at 50% 35%, rgba(255, 249, 238, 0.95), rgba(226, 207, 180, 0.42));
   color: rgba(91, 65, 38, 0.72);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   overflow: hidden;
 }
@@ -1102,7 +1107,7 @@ html.annap-correspond-ui #trayCountLine {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.92rem;
   line-height: 1.08;
   color: rgba(26, 18, 9, 0.9);
@@ -1113,7 +1118,7 @@ html.annap-correspond-ui #trayCountLine {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.72rem;
   font-style: italic;
   color: rgba(91, 65, 38, 0.64);
@@ -1158,7 +1163,7 @@ html.annap-correspond-ui #trayCountLine {
 
 .order-tray-line__price {
   color: rgba(91, 65, 38, 0.82);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.86rem;
   font-style: italic;
   font-variant-numeric: tabular-nums;
@@ -1301,7 +1306,7 @@ html.annap-correspond-ui #trayCountLine {
   }
 
   body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__total {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif !important;
+    font-family: var(--font-ui) !important;
     font-style: normal !important;
     font-size: 0.8125rem !important;
     font-weight: 600 !important;
@@ -1347,13 +1352,13 @@ html.annap-correspond-ui #trayCountLine {
 
   html.annap-correspond-ui .order-tray-chip__kicker {
     font-size: 0.46rem !important;
-    letter-spacing: 0.24em !important;
+    letter-spacing: 0.04em !important;
     opacity: 0.68;
   }
 
   html.annap-correspond-ui #order-tray-chip-title {
     margin-top: 0.02rem !important;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif !important;
+    font-family: var(--font-ui) !important;
     font-style: normal !important;
     font-size: 0.8125rem !important;
     font-weight: 500 !important;
@@ -1363,7 +1368,7 @@ html.annap-correspond-ui #trayCountLine {
 
   html.annap-correspond-ui #order-tray-chip-sub {
     margin-top: 0.04rem !important;
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif !important;
+    font-family: var(--font-ui) !important;
     font-style: normal !important;
     font-size: 0.6875rem !important;
     line-height: 1.25 !important;
@@ -1408,11 +1413,11 @@ html.annap-correspond-ui #trayCountLine {
   }
 
   html.annap-correspond-ui .order-tray-root--sheet-open #order-tray-chip-title {
-    font-family: "Outfit", ui-sans-serif, sans-serif;
+    font-family: var(--font-ui);
     font-size: 0.74rem !important;
     font-style: normal;
     font-weight: 500;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.04em;
     line-height: 1;
     text-transform: uppercase;
   }
@@ -1446,7 +1451,7 @@ html.annap-correspond-ui #trayCountLine {
   }
 
   html.annap-correspond-ui .annap-tray-header .font-display {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif !important;
+    font-family: var(--font-ui) !important;
     font-size: 0.9375rem !important;
     font-weight: 500 !important;
     font-style: normal !important;
@@ -1454,14 +1459,14 @@ html.annap-correspond-ui #trayCountLine {
   }
 
   html.annap-correspond-ui #trayCountLine {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif !important;
+    font-family: var(--font-ui) !important;
     font-size: 0.6875rem !important;
     line-height: 1.35 !important;
     color: rgb(var(--muted, 107 90 72)) !important;
   }
 
   html.annap-correspond-ui #order-tray-subtotal {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif !important;
+    font-family: var(--font-ui) !important;
     font-style: normal !important;
     font-size: 1.125rem !important;
     font-weight: 600 !important;
@@ -1474,7 +1479,7 @@ html.annap-correspond-ui #trayCountLine {
   }
 
   html.annap-correspond-ui .order-tray-line p.font-display {
-    font-family: Outfit, ui-sans-serif, system-ui, sans-serif !important;
+    font-family: var(--font-ui) !important;
     font-style: normal !important;
     font-size: 0.875rem !important;
     font-weight: 500 !important;
@@ -1568,7 +1573,7 @@ html.annap-correspond-ui #guestToast .surface-glass {
   z-index: 200;
   left: 50%;
   pointer-events: none;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 0.9375rem;
   color: var(--ink-secondary, #8b6b47);
@@ -1589,7 +1594,7 @@ html.annap-correspond-ui #guestToast .surface-glass {
     0 10px 28px rgba(26, 18, 9, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.62);
   color: rgba(91, 65, 38, 0.78);
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.86rem;
   font-style: italic;
   letter-spacing: 0.025em;
@@ -1622,7 +1627,7 @@ html.annap-correspond-ui #guestToast .surface-glass {
     0 8px 22px rgba(26, 18, 9, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.62);
   color: rgba(61, 43, 26, 0.88);
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.72rem;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -1766,7 +1771,7 @@ html.annap-guest-no-motion .annap-tray-receipt-toast--out {
 }
 
 .annap-cup-flyer__glyph {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   color: var(--wax-seal, #c4a882);
   font-size: 1.35rem;
@@ -1944,7 +1949,7 @@ html.annap-correspond-ui .annap-tray-header {
 }
 
 html.annap-correspond-ui .annap-tray-header .font-display {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 1.0625rem;
   font-weight: 400;
@@ -1953,7 +1958,7 @@ html.annap-correspond-ui .annap-tray-header .font-display {
 
 /* Count line under title */
 html.annap-correspond-ui #trayCountLine {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.8125rem;
   font-style: italic;
   color: var(--ink-secondary, #8b6b47);
@@ -1988,7 +1993,7 @@ html.annap-correspond-ui .order-tray-line .flex.items-start {
 
 /* Item name in tray */
 html.annap-correspond-ui .order-tray-line p.font-display {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 0.9375rem;
   color: var(--ink-deep, #1a1209);
@@ -1997,13 +2002,13 @@ html.annap-correspond-ui .order-tray-line p.font-display {
 /* "each" unit price */
 html.annap-correspond-ui .order-tray-line p.uppercase {
   font-size: 0.525rem;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.05em;
   color: var(--ink-tertiary, #c4a882);
 }
 
 /* Remove link */
 html.annap-correspond-ui .order-tray-remove {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.75rem;
   font-style: italic;
   letter-spacing: 0.04em;
@@ -2047,7 +2052,7 @@ html.annap-correspond-ui .order-tray-qty:hover {
 
 /* Line total */
 html.annap-correspond-ui .order-tray-line .ml-auto.tabular-nums {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 0.9375rem;
   color: var(--wax-seal, #c4a882);
@@ -2055,14 +2060,14 @@ html.annap-correspond-ui .order-tray-line .ml-auto.tabular-nums {
 
 /* Qty display */
 html.annap-correspond-ui .order-tray-line .min-w-\[2\.5rem\] {
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.8125rem;
   color: var(--ink-primary, #3d2b1a);
 }
 
 /* â”€â”€ Empty cart state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.annap-correspond-ui #cart > p {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 0.9375rem;
   color: var(--ink-tertiary, #c4a882);
@@ -2076,7 +2081,7 @@ html.annap-correspond-ui #cart > p {
 
 /* â”€â”€ Subtotal row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.annap-correspond-ui #order-tray-subtotal {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 1.5rem;
   color: var(--ink-deep, #1a1209);
@@ -2089,14 +2094,14 @@ html.annap-correspond-ui #menu-table-identity {
 }
 
 html.annap-correspond-ui #menu-table-primary {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-size: 0.9375rem;
   color: var(--ink-deep, #1a1209);
 }
 
 html.annap-correspond-ui #menu-table-need-qr {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.875rem;
   font-style: italic;
   color: var(--ink-secondary, #8b6b47);
@@ -2106,9 +2111,9 @@ html.annap-correspond-ui #menu-table-need-qr {
 
 /* â”€â”€ Submit button â€” elevated CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.annap-correspond-ui #menuSubmitBtn {
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.8rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   padding: 1rem 1.5rem;
   min-height: 3.25rem;
@@ -2154,14 +2159,14 @@ html.annap-correspond-ui #menuSubmitBtn.order-tray-submit--success {
 
 /* Order result text */
 html.annap-correspond-ui #orderResult {
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 0.875rem;
   font-style: italic;
   color: var(--ink-secondary, #8b6b47);
 }
 
 html.annap-correspond-ui #orderResult .order-tray-confirm {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1rem;
   color: var(--wax-seal, #c4a882);
 }
@@ -2202,7 +2207,7 @@ html.annap-correspond-ui .order-tray-confirm-card__seal {
   border-radius: 999px;
   color: #f8ead4;
   background: radial-gradient(circle at 34% 28%, rgba(151, 54, 38, 0.98), rgba(104, 35, 25, 0.94));
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   box-shadow: 0 9px 22px rgba(104, 35, 25, 0.2);
   animation: annap-order-seal-in 0.9s 0.14s cubic-bezier(0.18, 0.86, 0.22, 1) both;
@@ -2210,10 +2215,10 @@ html.annap-correspond-ui .order-tray-confirm-card__seal {
 
 html.annap-correspond-ui .order-tray-confirm-card__kicker {
   margin: 0;
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.56rem;
   font-style: normal;
-  letter-spacing: 0.24em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-tertiary, #c4a882);
 }
@@ -2229,7 +2234,7 @@ html.annap-correspond-ui .order-tray-confirm-card__title {
 html.annap-correspond-ui .order-tray-confirm-card__meta {
   margin: 0.46rem auto 0;
   max-width: 18rem;
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.52rem;
   font-style: normal;
   font-weight: 600;
@@ -2250,10 +2255,10 @@ html.annap-correspond-ui .order-tray-confirm-card__body {
 html.annap-correspond-ui .order-tray-confirm-card__link {
   display: inline-flex;
   margin-top: 0.8rem;
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.58rem;
   font-style: normal;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--wax-seal, #c4a882);
   border-bottom: 1px solid rgba(196, 168, 130, 0.42);
@@ -2271,16 +2276,16 @@ html.annap-correspond-ui .order-tray-confirm-card__link {
 }
 
 html.annap-correspond-ui #orderResult a {
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.625rem;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-secondary, #8b6b47);
 }
 
 /* â”€â”€ Qty span selector fix â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 html.annap-correspond-ui span.tabular-nums.tracking-wide {
-  font-family: "Outfit", ui-sans-serif, sans-serif;
+  font-family: var(--font-ui);
   font-size: 0.8125rem;
   color: var(--ink-primary, #3d2b1a);
 }
@@ -2370,7 +2375,7 @@ html.annap-correspond-ui .menu-chapter-head {
 }
 
 html.annap-correspond-ui .menu-editorial-card__price {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
@@ -2436,7 +2441,7 @@ body.guest-app:has(.menu-browse--catalogue) .order-tray-root--empty .order-tray-
 }
 
 .annap-tasting-flyer img { width: 100%; height: 100%; object-fit: contain; padding: 0.14rem; }
-.annap-tasting-flyer__glyph { font-family: "Playfair Display", Georgia, serif; font-style: italic; color: var(--wax-seal, #c4a882); font-size: 1.2rem; }
+.annap-tasting-flyer__glyph { font-family: var(--font-ui); font-style: italic; color: var(--wax-seal, #c4a882); font-size: 1.2rem; }
 .annap-tasting-flyer--sommelier { animation-duration: 1040ms; }
 
 .order-tray-chip__stack.annap-tray-slot-receive .order-tray-chip__card:last-child {
@@ -2511,17 +2516,17 @@ body.guest-app:has(.menu-browse--catalogue) .order-tray-root--empty .order-tray-
   border-radius: 0.62rem;
   border: 1px solid rgba(196, 168, 130, 0.26);
   overflow: hidden;
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
 }
 
 .tray-correspondence-card__visual img { width: 100%; height: 100%; object-fit: contain; padding: 0.14rem; }
-.tray-correspondence-card__name { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: "Playfair Display", Georgia, serif; font-size: 0.98rem; font-style: italic; }
+.tray-correspondence-card__name { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-ui); font-size: 0.98rem; font-style: italic; }
 .tray-correspondence-card__note { margin: 0.22rem 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.76rem; font-style: italic; color: rgba(91, 65, 38, 0.62); }
 .tray-correspondence-card__actions { grid-column: 2 / span 2; display: inline-flex; align-items: center; gap: 0.55rem; }
 .tray-correspondence-card__qty-ring { display: inline-grid; grid-template-columns: 1.5rem 1.2rem 1.5rem; align-items: center; border: 1px solid rgba(196, 168, 130, 0.3); border-radius: 999px; }
 .tray-correspondence-card__qty { min-width: 1rem; text-align: center; font-variant-numeric: tabular-nums; }
-.tray-correspondence-card__price { font-family: "Playfair Display", Georgia, serif; font-style: italic; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tray-correspondence-card__price { font-family: var(--font-ui); font-style: italic; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .tray-correspondence-card__release { width: 1.55rem; height: 1.55rem; display: grid; place-items: center; border-radius: 50%; }
 
 html.annap-guest-no-motion .annap-tasting-flyer,
@@ -2603,5 +2608,62 @@ html.annap-correspond-ui .order-tray-root--sheet-open .order-tray-sheet {
     animation: none !important;
     transition: none !important;
   }
+}
+
+.tray-line-note-toggle {
+  margin-top: 0.35rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(91, 65, 38, 0.72);
+  cursor: pointer;
+}
+
+.tray-line-customer-note--pill {
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: rgba(91, 65, 38, 0.78);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tray-line-note-input {
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgba(212, 184, 150, 0.45);
+  background: rgba(253, 249, 244, 0.85);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgb(var(--fg));
+  resize: vertical;
+  min-height: 2.4rem;
+  max-height: 5rem;
+}
+
+.tray-line-note-input:focus {
+  outline: 2px solid rgba(199, 168, 122, 0.35);
+  outline-offset: 1px;
+}
+
+.tray-line-note-count {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.625rem;
+  line-height: 1.3;
+  text-align: right;
+  color: rgba(91, 65, 38, 0.55);
+}
+
+.tray-correspondence-card__letter {
+  grid-column: 2 / 3;
+  grid-row: 1 / 3;
 }
 

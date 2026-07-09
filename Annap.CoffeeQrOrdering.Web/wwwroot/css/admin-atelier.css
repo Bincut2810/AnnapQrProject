@@ -94,14 +94,14 @@ body.admin-scroll-lock {
   display: block;
   font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(var(--muted-2));
 }
 
 .admin-mark__title {
   margin-top: var(--admin-space-2);
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1.35rem;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -132,7 +132,7 @@ body.admin-scroll-lock {
   padding-left: var(--admin-space-3);
   font-size: 0.6rem;
   font-weight: 500;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgb(var(--muted-2));
 }
@@ -260,14 +260,14 @@ body.admin-scroll-lock {
 .admin-topbar__eyebrow {
   font-size: 0.6rem;
   font-weight: 500;
-  letter-spacing: 0.26em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgb(var(--muted-2));
 }
 
 .admin-topbar__title {
   margin-top: var(--admin-space-1);
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1.15rem;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -373,14 +373,14 @@ body.admin-scroll-lock {
 .admin-kpi-label {
   font-size: 0.6rem;
   font-weight: 500;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgb(var(--muted-2));
 }
 
 .admin-kpi-value {
   margin-top: var(--admin-space-3);
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 2rem;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -473,7 +473,7 @@ body.admin-scroll-lock {
   margin-bottom: var(--admin-space-2);
   font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgb(var(--muted-2));
 }
@@ -902,7 +902,7 @@ body.admin-scroll-lock {
   margin-bottom: var(--admin-space-6);
   font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgb(var(--muted));
   transition: color var(--admin-duration-fast) var(--admin-ease-out), transform var(--admin-duration-fast) var(--admin-ease-out);
@@ -918,14 +918,14 @@ body.admin-scroll-lock {
 .menu-curation-hero__kicker {
   font-size: 0.6rem;
   font-weight: 500;
-  letter-spacing: 0.32em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgb(var(--muted-2));
 }
 
 .menu-curation-hero__title {
   margin-top: var(--admin-space-4);
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: clamp(2rem, 4vw, 2.75rem);
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -1022,14 +1022,14 @@ body.admin-scroll-lock {
 .menu-curation-preview-card__eyebrow {
   font-size: 0.58rem;
   font-weight: 500;
-  letter-spacing: 0.28em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgb(var(--muted-2));
 }
 
 .menu-curation-preview-card__name {
   margin-top: var(--admin-space-3);
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1.65rem;
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -1061,7 +1061,7 @@ body.admin-scroll-lock {
 }
 
 .menu-curation-preview-card__price {
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1.25rem;
   color: rgb(var(--accent));
 }
@@ -1194,7 +1194,7 @@ body.admin-scroll-lock {
 }
 
 .menu-curation-dropzone__title {
-  font-family: ui-serif, "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1.15rem;
   font-weight: 500;
   color: rgb(var(--fg));
@@ -1254,7 +1254,7 @@ body.admin-scroll-lock {
 .menu-curation-save-strip__state {
   font-size: 0.65rem;
   font-weight: 500;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: rgb(var(--muted-2));
   transition: color 0.45s ease;
@@ -1397,7 +1397,7 @@ body.admin-scroll-lock {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+  font-family: var(--font-ui);
   font-size: 1.05rem;
   font-weight: 400;
   font-style: italic;

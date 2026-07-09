@@ -135,7 +135,7 @@
 }
 
 .admin-mark__title {
-  font-family: "Cormorant Garamond", ui-serif, Georgia, serif;
+  font-family: var(--font-ui);
   font-style: italic;
   color: rgb(var(--fg));
 }

@@ -138,13 +138,18 @@
         var up = Number(line.unitPrice);
         var guestLabel = normalizeGuestLabel(line.guestLabel);
         var imageSrc = line.imageSrc != null ? String(line.imageSrc) : "";
+        var customerNote =
+            line.customerNote != null && String(line.customerNote).trim()
+                ? String(line.customerNote).trim().slice(0, 200)
+                : "";
         return {
             menuItemId: menuItemId,
             name: name,
             unitPrice: isFinite(up) ? up : 0,
             qty: isFinite(qty) && qty > 0 ? qty : 0,
             guestLabel: guestLabel,
-            imageSrc: imageSrc
+            imageSrc: imageSrc,
+            customerNote: customerNote
         };
     }
 
@@ -579,6 +584,7 @@
 
     function addItem(payload) {
         payload = payload || {};
+        if (readGuestOrderSession()) removeGuestOrderSession();
         if (!payload.imageSrc) payload.imageSrc = imageFromPayloadSource(payload);
         var key = ensureMigrated();
         addIncrementRaw(key, payload);
@@ -629,6 +635,30 @@
         emitCartUpdated();
     }
 
+    function setLineCustomerNote(menuItemId, note, guestLabel, options) {
+        options = options || {};
+        var silent = options.silent === true;
+        ensureMigrated();
+        var key = getCartStorageKey();
+        var id = String(menuItemId);
+        var gl = normalizeGuestLabel(guestLabel);
+        var raw = note != null ? String(note) : "";
+        var stored = silent
+            ? (raw.length > 200 ? raw.slice(0, 200) : raw)
+            : (raw.trim() ? raw.trim().slice(0, 200) : "");
+        var lines = readLinesRaw(key);
+        var changed = false;
+        for (var i = 0; i < lines.length; i++) {
+            if (lines[i].menuItemId === id && normalizeGuestLabel(lines[i].guestLabel) === gl) {
+                lines[i].customerNote = stored;
+                changed = true;
+            }
+        }
+        if (!changed) return;
+        writeLinesRaw(key, lines);
+        if (!silent) emitCartUpdated();
+    }
+
     function clearCart() {
         ensureMigrated();
         writeLinesRaw(getCartStorageKey(), []);
@@ -662,6 +692,11 @@
             if (!raw) return null;
             var o = JSON.parse(raw);
             if (!o || !o.orderId || !o.token) return null;
+            var storedVt = String(o.venueTableId || "").trim();
+            if (storedVt && _venueId && storedVt !== _venueId) {
+                removeGuestOrderSession();
+                return null;
+            }
             return o;
         } catch (e) {
             return null;
@@ -669,11 +704,42 @@
     }
 
     function writeGuestOrderSession(obj) {
+        if (!obj || !obj.orderId || !obj.token) return;
+        var vt = String(obj.venueTableId || _venueId || "").trim();
+        var payload = {
+            orderId: String(obj.orderId),
+            token: String(obj.token),
+            venueTableId: vt,
+            submittedAt: obj.submittedAt || new Date().toISOString(),
+            status: obj.status || "submittedPendingPayment"
+        };
+        if (obj.paymentMethod) payload.paymentMethod = String(obj.paymentMethod);
         try {
-            global.localStorage.setItem(orderSessionKey(_venueId), JSON.stringify(obj));
+            global.localStorage.setItem(orderSessionKey(vt || _venueId), JSON.stringify(payload));
         } catch (e) {
             /* ignore */
         }
+    }
+
+    function updateGuestOrderSessionStatus(status) {
+        var sess = readGuestOrderSession();
+        if (!sess) return;
+        sess.status = String(status || sess.status || "submittedPendingPayment");
+        writeGuestOrderSession(sess);
+    }
+
+    function buildGuestTrackUrl(orderId, token) {
+        var id = String(orderId || "").trim();
+        var tok = String(token || "").trim();
+        if (!id || !tok) return "";
+        return "/track/" + encodeURIComponent(id) + "?token=" + encodeURIComponent(tok);
+    }
+
+    function buildGuestTrackApiUrl(orderId, token) {
+        var id = String(orderId || "").trim();
+        var tok = String(token || "").trim();
+        if (!id || !tok) return "";
+        return "/api/track/orders/" + encodeURIComponent(id) + "?token=" + encodeURIComponent(tok);
     }
 
     function removeGuestOrderSession() {
@@ -748,10 +814,14 @@
         addItem: addItem,
         adjustItemQuantity: adjustItemQuantity,
         removeItem: removeItem,
+        setLineCustomerNote: setLineCustomerNote,
         clearCart: clearCart,
         clearGroupGuestLabeledLines: clearGroupGuestLabeledLines,
         readGuestOrderSession: readGuestOrderSession,
         writeGuestOrderSession: writeGuestOrderSession,
+        updateGuestOrderSessionStatus: updateGuestOrderSessionStatus,
+        buildGuestTrackUrl: buildGuestTrackUrl,
+        buildGuestTrackApiUrl: buildGuestTrackApiUrl,
         removeGuestOrderSession: removeGuestOrderSession,
         setTrayOpener: setTrayOpener,
         openTray: openTray

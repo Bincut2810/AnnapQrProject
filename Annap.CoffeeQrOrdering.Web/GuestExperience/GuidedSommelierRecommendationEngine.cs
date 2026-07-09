@@ -120,7 +120,7 @@ public static class GuidedSommelierRecommendationEngine
         {
             var (m, _) = top[i];
             var pct = pcts[i];
-            var explain = ExplainForRank(i, pct, m.Name, ambient, categoryDirectionLine);
+            var explain = ExplainForRank(i, pct, m.Name, ambient, categoryDirectionLine, m.TastingNotes);
             var label = GuestDiscoveryRitualComposer.PalateAlignmentLabel(pct, i);
             var direction = i == 0 ? "lead" : ComputeDirection(m.Sensory, leadSensory);
             var explanationTags = ComputeExplanationTags(m.Sensory);
@@ -163,14 +163,14 @@ public static class GuidedSommelierRecommendationEngine
             return ComposeSpecialtyNamingLine(selectedAnswers);
 
         if (selectedAnswers.Count == 0)
-            return "Quầy đang cân một ly cho bàn bạn tối nay.";
+            return "Annap đang chọn một ly hợp với ghi chú này.";
 
-        var frags = selectedAnswers
-            .Select(o => o.EmotionalFragment.Trim())
-            .ToArray();
+        var mood = selectedAnswers[0].Label.Trim();
+        var family = selectedAnswers.Count > 1 ? selectedAnswers[1].Label.Trim().ToLowerInvariant() : "";
+        if (family.Length > 0 && mood.Length > 0)
+            return $"Vì bạn chọn {family} và muốn một ly {mood.ToLowerInvariant()}, Annap chọn cho bạn.";
 
-        var drink = frags.Length >= 2 && frags[1].Length > 0 ? frags[1] : (frags.Length >= 1 ? frags[0] : "đồ uống");
-        return $"Quầy đọc {drink} — và sẽ gọi tên một ly cho bàn bạn.";
+        return "Annap chọn cho bạn.";
     }
 
     public static string ComposeAmbientLine(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
@@ -194,15 +194,29 @@ public static class GuidedSommelierRecommendationEngine
     private static string Capitalize(string s) =>
         string.IsNullOrEmpty(s) ? s : string.Concat(s[..1].ToUpperInvariant(), s[1..]);
 
-    private static string ExplainForRank(int rank, int pct, string drinkName, string ambient, string categoryDirectionLine)
+    private static string ExplainForRank(int rank, int pct, string drinkName, string ambient, string categoryDirectionLine, string? tastingNotes = null)
     {
+        _ = pct;
         var name = string.IsNullOrWhiteSpace(drinkName) ? "Ly này" : drinkName.Trim();
-        var lead = string.IsNullOrWhiteSpace(categoryDirectionLine) ? ambient : categoryDirectionLine;
+        var dir = (categoryDirectionLine ?? "").Trim().TrimEnd('—', ' ', '-');
+        var taste = string.IsNullOrWhiteSpace(tastingNotes) ? "" : tastingNotes.Trim().TrimEnd('.');
         if (rank == 0)
-            return $"{lead} {name} phù hợp {pct}% với khẩu vị hôm nay của bạn.";
+        {
+            if (dir.Length > 0 && taste.Length > 0)
+                return $"{dir} {name} sẽ hợp với buổi hôm nay: {taste}.";
+            if (dir.Length > 0)
+                return $"{dir} {name} là lựa chọn Annap gửi cho bạn hôm nay.";
+            if (!string.IsNullOrWhiteSpace(ambient))
+                return $"{ambient.Trim()} {name} là lựa chọn Annap gửi cho bạn hôm nay.";
+            if (taste.Length > 0)
+                return $"Annap chọn {name} cho gu hôm nay của bạn — {taste}.";
+            return $"Annap chọn {name} cho gu hôm nay của bạn.";
+        }
+
         if (rank == 1)
-            return $"{name} cũng là lựa chọn tốt — phù hợp khoảng {pct}%.";
-        return $"{name} vẫn phù hợp một phần với bạn — khoảng {pct}%.";
+            return $"{name} cũng là một hướng khác đáng thử.";
+
+        return $"{name} là một lựa chọn dịu hơn nếu bạn muốn đổi nhịp.";
     }
 
     private static string ComputeDirection(DrinkSensoryProfile cup, DrinkSensoryProfile lead)
@@ -348,37 +362,37 @@ public static class GuidedSommelierRecommendationEngine
         return family switch
         {
             BeverageFamilyGrounding.Coffee when cafLevel >= 4 && isSweet =>
-                "Bạn muốn cà phê đậm và đủ ngọt —",
+                "Vì bạn muốn một ly rõ vị và đủ ngọt,",
             BeverageFamilyGrounding.Coffee when cafLevel >= 4 =>
-                "Bạn muốn cà phê mạnh —",
+                "Vì bạn muốn một ly rõ vị và tỉnh táo,",
             BeverageFamilyGrounding.Coffee when cafLevel <= 2 && isLow =>
-                "Bạn thích cà phê nhẹ, ít ngọt —",
+                "Vì bạn muốn một ly cà phê nhẹ và ít ngọt,",
             BeverageFamilyGrounding.Coffee when cafLevel <= 2 =>
-                "Bạn thích cà phê nhẹ nhàng hơn —",
+                "Vì bạn muốn một ly cà phê êm hơn,",
             BeverageFamilyGrounding.Coffee when isLow =>
-                "Bạn thích cà phê ít ngọt —",
+                "Vì bạn muốn cà phê ít ngọt,",
             BeverageFamilyGrounding.Coffee when isSweet =>
-                "Bạn thích cà phê ngọt —",
+                "Vì bạn thích vị cà phê mềm hơn,",
             BeverageFamilyGrounding.Coffee =>
-                "Bạn đang nghiêng về cà phê —",
+                "Vì bạn đang nghiêng về cà phê,",
             BeverageFamilyGrounding.Tea =>
-                "Bạn chọn trà —",
+                "Vì bạn chọn trà và muốn một ly tỉnh táo,",
             BeverageFamilyGrounding.Juice when isLow =>
-                "Bạn muốn nước ép ít ngọt —",
+                "Vì bạn muốn một ly mát và ít ngọt,",
             BeverageFamilyGrounding.Juice =>
-                "Bạn muốn nước ép —",
+                "Vì bạn muốn một ly mát và dễ uống,",
             BeverageFamilyGrounding.Smoothie when isLow =>
-                "Bạn muốn sinh tố ít ngọt —",
+                "Vì bạn muốn sinh tố ít ngọt,",
             BeverageFamilyGrounding.Smoothie =>
-                "Bạn muốn sinh tố —",
+                "Vì bạn muốn một ly mềm và dễ uống,",
             BeverageFamilyGrounding.Matcha =>
-                "Bạn chọn matcha —",
+                "Vì bạn chọn matcha,",
             BeverageFamilyGrounding.Fruit when isLow =>
-                "Bạn muốn nước ép / trái cây ít ngọt —",
+                "Vì bạn muốn trái cây nhẹ và ít ngọt,",
             BeverageFamilyGrounding.Fruit =>
-                "Bạn muốn nước ép / trái cây —",
+                "Vì bạn muốn một ly mát và dễ uống,",
             BeverageFamilyGrounding.Signature =>
-                "Bạn muốn thử signature của quán —",
+                "Vì bạn muốn thử signature của quán,",
             _ => ""
         };
     }
