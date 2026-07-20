@@ -2,7 +2,7 @@
 @model ErrorModel
 @{
     Layout = null;
-    ViewData["Title"] = "Đã xảy ra lỗi";
+    ViewData["Title"] = Model.Title;
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -71,6 +71,9 @@
             font-weight: 500;
             text-decoration: none;
             transition: opacity 0.15s ease;
+            border: 0;
+            cursor: pointer;
+            font-family: inherit;
         }
         .err-btn:active { opacity: 0.85; }
         .err-btn--primary {
@@ -93,11 +96,9 @@
 </head>
 <body class="err-page">
     <main class="err-card" role="main">
-        <p class="err-kicker">Annap Coffee</p>
-        <h1 class="err-title">Đã xảy ra lỗi</h1>
-        <p class="err-lede">
-            Chúng tôi không thể hoàn tất yêu cầu của bạn. Vui lòng thử lại hoặc quay lại thực đơn.
-        </p>
+        <p class="err-kicker">Annap Coffee · @Model.StatusCodeValue</p>
+        <h1 class="err-title">@Model.Title</h1>
+        <p class="err-lede">@Model.Lede</p>
         <div class="err-actions">
             <a class="err-btn err-btn--primary" href="/Menu/Index">Quay lại menu</a>
             <button type="button" class="err-btn err-btn--quiet" onclick="location.reload()">Thử lại</button>

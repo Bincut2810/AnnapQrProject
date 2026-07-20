@@ -1291,6 +1291,9 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("ClosedByAccountId");
 
+                    b.HasIndex("OpenedAtUtc")
+                        .IsUnique();
+
                     b.ToTable("shift_closes", (string)null);
                 });
 

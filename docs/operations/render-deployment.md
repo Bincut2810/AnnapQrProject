@@ -2,12 +2,15 @@
 
 Operational guide for deploying ANNAP to [Render](https://render.com) for demonstration. Does not change guest UX or recommendation logic.
 
-## Architecture on Render
+## Production architecture
 
-| Render resource | Role |
+| Resource | Role |
 |-----------------|------|
-| **PostgreSQL** | Managed Postgres (PG 13+); pgvector via `CREATE EXTENSION vector` (runs in EF migrations) |
-| **Web Service** | ASP.NET Core 8 app; binds to Render `PORT` |
+| **Neon PostgreSQL** | Managed Postgres with pgvector; SSL required |
+| **Render Starter Web Service** | ASP.NET Core 8 Docker app; binds to Render `PORT` |
+| **Cloudinary** | Durable menu image uploads and delivery |
+| **Render Persistent Disk** | Data Protection keys at `/var/data` |
+| **Cloudflare** | Public HTTPS hostname in front of Render |
 
 The app automatically:
 
@@ -17,14 +20,14 @@ The app automatically:
 
 ---
 
-## Render PostgreSQL setup
+## Neon PostgreSQL setup
 
-1. In Render dashboard: **New → PostgreSQL**
-2. Choose **PostgreSQL 15** (or 13+) in the same region as the web service
-3. Note the **Internal Database URL** (for linked web service) or External URL
-4. Link the database to your web service (**Connections → Link database**)
+1. Create a Neon project in the nearest region to the Render service.
+2. Enable/confirm the `vector` extension is available (the initial EF migration runs `CREATE EXTENSION IF NOT EXISTS vector`).
+3. Copy the pooled PostgreSQL connection URL with `sslmode=require`.
+4. Set it as `DATABASE_URL` on the Render web service.
 
-Render injects `DATABASE_URL` into the web service when linked. ANNAP converts it to an Npgsql connection string at startup and logs:
+ANNAP converts `DATABASE_URL` to an Npgsql connection string, enforces SSL in Production, and logs:
 
 ```
 Using DATABASE_URL-derived PostgreSQL connection.
@@ -42,10 +45,18 @@ If you prefer an explicit string, set `ConnectionStrings__DefaultConnection` ins
 | `ASPNETCORE_URLS` | Yes | `http://+:${PORT}` |
 | `DATABASE_URL` | Yes* | Auto-injected when Postgres is linked |
 | `ConnectionStrings__DefaultConnection` | Alt* | Npgsql format; overrides `DATABASE_URL` if set |
-| `StaffAuth__Password` or `STAFF_PASSWORD` | Yes | ≥ 12 characters; not on weak-password list |
-| `StaffAuth__UserName` or `STAFF_USER` | No | Default `host` |
-| `AppUrl__PublicBaseUrl` | **Strongly recommended** | `https://your-service.onrender.com` |
+| `StaffAuth__Password` | Yes | Admin/shared password; ≥12 characters and not weak |
+| `StaffAuth__CheckoutPassword` | Yes | Checkout shared password; ≥12 characters and not weak |
+| `StaffAuth__BaristaPassword` | Yes | Barista shared password; ≥12 characters and not weak |
+| `StaffAuth__UserName` | No | Default `host` |
+| `AppUrl__PublicBaseUrl` | Yes | Cloudflare HTTPS hostname |
 | `Database__ApplyMigrationsOnStartup` | First deploy | `true` then `false` after stable |
+| `Cloudinary__CloudName` | Yes | Cloudinary cloud name |
+| `Cloudinary__ApiKey` | Yes | Cloudinary API key |
+| `Cloudinary__ApiSecret` | Yes | Cloudinary API secret |
+| `Cloudinary__Folder` | Yes | `annap/menu-items` |
+| `DataProtection__KeysPath` | Yes | `/var/data/dataprotection-keys` on a Render persistent disk |
+| `DataProtection__ApplicationName` | Yes | `Annap.CoffeeQrOrdering` |
 
 \* Use **either** linked `DATABASE_URL` **or** `ConnectionStrings__DefaultConnection`, not both unless intentional.
 
@@ -65,7 +76,6 @@ If you prefer an explicit string, set `ConnectionStrings__DefaultConnection` ins
 | `BankTransfer__DescriptionTemplate` | Transfer memo template — default `ANNAP {Reference}` |
 | `BankTransfer__QrImageUrlTemplate` | VietQR image URL template with `{bankBin}`, `{accountNumber}`, `{amount}`, `{memo}`, `{accountName}` |
 | `BankTransfer__Webhook__DevWebhookEnabled` | **`false` in production** — dev/mock webhook only |
-| `BankTransfer__Webhook__Secret` | Required when dev webhook is enabled outside Development |
 
 ### Bank transfer QR and auto-confirmation
 
@@ -74,7 +84,7 @@ If you prefer an explicit string, set `ConnectionStrings__DefaultConnection` ins
 - **Matching rules:** memo must match the order transfer reference (via `BankTransfer:DescriptionTemplate`, default `ANNAP {Reference}`) and amount must equal the locked order total exactly.
 - **Manual fallback:** staff can still click **Xác nhận thanh toán** when webhook does not match.
 
-Local dev webhook (Development only, or Production with secret):
+Local dev webhook (Development only):
 
 ```bash
 curl -X POST http://localhost:8080/api/webhooks/bank-transfer/dev \
@@ -82,7 +92,8 @@ curl -X POST http://localhost:8080/api/webhooks/bank-transfer/dev \
   -d '{"provider":"dev","transactionId":"dev-txn-001","amount":90000,"memo":"ANNAP AC6D9D13A"}'
 ```
 
-Outside Development, set `BankTransfer__Webhook__Secret` and send header `X-Annap-Webhook-Secret`.
+The endpoint is not mapped outside Development. Production startup also rejects
+`BankTransfer__Webhook__DevWebhookEnabled=true`.
 
 ---
 
@@ -114,7 +125,7 @@ Run from the publish output directory.
 
 | Setting | Value |
 |---------|-------|
-| **Runtime** | Docker not required — Native Environment (.NET) |
+| **Runtime** | Docker |
 | **Root directory** | Repository root (or path containing `.csproj`) |
 | **Health check path** | `/health` |
 | **Health check initial delay** | `90` seconds (first deploy with migrations) |
@@ -124,20 +135,28 @@ Run from the publish output directory.
 
 ## First deployment procedure
 
-1. Create Render **PostgreSQL** (PG 13+) and **Web Service** in the same region.
-2. Link Postgres to the web service (injects `DATABASE_URL`).
+1. Create the Neon database and Render **Starter Web Service** in nearby regions.
+2. Set the Neon pooled connection URL as `DATABASE_URL`.
 3. Set environment variables:
    - `ASPNETCORE_ENVIRONMENT=Production`
    - `ASPNETCORE_URLS=http://+:${PORT}`
    - `StaffAuth__Password=<strong-password>`
-   - `AppUrl__PublicBaseUrl=https://<your-service>.onrender.com`
+   - `StaffAuth__CheckoutPassword=<strong-password>`
+   - `StaffAuth__BaristaPassword=<strong-password>`
+   - `AppUrl__PublicBaseUrl=https://<cloudflare-hostname>`
    - `Database__ApplyMigrationsOnStartup=true`
-4. Deploy. Watch logs for:
+   - `Cloudinary__CloudName`, `Cloudinary__ApiKey`, `Cloudinary__ApiSecret`
+   - `Cloudinary__Folder=annap/menu-items`
+   - `DataProtection__KeysPath=/var/data/dataprotection-keys`
+   - `DataProtection__ApplicationName=Annap.CoffeeQrOrdering`
+   - `BankTransfer__Webhook__DevWebhookEnabled=false`
+4. Attach a Render persistent disk mounted at `/var/data`.
+5. Deploy. Watch logs for:
    - `Using DATABASE_URL-derived PostgreSQL connection.`
    - `ANNAP PRODUCTION STARTUP` banner (Render deployment: yes)
    - `EF Core migrations applied successfully.`
    - `Specialty coffee bootstrap: 4 flagship coffees ensured.`
-5. Confirm `/health` returns Healthy in Render dashboard.
+6. Confirm `/health` returns Healthy in Render dashboard.
 
 ### Order workflow migrations (staff order board + item preparation)
 
@@ -151,10 +170,10 @@ Or set `Database__ApplyMigrationsOnStartup=true` for the first deploy only, then
 
 If migrations are missing, startup logs a critical error in Production (fail-fast) and `/health` reports **Unhealthy** for `payment_workflow_schema`. Staff board API returns `503` with `database_migration_required` instead of a raw PostgreSQL error.
 
-6. Open `/staff/orders` after login and confirm the order board loads.
-6. Run go-live verification (below).
-7. Set `Database__ApplyMigrationsOnStartup=false` for subsequent deploys.
-8. Smoke test: table QR → specialty sommelier → cup moment → order submit.
+7. Open `/staff/orders` after login and confirm the order board loads.
+8. Run go-live verification (below).
+9. Set `Database__ApplyMigrationsOnStartup=false` for subsequent deploys.
+10. Smoke test: table QR → specialty sommelier → cup moment → order submit.
 
 ### Startup warnings (non-blocking)
 

@@ -3,8 +3,8 @@ using Annap.CoffeeQrOrdering.Domain.Entities;
 namespace Annap.CoffeeQrOrdering.Web.Services;
 
 /// <summary>
-/// Guest-facing image pipeline — local Annap drink assets only. No remote URLs or demo placeholders.
-/// Menu cards prefer lightweight WebP thumbs; detail views use full poster/card WebP.
+/// Guest-facing image pipeline. Managed Cloudinary URLs are returned directly;
+/// legacy local assets remain supported during migration and development.
 /// </summary>
 public static class MenuMediaResolver
 {
@@ -26,6 +26,9 @@ public static class MenuMediaResolver
         var sawManagedUpload = false;
         foreach (var raw in new[] { thumbnailUrl, cardImageUrl, heroImageUrl, imageUrl })
         {
+            if (IsCloudinaryUrl(raw))
+                return raw!.Trim();
+
             if (IsManagedUploadUrl(raw))
                 sawManagedUpload = true;
 
@@ -50,6 +53,12 @@ public static class MenuMediaResolver
         string categoryName)
     {
         var sawManagedUpload = false;
+        if (IsCloudinaryUrl(detailPosterImagePath))
+            return detailPosterImagePath!.Trim();
+
+        if (IsCloudinaryUrl(imageUrl))
+            return imageUrl!.Trim();
+
         if (IsAllowedLocalUrl(detailPosterImagePath))
         {
             var poster = NormalizeWebRelative(detailPosterImagePath!);
@@ -101,6 +110,16 @@ public static class MenuMediaResolver
         TryResolveDetailPosterUrl(detailPosterImagePath, imageUrl, drinkName, categoryName) ?? "";
 
     public static bool HasLocalImage(string? url) => IsAllowedLocalUrl(url);
+
+    public static bool IsCloudinaryUrl(string? url)
+    {
+        if (!Uri.TryCreate(url?.Trim(), UriKind.Absolute, out var uri))
+            return false;
+
+        return uri.Scheme == Uri.UriSchemeHttps
+               && uri.Host.Equals("res.cloudinary.com", StringComparison.OrdinalIgnoreCase)
+               && uri.AbsolutePath.Contains("/image/upload/", StringComparison.Ordinal);
+    }
 
     public static string NormalizeWebRelative(string url)
     {

@@ -1,3 +1,4 @@
+using System.Data;
 using System.Globalization;
 using System.Security.Claims;
 using System.Text.Json;
@@ -6,6 +7,7 @@ using Annap.CoffeeQrOrdering.Infrastructure.Persistence;
 using Annap.CoffeeQrOrdering.Web.Internal;
 using Annap.CoffeeQrOrdering.Web.Security;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Annap.CoffeeQrOrdering.Web.Services;
 
@@ -102,9 +104,14 @@ public sealed class ShiftCloseService(AppDbContext db) : IShiftCloseService
         return preview;
     }
 
+    internal const string ConcurrentCloseMessage =
+        "Ca vừa được kết trên một thiết bị khác. Vui lòng xem lại tổng kết trước khi kết ca tiếp.";
+
     public async Task<ShiftCloseResultVm> CloseShiftAsync(ClaimsPrincipal user, CancellationToken ct = default)
     {
-        await using var tx = await db.Database.BeginTransactionAsync(ct);
+        // Serializable: the window-start read (latest ShiftClose) and the new ShiftClose insert
+        // must be atomic, or two devices closing at once each snapshot the same paid orders.
+        await using var tx = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
         try
         {
             var endUtc = DateTimeOffset.UtcNow;
@@ -147,11 +154,31 @@ public sealed class ShiftCloseService(AppDbContext db) : IShiftCloseService
             var closedSummary = preview with { LastClose = null };
             return new ShiftCloseResultVm(true, null, entity, closedSummary);
         }
+        catch (Exception ex) when (IsConcurrentCloseConflict(ex))
+        {
+            // A concurrent close won: unique window-start index (23505) or Serializable
+            // conflict (40001/40P01), possibly wrapped by the Npgsql execution strategy.
+            // The caller re-renders the fresh (now empty) window.
+            await tx.RollbackAsync(ct);
+            db.ChangeTracker.Clear();
+            return new ShiftCloseResultVm(false, ConcurrentCloseMessage, null, null);
+        }
         catch
         {
             await tx.RollbackAsync(ct);
             throw;
         }
+    }
+
+    private static bool IsConcurrentCloseConflict(Exception? ex)
+    {
+        for (; ex is not null; ex = ex.InnerException)
+        {
+            if (ex is PostgresException pg && pg.SqlState is "40001" or "40P01" or "23505")
+                return true;
+        }
+
+        return false;
     }
 
     public string BuildCopyText(ShiftClosePreviewVm preview)

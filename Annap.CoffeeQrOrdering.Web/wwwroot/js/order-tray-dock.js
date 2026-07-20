@@ -846,9 +846,9 @@ function __annapMenuRuntimeJsonSelfCheck() {
             const q = qr || {};
             const amount = q.amountFormatted || q.amount || "—";
             const memo = q.memo || "—";
-            const bankName = q.bankName || "ACB";
-            const account = q.accountNumber || "7385268";
-            const holder = q.accountName || "HO KINH DOANH ANNAP";
+            const bankName = q.bankName || "—";
+            const account = q.accountNumber || "—";
+            const holder = q.accountName || "—";
             const qrImage = q.qrImageUrl ? String(q.qrImageUrl) : "";
             const warningLine = options.showWarning
                 ? `<p class="order-tray-submitted-card__note">${escapeHtml(

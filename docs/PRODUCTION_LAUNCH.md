@@ -93,9 +93,11 @@ Optional experiences remain; copy states they are **never required to order**.
 
 - [ ] `ASPNETCORE_ENVIRONMENT=Production`
 - [ ] `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD` set for Compose, or `ConnectionStrings__DefaultConnection` set for a managed Postgres URL.
-- [ ] `StaffAuth__UserName` / `StaffAuth__Password` — password **≥12 chars**, not weak list (`ProductionStartupGuard`).
+- [ ] `StaffAuth__UserName`, `StaffAuth__Password`, `StaffAuth__CheckoutPassword`, `StaffAuth__BaristaPassword` — every password **≥12 chars**, not weak list (`ProductionStartupGuard`).
 - [ ] `AppUrl__PublicBaseUrl` — canonical HTTPS base for printed QR / emails.
 - [ ] `Database__ApplyMigrationsOnStartup` — `true` for first deploy; consider `false` after stable with manual migrations.
+- [ ] `Cloudinary__CloudName`, `Cloudinary__ApiKey`, `Cloudinary__ApiSecret`, `Cloudinary__Folder`.
+- [ ] `DataProtection__KeysPath=/var/data/dataprotection-keys` on a persistent disk.
 
 ### Infra
 
@@ -106,7 +108,7 @@ Optional experiences remain; copy states they are **never required to order**.
 
 ### Docker (`docker-compose.prod.yml`)
 
-- [ ] `POSTGRES_PASSWORD`, `STAFF_PASSWORD` set in `.env` or deployment secrets.
+- [ ] `POSTGRES_PASSWORD` and all canonical `StaffAuth__*Password` values set in `.env` or deployment secrets.
 - [ ] PostgreSQL container is `annap-postgres` with `5432:5432`; web container is `annap-web` with `8080:8080`.
 - [ ] Volume backup for Postgres data dir / managed snapshot.
 

@@ -41,10 +41,10 @@ public sealed class IndexModel(
     /// <summary>LAN isolation: skip mood/sommelier/tray scripts; only menu fetch on home (<c>Diagnostics:SlimGuestBoot</c>).</summary>
     public bool SlimGuestBoot => (env.IsDevelopment() || diagnostics.Value.DeveloperOverlays) && diagnostics.Value.SlimGuestBoot;
 
-    /// <summary>When true, seated arrival shows a primary link to the menu before optional experiences.</summary>
+    /// <summary>When true, seated guest homepage shows a primary link to the menu before optional experiences.</summary>
     public bool MenuFirstArrival => guestOperational.Value.MenuFirstArrival;
 
-    /// <summary>When true, seated arrival uses calmer CSS motion for WebViews and low-end devices.</summary>
+    /// <summary>When true, seated guest homepage uses calmer CSS motion for WebViews and low-end devices.</summary>
     public bool CalmArrivalAnimations => guestOperational.Value.CalmArrivalAnimations;
 
     /// <summary>Set when the guest arrives via table QR (<c>/table/T12</c> or <c>/t/annap-t12</c>).</summary>
@@ -66,15 +66,7 @@ public sealed class IndexModel(
     public GuestTableContextState TableContextState =>
         GuestTableContext.Resolve(HasSeatedTable, QrScanInvalid, TableHandoffInvalid);
 
-    /// <summary>
-    /// Lightweight QR arrival shell (Phase 1B). Off by default; ritual seated arrival is restored.
-    /// </summary>
-    public bool UseSlimQrArrival => guestOperational.Value.UseSlimQrArrival;
-
-    /// <summary>When true, render <c>_GuestArrivalSlim</c> instead of ritual entry (feature-flagged).</summary>
-    public bool ShowSlimArrival => UseSlimQrArrival && HasSeatedTable && MenuFirstArrival;
-
-    /// <summary>Homepage CMS: guided sommelier ritual on homepage arrival (not slim QR Lite).</summary>
+    /// <summary>Homepage CMS: guided sommelier ritual on homepage (not slim QR Lite).</summary>
     public bool IsSommelierEnabled { get; private set; } = true;
 
     /// <summary>Live guided catalog still exposes q1–q4 and all AI Lite option keys.</summary>
@@ -83,12 +75,6 @@ public sealed class IndexModel(
     public string SommelierLiteBootJson { get; private set; } = "{}";
 
     public string? SommelierLiteIncompatibleReason { get; private set; }
-
-    public SommelierLiteUiState SommelierLiteUiState =>
-        GuestSommelierLiteGating.Resolve(ShowSlimArrival, IsSommelierEnabled);
-
-    /// <summary>Secondary AI CTA — CMS sommelier enabled on seated slim arrival (not gated by Lite catalog compatibility).</summary>
-    public bool ShowSlimSommelier => GuestSommelierLiteGating.ShowCta(ShowSlimArrival, IsSommelierEnabled);
 
     public async Task OnGetAsync(Guid? vt, CancellationToken cancellationToken)
     {

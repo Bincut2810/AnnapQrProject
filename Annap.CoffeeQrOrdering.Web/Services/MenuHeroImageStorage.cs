@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using SixLabors.ImageSharp;
 
 namespace Annap.CoffeeQrOrdering.Web.Services;
 
@@ -113,7 +114,7 @@ public static class MenuHeroImageStorage
             TryDeleteFile(MenuImagePaths.ToPhysicalPath(env, imageUrl));
     }
 
-    private static void ValidateUpload(IFormFile file)
+    internal static void ValidateUpload(IFormFile file)
     {
         if (file.Length > MaxBytes)
             throw new InvalidOperationException("Image must be 5 MB or smaller.");
@@ -132,6 +133,38 @@ public static class MenuHeroImageStorage
         if (!string.Equals(safeName, file.FileName, StringComparison.Ordinal)
             || safeName.Contains("..", StringComparison.Ordinal))
             throw new InvalidOperationException("Invalid file name.");
+    }
+
+    internal static async Task ValidateImageContentAsync(
+        IFormFile file,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var stream = file.OpenReadStream();
+            var info = await Image.IdentifyAsync(stream, cancellationToken).ConfigureAwait(false);
+            if (info is null)
+                throw new InvalidOperationException("File must contain a valid JPG, PNG, or WebP image.");
+
+            const int maxDimension = 12_000;
+            const long maxPixels = 50_000_000;
+            if (info.Width > maxDimension
+                || info.Height > maxDimension
+                || (long)info.Width * info.Height > maxPixels)
+            {
+                throw new InvalidOperationException("Image dimensions are too large.");
+            }
+        }
+        catch (InvalidOperationException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            throw new InvalidOperationException(
+                "File must contain a valid JPG, PNG, or WebP image.",
+                ex);
+        }
     }
 
     private static async Task<string?> FallbackCopyBufferAsync(

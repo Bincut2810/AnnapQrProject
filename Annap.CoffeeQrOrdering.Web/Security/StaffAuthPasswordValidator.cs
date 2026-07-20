@@ -9,6 +9,10 @@ public static class StaffAuthPasswordValidator
     [
         "changeme",
         "change-this-staff-password",
+        "change-this-admin-password",
+        "change-this-checkout-password",
+        "change-this-barista-password",
+        "change-this-local-or-production-password",
         "password",
         "password123",
         "admin",

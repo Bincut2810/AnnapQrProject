@@ -13,7 +13,13 @@ public sealed class ProductionStartupGuardTests
         string staffPassword,
         string? checkoutPassword = null,
         string? baristaPassword = null,
-        string? connectionString = null)
+        string? connectionString = null,
+        string? cloudName = "test-cloud",
+        string? cloudApiKey = "test-api-key",
+        string? cloudApiSecret = "test-api-secret",
+        string? dataProtectionKeysPath = null,
+        bool devWebhookEnabled = false,
+        string? publicBaseUrl = "https://coffee.example.com")
     {
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -23,7 +29,15 @@ public sealed class ProductionStartupGuardTests
                 ["StaffAuth:CheckoutPassword"] = checkoutPassword ?? "CheckoutFloor-2026-Secure",
                 ["StaffAuth:BaristaPassword"] = baristaPassword ?? "BaristaFloor-2026-Secure",
                 ["ConnectionStrings:DefaultConnection"] = connectionString
-                    ?? "Host=localhost;Database=test;Username=postgres;Password=deployment-secret-32"
+                    ?? "Host=postgres;Database=test;Username=postgres;Password=deployment-secret-32;SSL Mode=Require",
+                ["Cloudinary:CloudName"] = cloudName,
+                ["Cloudinary:ApiKey"] = cloudApiKey,
+                ["Cloudinary:ApiSecret"] = cloudApiSecret,
+                ["DataProtection:KeysPath"] = dataProtectionKeysPath
+                    ?? Path.Combine(Path.GetTempPath(), "annap-test-dp-keys"),
+                ["DataProtection:ApplicationName"] = "Annap.Tests",
+                ["BankTransfer:Webhook:DevWebhookEnabled"] = devWebhookEnabled.ToString(),
+                ["AppUrl:PublicBaseUrl"] = publicBaseUrl
             })
             .Build();
 
@@ -97,14 +111,64 @@ public sealed class ProductionStartupGuardTests
             Validate(
                 Environments.Production,
                 "CafeFloor-2026-Secure",
-                connectionString: "Host=localhost;Database=test;Username=postgres;Password=annap_local_dev"));
+                connectionString: "Host=postgres;Database=test;Username=postgres;Password=annap_local_dev"));
 
         Assert.Contains("PostgreSQL", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Production_requires_Cloudinary()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(Environments.Production, "CafeFloor-2026-Secure", cloudName: ""));
+
+        Assert.Contains("Cloudinary", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Production_rejects_placeholder_Cloudinary_credentials()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(
+                Environments.Production,
+                "CafeFloor-2026-Secure",
+                cloudName: "your-cloud-name",
+                cloudApiKey: "your-api-key",
+                cloudApiSecret: "your-api-secret"));
+
+        Assert.Contains("Cloudinary", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Production_requires_durable_DataProtection_path()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(
+                Environments.Production,
+                "CafeFloor-2026-Secure",
+                dataProtectionKeysPath: ""));
+
+        Assert.Contains("DataProtection", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Production_rejects_development_bank_webhook()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(
+                Environments.Production,
+                "CafeFloor-2026-Secure",
+                devWebhookEnabled: true));
+
+        Assert.Contains("webhook", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Theory]
     [InlineData("checkout-dev")]
     [InlineData("barista-dev")]
+    [InlineData("change-this-admin-password")]
+    [InlineData("change-this-checkout-password")]
+    [InlineData("change-this-barista-password")]
     public void StaffAuthPasswordValidator_rejects_known_dev_defaults(string password)
     {
         var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -113,6 +177,58 @@ public sealed class ProductionStartupGuardTests
             ex.Message.Contains("weak", StringComparison.OrdinalIgnoreCase)
             || ex.Message.Contains("at least", StringComparison.OrdinalIgnoreCase),
             ex.Message);
+    }
+
+    [Fact]
+    public void Production_rejects_env_example_staff_password_placeholders()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(
+                Environments.Production,
+                "change-this-admin-password",
+                "change-this-checkout-password",
+                "change-this-barista-password"));
+
+        Assert.Contains("StaffAuth", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Production_requires_public_base_url()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(Environments.Production, "CafeFloor-2026-Secure", publicBaseUrl: ""));
+
+        Assert.Contains("PublicBaseUrl", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Production_rejects_localhost_public_base_url()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(Environments.Production, "CafeFloor-2026-Secure", publicBaseUrl: "http://localhost:8080"));
+
+        Assert.Contains("localhost", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Production_rejects_http_public_base_url()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(Environments.Production, "CafeFloor-2026-Secure", publicBaseUrl: "http://annapcoffee.io.vn"));
+
+        Assert.Contains("https", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Production_rejects_loopback_database_host()
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            Validate(
+                Environments.Production,
+                "CafeFloor-2026-Secure",
+                connectionString: "Host=127.0.0.1;Database=test;Username=postgres;Password=deployment-secret-32"));
+
+        Assert.Contains("localhost", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed class HostEnvironment : IHostEnvironment

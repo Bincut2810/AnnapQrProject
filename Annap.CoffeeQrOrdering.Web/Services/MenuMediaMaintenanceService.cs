@@ -8,6 +8,7 @@ namespace Annap.CoffeeQrOrdering.Web.Services;
 public sealed class MenuMediaMaintenanceService(
     IApplicationDbContext db,
     IWebHostEnvironment env,
+    IMenuImageStorage imageStorage,
     ILogger<MenuMediaMaintenanceService> log)
 {
     public sealed record MaintenanceReport(
@@ -105,10 +106,14 @@ public sealed class MenuMediaMaintenanceService(
         return new MaintenanceReport(orphansRemoved, thumbsRebuilt, missing.Count, missing);
     }
 
-    public void PurgeManagedAssetsForItem(Guid itemId)
+    public async Task PurgeManagedAssetsForItemAsync(
+        Guid itemId,
+        string? heroUrl,
+        string? posterUrl,
+        CancellationToken cancellationToken = default)
     {
-        MenuHeroImageStorage.TryDeleteIfManaged(env, MenuImagePaths.HeroWebRelative(itemId));
-        MenuHeroImageStorage.TryDeletePosterIfManaged(env, MenuImagePaths.PosterWebRelative(itemId));
+        await imageStorage.DeleteHeroAsync(itemId, heroUrl, cancellationToken).ConfigureAwait(false);
+        await imageStorage.DeletePosterAsync(itemId, posterUrl, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<HashSet<string>> CollectReferencedUrlsAsync(CancellationToken cancellationToken)

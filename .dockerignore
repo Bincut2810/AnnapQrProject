@@ -10,3 +10,5 @@ terminals/
 .env
 .env.*
 !.env.example
+tmp-*
+*cookie*.txt

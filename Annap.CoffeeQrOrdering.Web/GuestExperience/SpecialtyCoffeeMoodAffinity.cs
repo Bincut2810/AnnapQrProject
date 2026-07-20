@@ -69,12 +69,20 @@ internal static class SpecialtyCoffeeMoodAffinity
                 "dufatanye" => 0.15,
                 _ => 0
             },
-            "blueberry_honey" => product switch
+            "blueberry_honey" or "surprise" => product switch
             {
                 "nigussie" => 1.0,
                 "rift_valley" => 0.50,
                 "abateranankunga" => 0.35,
                 "dufatanye" => 0.20,
+                _ => 0
+            },
+            "chocolate" => product switch
+            {
+                "rift_valley" => 1.0,
+                "nigussie" => 0.70,
+                "abateranankunga" => 0.25,
+                "dufatanye" => 0.15,
                 _ => 0
             },
             _ => 0

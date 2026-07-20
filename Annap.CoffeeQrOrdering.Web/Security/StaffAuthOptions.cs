@@ -13,7 +13,7 @@ public sealed class StaffAuthOptions
     /// <summary>Sign-in name for the staff back room.</summary>
     public string UserName { get; set; } = "host";
 
-    /// <summary>Local-dev default only — override via <c>STAFF_PASSWORD</c> in production.</summary>
+    /// <summary>Local-dev default only — override via <c>StaffAuth__Password</c> in production.</summary>
     public string Password { get; set; } = "ChangeMe";
 
     /// <summary>Checkout device password. Falls back to <see cref="Password"/> when empty in development.</summary>

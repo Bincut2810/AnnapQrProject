@@ -19,15 +19,23 @@ public sealed class GuestRitualArrivalRenderTests(AnnapPostgresWebApplicationFac
 
         response.EnsureSuccessStatusCode();
         Assert.Contains("guest-experience-root", html);
-        Assert.Contains("id=\"ge-ritual-begin\"", html);
-        Assert.Contains("Bắt đầu chọn gu", html);
-        Assert.Contains("data-ge-flow=\"sommelier\"", html);
+        Assert.DoesNotContain("id=\"ge-ritual-begin\"", html);
+        Assert.DoesNotContain("ge-atelier-return", html);
+        Assert.DoesNotContain("đã được chuẩn bị", html);
+        Assert.Contains("Mời bạn", html);
+        Assert.Contains("đã sẵn sàng", html);
+        Assert.Contains("id=\"annap-arrival\"", html);
+        Assert.Contains("id=\"annap-arrival-invite\"", html);
+        Assert.Contains("arrival/arrival.js", html);
         Assert.Contains("id=\"ge-panel-sommelier\"", html);
         Assert.Contains("id=\"ge-sommelier-step\"", html);
         Assert.Contains("id=\"ge-sommelier-results\"", html);
         Assert.Contains("guest-experience.js", html);
         Assert.DoesNotContain("id=\"guest-arrival-slim\"", html);
-        Assert.DoesNotContain("guest-arrival-boot.js", html);
+        Assert.DoesNotContain("guest-arrival-slim", html);
+        Assert.DoesNotContain("arrival-scene", html);
+        Assert.DoesNotContain("choreography.js", html);
+        Assert.Contains("css/arrival.css", html);
     }
 
     [Fact]

@@ -22,82 +22,11 @@
      class="ge-root@(Model.CalmArrivalAnimations ? " ge-root--calm" : "")"
      data-vt="@(vt?.ToString("D") ?? "")"
      data-table-label="@(Model.TableGuestLabel ?? "")">
-    <div id="ge-landing" class="ge-landing ge-landing--ritual" aria-live="polite">
-        <div class="ge-ritual-atmosphere" aria-hidden="true">
-            <div class="ge-ritual-atmosphere__veil"></div>
-            <div class="ge-ritual-atmosphere__glow"></div>
-        </div>
-
-        <div class="ge-ritual-hero">
-            <div class="ge-ritual-stage ge-ritual-stage--ritual-first">
-                <div class="ge-annap-lockup ge-ritual-lockup" aria-hidden="true">
-                    <svg class="ge-annap-lockup__mark" viewBox="0 0 215 157" xmlns="http://www.w3.org/2000/svg" focusable="false">
-                        <path class="ge-annap-lockup__mountain" d="M98 18 L38 123 C34 130 42 136 49 130 L83 99 C88 95 93 99 91 106 L85 128 C83 137 94 141 100 133 L126 98 C134 88 145 91 145 103 L144 129 C144 138 156 142 162 134 L190 96 L171 58 L143 66 L126 36 Z"/>
-                        <path class="ge-annap-lockup__cream" d="M41 124 C61 104 68 95 75 95 C82 95 78 105 74 115 C91 109 101 91 112 86 C121 82 122 91 119 102 C139 81 151 73 171 78" />
-                        <path class="ge-annap-lockup__sun" d="M133 56 C150 39 180 48 191 72 C171 76 150 85 128 104 C127 84 124 65 133 56 Z"/>
-                        <text class="ge-annap-lockup__word ge-annap-lockup__word--green" x="37" y="144">an</text>
-                        <text class="ge-annap-lockup__word ge-annap-lockup__word--red" x="92" y="144">nap</text>
-                    </svg>
-                </div>
-                <p class="ge-kicker ge-ritual-table ge-ritual-table--quiet">@Model.TableGuestLabel</p>
-                <p id="ge-table-notice" class="ge-table-notice ge-table-notice--quiet" hidden aria-hidden="true"></p>
-                <p class="ge-ritual-script-kicker" data-i18n="ge.arrival.ritualKicker">NGHI THỨC ANNAP</p>
-                <h1 class="ge-hero-title ge-ritual-title" data-i18n="ge.arrival.ritualTitle">Một lá thư nhỏ cho khẩu vị hôm nay.</h1>
-            </div>
-
-            <div id="ge-ritual-invitation" class="ge-ritual-invitation ge-ritual-hero__cta">
-                <div class="ge-ritual-invitation-card">
-                    <button type="button"
-                            id="ge-ritual-begin"
-                            class="ge-ritual-begin guest-hit"
-                            data-ge-flow="sommelier">
-                        <span class="ge-ritual-begin__label" data-i18n="ge.arrival.beginTasting">Bắt đầu chọn gu</span>
-                        <span class="ge-ritual-begin__sub" data-i18n="ge.arrival.beginTastingSub">Annap sẽ gợi ý một ly hợp với bạn</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
+    <div id="ge-landing" class="ge-landing ge-landing--away" hidden aria-hidden="true">
+        <p id="ge-table-notice" class="ge-table-notice ge-table-notice--quiet" hidden aria-hidden="true"></p>
         <div id="ge-homepage-curated-empty" class="ge-homepage-empty hidden" hidden role="status">
-            <p class="ge-homepage-empty__kicker" data-i18n="ge.arrival.curatedEmptyKicker">106/1 · curated pause</p>
-            <p class="ge-homepage-empty__title" data-i18n="ge.arrival.curatedEmptyTitle">Experience temporarily being curated.</p>
-            <p class="ge-homepage-empty__lead" data-i18n="ge.arrival.curatedEmptyLead">The atelier is adjusting tonight&apos;s arrival — your table is still recognized. Ask the bar when you are ready.</p>
+            <p class="ge-homepage-empty__title" data-i18n="ge.arrival.curatedEmptyTitle">Trải nghiệm đang được sắp đặt.</p>
         </div>
-
-        <nav class="ge-ritual-secondary ge-ritual-secondary--menu" id="ge-ritual-secondary" aria-label="Lối phụ">
-            <div class="ge-ritual-secondary__links">
-                @if (vt is Guid ritualMenuVt)
-                {
-                    <a class="ge-ritual-secondary__link ge-ritual-secondary__link--menu guest-hit"
-                       id="ge-ritual-menu"
-                       asp-page="/Menu/Index"
-                       asp-route-vt="@ritualMenuVt"
-                       data-i18n="ge.arrival.secondaryMenu">Xem thực đơn</a>
-                }
-                <button type="button"
-                        class="ge-ritual-secondary__link ge-ritual-secondary__link--alt guest-hit"
-                        data-ge-flow="group"
-                        data-ritual-secondary="group"
-                        data-i18n="ge.arrival.secondaryGroup"
-                        hidden
-                        aria-hidden="true">Đặt theo nhóm</button>
-                <button type="button"
-                        class="ge-ritual-secondary__link ge-ritual-secondary__link--alt guest-hit"
-                        data-ge-flow="discovery"
-                        data-ritual-secondary="discovery"
-                        data-i18n="ge.arrival.secondaryDiscovery"
-                        hidden
-                        aria-hidden="true">Bất ngờ có niêm phong</button>
-                <button type="button"
-                        class="ge-ritual-secondary__link ge-ritual-secondary__link--alt guest-hit"
-                        data-ge-flow="sommelier"
-                        data-ritual-secondary="sommelier"
-                        data-i18n="ge.arrival.secondarySommelier"
-                        hidden
-                        aria-hidden="true">Trò chuyện với Annapp</button>
-            </div>
-        </nav>
-
     </div>
 
     <div id="ge-panel-group" class="ge-panel hidden" hidden>

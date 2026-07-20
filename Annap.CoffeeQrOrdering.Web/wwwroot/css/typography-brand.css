@@ -16,7 +16,7 @@ html.annap-correspond-ui .order-tray-confirm-card__title,
 html.annap-correspond-ui .menu-cat-section h2,
 html.annap-correspond-ui .menu-chapter-head .menu-cat-heading,
 html.annap-correspond-ui .menu-chapter-hero .menu-editorial-card__name,
-.guest-arrival-slim__title,
+.guest-table-notice__title,
 .ge-hero-title,
 .ge-ritual-title,
 .ge-sommelier-lite__title,
@@ -42,7 +42,7 @@ html.annap-correspond-ui .menu-chapter-head .menu-cat-heading {
 html.annap-correspond-ui .menu-cat-section > div > p,
 .ge-hero-lead,
 .ge-ritual-lead,
-.guest-arrival-slim__lead {
+.guest-table-notice__lead {
   font-family: var(--font-ui);
   font-style: normal;
   font-size: clamp(0.9375rem, 2.5vw, 1.0625rem);
@@ -80,19 +80,12 @@ html.annap-correspond-ui .menu-chapter-support .menu-editorial-card__name {
 }
 
 /* Table / bill codes — never decorative serif */
-.guest-arrival-slim__table-name,
-.guest-arrival-slim__table-code,
 .guest-track-bill__table-code,
 .guest-track-bill__bill-no,
 .staff-order-card__table-code {
   font-family: var(--font-code) !important;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-}
-
-.guest-arrival-slim__table-name {
-  font-size: clamp(1.35rem, 5vw, 1.75rem);
-  font-weight: 700;
 }
 
 /* ── Admin — premium titles, calm body ──────────────────────────────────── */

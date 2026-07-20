@@ -1,6 +1,8 @@
 using Annap.CoffeeQrOrdering.Domain.Entities;
 using Annap.CoffeeQrOrdering.Infrastructure.Persistence;
+using Annap.CoffeeQrOrdering.Web;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Annap.CoffeeQrOrdering.Web.Pages.Admin.Connectivity;
 
 [Authorize(Policy = "Staff")]
-public sealed class NetworkModel(AppDbContext db) : PageModel
+public sealed class NetworkModel(AppDbContext db, IWebHostEnvironment environment) : PageModel
 {
     [BindProperty]
     public string PublicBaseUrl { get; set; } = "";
@@ -37,15 +39,29 @@ public sealed class NetworkModel(AppDbContext db) : PageModel
             return RedirectToPage();
         }
 
-        if (!Uri.TryCreate(raw, UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https"))
+        if (!PublicBaseUrlRules.TryNormalizeAbsoluteHttpUrl(raw, out var normalized, out var error))
         {
-            ModelState.AddModelError(string.Empty, "Enter a valid absolute http or https URL, or leave empty for auto-detect.");
+            ModelState.AddModelError(string.Empty, error ?? "Enter a valid absolute http or https URL, or leave empty for auto-detect.");
             RequestDerivedBaseUrl = $"{Request.Scheme}://{Request.Host.Value}".TrimEnd('/');
             TrailingSlashWarning = raw.EndsWith('/');
             return Page();
         }
 
-        var normalized = raw.TrimEnd('/');
+        if (!environment.IsDevelopment() && PublicBaseUrlRules.IsLoopbackHost(new Uri(normalized).Host))
+        {
+            ModelState.AddModelError(string.Empty, "Production public base URL must not use localhost or 127.0.0.1.");
+            RequestDerivedBaseUrl = $"{Request.Scheme}://{Request.Host.Value}".TrimEnd('/');
+            return Page();
+        }
+
+        if (!environment.IsDevelopment()
+            && !string.Equals(new Uri(normalized).Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+        {
+            ModelState.AddModelError(string.Empty, "Production public base URL must use https.");
+            RequestDerivedBaseUrl = $"{Request.Scheme}://{Request.Host.Value}".TrimEnd('/');
+            return Page();
+        }
+
         await SetOverrideAsync(normalized, cancellationToken);
         return RedirectToPage();
     }

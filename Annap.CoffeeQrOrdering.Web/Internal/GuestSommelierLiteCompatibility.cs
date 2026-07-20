@@ -1,11 +1,10 @@
 using Annap.CoffeeQrOrdering.Web.GuestExperience;
-using Annap.CoffeeQrOrdering.Web.Services;
 
 namespace Annap.CoffeeQrOrdering.Web.Internal;
 
 /// <summary>
 /// Validates whether the live guided sommelier catalog supports AI Sommelier Lite on seated QR arrival.
-/// AI Lite is a lightweight path and must degrade gracefully when CMS edits remove required keys.
+/// atelier_v5 is category-branched; Lite remains gated off until preference maps are rewritten.
 /// </summary>
 public sealed record GuestSommelierLiteCompatibilityResult(
     bool IsCompatible,
@@ -32,7 +31,6 @@ public static class GuestSommelierLiteCompatibility
 {
     public static readonly string[] CoreQuestionIds = ["q1", "q2", "q3", "q4"];
 
-    /// <summary>Every option ID AI Lite may select after preference mapping.</summary>
     public static readonly string[] RequiredOptionIds =
     [
         "q1_light", "q1_alert", "q1_curious", "q1_refresh",
@@ -43,18 +41,22 @@ public static class GuestSommelierLiteCompatibility
 
     public static GuestSommelierLiteCompatibilityResult Assess(IReadOnlyList<GuidedQuestionSeed> loadedCatalog)
     {
-        var core = ExtractCoreQuestions(loadedCatalog);
-        if (core.Count != CoreQuestionIds.Length)
+        var merged = GuidedSommelierCatalog.MergeClientCatalogQuestions(loadedCatalog);
+        var hasV5Entry = merged.Any(q =>
+            string.Equals(q.QuestionId, GuidedSommelierCatalog.EntryQuestionId, StringComparison.OrdinalIgnoreCase));
+        if (hasV5Entry || string.Equals(GuidedSommelierCatalog.QuestionSetId, "atelier_v5", StringComparison.OrdinalIgnoreCase))
         {
             return Incompatible("core_questions_missing", ["q1", "q2", "q3", "q4"]);
         }
 
+        var core = ExtractCoreQuestions(merged);
+        if (core.Count != CoreQuestionIds.Length)
+            return Incompatible("core_questions_missing", ["q1", "q2", "q3", "q4"]);
+
         for (var i = 0; i < CoreQuestionIds.Length; i++)
         {
             if (!string.Equals(core[i].QuestionId, CoreQuestionIds[i], StringComparison.OrdinalIgnoreCase))
-            {
                 return Incompatible("core_questions_missing", [CoreQuestionIds[i]]);
-            }
         }
 
         var available = core
@@ -83,7 +85,9 @@ public static class GuestSommelierLiteCompatibility
     {
         var merged = GuidedSommelierCatalog.MergeClientCatalogQuestions(loaded);
         return merged
-            .Where(q => !GuidedSommelierCatalog.IsSpecialtyDiscoveryQuestionId(q.QuestionId))
+            .Where(q => !GuidedSommelierCatalog.IsSpecialtyDiscoveryQuestionId(q.QuestionId)
+                        && !GuidedSommelierCatalog.IsBranchQuestionId(q.QuestionId)
+                        && !string.Equals(q.QuestionId, GuidedSommelierCatalog.EntryQuestionId, StringComparison.OrdinalIgnoreCase))
             .OrderBy(q => q.QuestionId switch
             {
                 "q1" => 0,

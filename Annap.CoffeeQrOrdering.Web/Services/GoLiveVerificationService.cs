@@ -375,12 +375,12 @@ public sealed class GoLiveVerificationService(
         var setKey = GuidedSommelierCatalog.QuestionSetId;
         var specialtyQuestions = await db.ExperienceGuidedQuestions
             .AsNoTracking()
-            .Where(q => q.SetKey == setKey && (q.ExternalKey == "q_sc_flavor" || q.ExternalKey == "q_sc_experience"))
+            .Where(q => q.SetKey == setKey && (q.ExternalKey == "q0" || q.ExternalKey == "q_sp_profile" || q.ExternalKey == "q_sp_adventure"))
             .Select(q => q.ExternalKey)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var missingQuestions = new[] { "q_sc_flavor", "q_sc_experience" }
+        var missingQuestions = new[] { "q0", "q_sp_profile", "q_sp_adventure" }
             .Where(key => !specialtyQuestions.Contains(key, StringComparer.OrdinalIgnoreCase))
             .ToList();
 
@@ -388,14 +388,14 @@ public sealed class GoLiveVerificationService(
         {
             return Fail(
                 "Bootstrap",
-                $"Guided specialty discovery questions missing: {string.Join(", ", missingQuestions)}.");
+                $"Guided category-branch questions missing: {string.Join(", ", missingQuestions)}.");
         }
 
         var baseQuestionCount = await db.ExperienceGuidedQuestions
             .AsNoTracking()
             .CountAsync(q => q.SetKey == setKey, cancellationToken)
             .ConfigureAwait(false);
-        if (baseQuestionCount < 4)
+        if (baseQuestionCount < 10)
         {
             return Fail(
                 "Bootstrap",

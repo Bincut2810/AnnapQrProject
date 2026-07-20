@@ -27,11 +27,7 @@
     "tapBrowse": "Tap to browse"
   },
   "guest": {
-    "arrival": {
-      "slimTitle": "Welcome to your table",
-      "slimLead": "Open the menu to choose drinks — the bar receives orders from this table.",
-      "slimMenuCta": "Open menu",
-      "slimSommelierCta": "Let AI suggest a drink",
+    "tableNotice": {
       "qrInvalidTitle": "Table not recognized",
       "handoffInvalidTitle": "Table link expired",
       "browseOnlyNote": "You may browse the menu, but you need to scan the table QR to place an order."
@@ -70,41 +66,14 @@
   },
   "ge": {
     "arrival": {
-      "brandMark": "Annap Coffee Atelier · 106/1",
-      "heroTitle": "The 106/1 Tasting Atelier",
-      "heroLead": "A house ritual shaped for Annap Coffee — garden calm, warm Bauhaus lines, and the Nguyễn Thị Minh Khai bar.",
-      "ritualKicker": "THE ANNAP RITUAL",
-      "ritualTitle": "A small letter for today's palate.",
-      "ritualLead": "Annap will suggest a cup that fits you — unhurried, like a note from the atelier.",
-      "invitationLine": "A private tasting invitation",
-      "beginTasting": "Start choosing taste",
-      "beginTastingSub": "Annap will suggest a cup for you",
-      "ritualFraming": "Slow pace · guided feeling · one purposeful cup",
-      "beginHint": "Unhurried · one pour · no menu yet",
-      "secondaryLabel": "Quiet alternatives",
-      "secondaryMenu": "Browse menu",
+      "inviteIn": "Please come in",
+      "menuWord": "Menu",
+      "secondaryMenu": "Menu",
       "secondaryGroup": "Group ordering",
       "secondarySommelier": "Prefer a conversation",
       "secondaryDiscovery": "Sealed surprise",
-      "groupPath": "Table ritual",
-      "groupLabel": "Together at Annap",
-      "groupHint": "Pass one tasting tray around the table before it travels to the 106/1 bar.",
-      "soloPath": "Barista concierge",
-      "soloLabel": "Guide my cup",
-      "soloHint": "Let the Annap bar read texture, caffeine, and mood before naming one pour.",
-      "discoveryPath": "106/1 signature path",
-      "discoveryLabel": "Surprise me",
-      "discoveryHint": "Let the house send one playful recommendation from the Nguyễn Thị Minh Khai room.",
-      "ledgerOrigin": "Each cup keeps its source notes.",
-      "ledgerCraft": "Espresso, cold brew, matcha mood.",
-      "ledgerRoom": "Garden calm inside Hải Châu.",
-      "heroCuratedKicker": "Today's recommended journey",
-      "heroCuratedLead": "The house has composed one path for this table — step in when you are ready.",
-      "curatedEmptyKicker": "106/1 · curated pause",
       "curatedEmptyTitle": "Experience temporarily being curated.",
-      "curatedEmptyLead": "The atelier is adjusting tonight's arrival — your table is still recognized. Ask the bar when you are ready.",
-      "sceneWelcome": "You've arrived.",
-      "letterGreeting": "Something has been prepared for this table."
+      "beginTasting": "Please come in"
     },
     "duckPost": {
       "panelKicker": "Tonight's tasting",

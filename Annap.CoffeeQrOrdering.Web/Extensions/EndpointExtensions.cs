@@ -267,6 +267,8 @@ public static class EndpointExtensions
                     .ToList<object>();
 
             var isSpecialtyCoffee = GuidedSommelierRecommendationEngine.IsSpecialtyCoffeePath(resolved);
+            var isClassicCoffee = GuidedSommelierRecommendationEngine.IsClassicCoffeePath(resolved);
+            var wantsCompare = GuidedSommelierRecommendationEngine.WantsCompareTwo(resolved);
             var signatureCandidateCount = filteredRaw.Count(m => m.IsSignature);
             var poolBeforeSignature = filteredRaw.Count;
             if (isSpecialtyCoffee)
@@ -274,6 +276,12 @@ public static class EndpointExtensions
                 var signatureOnly = filteredRaw.Where(m => m.IsSignature).ToList();
                 if (signatureOnly.Count > 0)
                     filteredRaw = signatureOnly;
+            }
+            else if (isClassicCoffee)
+            {
+                filteredRaw = filteredRaw
+                    .Where(m => !string.Equals(m.CatName, "Specialty Coffee", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
             }
             var poolAfterSignature = filteredRaw.Count;
 
@@ -288,12 +296,15 @@ public static class EndpointExtensions
                     m.SensoryProfile.MergeWithLegacyLevels(m.CaffeineLevel, m.SweetnessLevel, m.AcidityLevel),
                     m.CatName))
                 .ToList();
-        
+
+            var takeCount = isSpecialtyCoffee
+                ? (wantsCompare ? 2 : 1)
+                : 5;
             var ranked = GuidedSommelierRecommendationEngine.Rank(
                 guestHints,
                 resolved,
                 rows,
-                isSpecialtyCoffee ? 1 : 5,
+                takeCount,
                 affinity);
             var invalidRanked = ranked
                 .Where(r => !BeverageFamilyGrounding.Matches(familyKey, rows.FirstOrDefault(x => x.Id == r.MenuItemId)?.CategoryName, r.Name))

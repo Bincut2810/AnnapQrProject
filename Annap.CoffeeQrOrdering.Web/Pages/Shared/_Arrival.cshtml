@@ -1,0 +1,137 @@
+@model Annap.CoffeeQrOrdering.Web.Pages.IndexModel
+@{
+    var tableLabel = string.IsNullOrWhiteSpace(Model.TableGuestLabel) ? "" : Model.TableGuestLabel.Trim();
+    var vt = Model.VenueTableId;
+    var titleVi = string.IsNullOrEmpty(tableLabel) ? "Bàn của bạn" : tableLabel;
+    var titleEn = string.IsNullOrEmpty(tableLabel) ? "Your table" : tableLabel;
+}
+<link rel="stylesheet" href="~/css/arrival.css" asp-append-version="true" />
+<div id="annap-arrival"
+     class="annap-arrival"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="annap-arrival-title"
+     data-title-vi="@titleVi"
+     data-title-en="@titleEn"
+     data-sub-vi="đã sẵn sàng."
+     data-sub-en="is ready.">
+
+    <div class="annap-arrival__stage" aria-hidden="true">
+        <div class="annap-arrival__bg">
+            <div class="annap-arrival__bg-dark"></div>
+            <div class="annap-arrival__bg-lit"></div>
+            <div class="annap-arrival__plaster"></div>
+            <div class="annap-arrival__paper"></div>
+            <div class="annap-arrival__foliage">
+                <span></span><span></span><span></span><span></span>
+            </div>
+        </div>
+
+        <div class="annap-arrival__mid">
+            <div class="annap-arrival__window-cast"></div>
+            <div class="annap-arrival__window">
+                <div class="annap-arrival__window-bleed"></div>
+                <div class="annap-arrival__window-outer">
+                    <div class="annap-arrival__window-inner">
+                        <div class="annap-arrival__exterior"></div>
+                        <div class="annap-arrival__glass">
+                            <span class="annap-arrival__glass-sheen"></span>
+                        </div>
+                        <span class="annap-arrival__mullion annap-arrival__mullion--v"></span>
+                        <span class="annap-arrival__mullion annap-arrival__mullion--h"></span>
+                    </div>
+                    <div class="annap-arrival__sill"></div>
+                </div>
+            </div>
+            <div class="annap-arrival__bloom"></div>
+            <div class="annap-arrival__haze"></div>
+            <div class="annap-arrival__shafts">
+                <span class="annap-arrival__shaft annap-arrival__shaft--a"></span>
+                <span class="annap-arrival__shaft annap-arrival__shaft--b"></span>
+                <span class="annap-arrival__shaft annap-arrival__shaft--c"></span>
+            </div>
+            <div class="annap-arrival__wall-shade"></div>
+        </div>
+
+        <div class="annap-arrival__fore">
+            <div class="annap-arrival__table">
+                <div class="annap-arrival__table-face"></div>
+                <div class="annap-arrival__table-edge"></div>
+                <div class="annap-arrival__table-gloss"></div>
+            </div>
+
+            <div class="annap-arrival__still">
+                <div class="annap-arrival__steam">
+                    <svg viewBox="0 0 72 110" xmlns="http://www.w3.org/2000/svg" focusable="false">
+                        <path class="annap-arrival__steam-path annap-arrival__steam-path--a" d="M32 108 C24 86 38 70 28 48 C20 30 34 16 30 2" fill="none" stroke="rgba(255,247,230,0.14)" stroke-width="1.4" stroke-linecap="round"/>
+                        <path class="annap-arrival__steam-path annap-arrival__steam-path--b" d="M40 106 C46 82 32 66 42 44 C48 28 38 14 40 0" fill="none" stroke="rgba(255,247,230,0.1)" stroke-width="1.15" stroke-linecap="round"/>
+                        <path class="annap-arrival__steam-path annap-arrival__steam-path--c" d="M24 104 C16 80 28 62 18 42 C12 26 22 12 20 0" fill="none" stroke="rgba(255,247,230,0.08)" stroke-width="1" stroke-linecap="round"/>
+                        <path class="annap-arrival__steam-path annap-arrival__steam-path--d" d="M36 100 C30 78 40 60 34 40 C30 26 36 12 34 4" fill="none" stroke="rgba(255,247,230,0.06)" stroke-width="0.9" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="annap-arrival__cup-reflect"></div>
+                <div class="annap-arrival__saucer"></div>
+                <div class="annap-arrival__cup">
+                    <div class="annap-arrival__cup-handle"></div>
+                    <div class="annap-arrival__cup-body">
+                        <span class="annap-arrival__cup-inner"></span>
+                        <span class="annap-arrival__cup-hl"></span>
+                    </div>
+                    <div class="annap-arrival__cup-rim"></div>
+                </div>
+                <div class="annap-arrival__contact"></div>
+            </div>
+        </div>
+
+        <div class="annap-arrival__dust">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="annap-arrival__vignette"></div>
+    </div>
+
+    <div class="annap-arrival__copy">
+        <h1 class="annap-arrival__headline" id="annap-arrival-title">
+            <span class="annap-arrival__name" id="annap-arrival-name">@titleVi</span>
+            <span class="annap-arrival__sub" id="annap-arrival-sub">đã sẵn sàng.</span>
+        </h1>
+
+        <div class="annap-arrival__actions">
+            <button type="button"
+                    class="annap-arrival__invite"
+                    id="annap-arrival-invite">
+                <span class="annap-arrival__cta-text" data-i18n="ge.arrival.inviteIn">Mời bạn</span>
+                <span class="annap-arrival__cta-arrow" aria-hidden="true">→</span>
+            </button>
+
+            @if (vt is Guid menuVt)
+            {
+                <a class="annap-arrival__menu"
+                   id="annap-arrival-menu"
+                   asp-page="/Menu/Index"
+                   asp-route-vt="@menuVt">
+                    <span class="annap-arrival__cta-text" data-i18n="ge.arrival.menuWord">Thực đơn</span>
+                    <span class="annap-arrival__cta-arrow" aria-hidden="true">→</span>
+                </a>
+            }
+            else
+            {
+                <a class="annap-arrival__menu"
+                   id="annap-arrival-menu"
+                   asp-page="/Menu/Index">
+                    <span class="annap-arrival__cta-text" data-i18n="ge.arrival.menuWord">Thực đơn</span>
+                    <span class="annap-arrival__cta-arrow" aria-hidden="true">→</span>
+                </a>
+            }
+        </div>
+    </div>
+
+    <p class="annap-arrival__hint" aria-hidden="true">
+        <span class="annap-arrival__hint-rule"></span>
+        <span class="annap-arrival__hint-text">Chạm để tiếp tục</span>
+    </p>
+    <div class="annap-arrival__logo" aria-hidden="true">A</div>
+</div>
+<script>
+!function(){try{var d=document.documentElement;if(sessionStorage.getItem("annap_arrival_done")==="1"){var e=document.getElementById("annap-arrival");e&&(e.hidden=!0,e.setAttribute("aria-hidden","true"),e.classList.add("is-done"));d.classList.remove("annap-arrival-active")}else{d.classList.add("annap-arrival-active")}}catch(e){}}();
+</script>

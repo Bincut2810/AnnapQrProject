@@ -8,14 +8,14 @@ namespace Annap.CoffeeQrOrdering.Tests;
 public class SpecialtyCoffeeContentTests
 {
     [Theory]
-    [InlineData("q_sc_flavor_floral", "Kinini Village — Dufatanye")]
-    [InlineData("q_sc_flavor_fruit", "Kinini Village — Abateranankunga")]
-    [InlineData("q_sc_flavor_wine", "Rift Valley Coffee Caucus")]
-    [InlineData("q_sc_flavor_blueberry", "Nigussie Nare — Murago Outgrowers")]
+    [InlineData("q_sp_profile_floral", "Kinini Village — Dufatanye")]
+    [InlineData("q_sp_profile_fruit", "Kinini Village — Abateranankunga")]
+    [InlineData("q_sp_profile_chocolate", "Rift Valley Coffee Caucus")]
+    [InlineData("q_sp_profile_surprise", "Nigussie Nare — Murago Outgrowers")]
     public void Specialty_flavor_archetype_ranking_favors_expected_origin(string flavorOptionId, string expectedName)
     {
         var rows = SpecialtyRows();
-        var resolved = ResolveSpecialtyAnswers("q1_light", flavorOptionId, "q_sc_experience_balanced");
+        var resolved = ResolveSpecialtyAnswers("q_sp_tried_first", flavorOptionId, "q_sp_adventure_balanced");
 
         var hints = GuidedSommelierCatalog.MergeGuestHints(resolved);
         var ranked = GuidedSommelierRecommendationEngine.Rank(hints, resolved, rows, take: 1);
@@ -25,23 +25,23 @@ public class SpecialtyCoffeeContentTests
     }
 
     [Theory]
-    [InlineData("calm", "q_sc_flavor_floral", "Kinini Village — Dufatanye")]
-    [InlineData("bright", "q_sc_flavor_fruit", "Kinini Village — Abateranankunga")]
-    [InlineData("adventurous", "q_sc_flavor_wine", "Rift Valley Coffee Caucus")]
-    public void Specialty_mood_secondary_signal_aligns_with_flavor_choice(
+    [InlineData("calm", "q_sp_profile_floral", "Kinini Village — Dufatanye")]
+    [InlineData("bright", "q_sp_profile_fruit", "Kinini Village — Abateranankunga")]
+    [InlineData("adventurous", "q_sp_profile_chocolate", "Rift Valley Coffee Caucus")]
+    public void Specialty_tried_mood_secondary_signal_aligns_with_profile(
         string moodKey,
         string flavorOptionId,
         string expectedName)
     {
         var rows = SpecialtyRows();
-        var moodOptionId = moodKey switch
+        var triedOptionId = moodKey switch
         {
-            "calm" => "q1_light",
-            "bright" => "q1_refresh",
-            "adventurous" => "q1_curious",
-            _ => "q1_light"
+            "calm" => "q_sp_tried_first",
+            "bright" => "q_sp_tried_occasional",
+            "adventurous" => "q_sp_tried_regular",
+            _ => "q_sp_tried_first"
         };
-        var resolved = ResolveSpecialtyAnswers(moodOptionId, flavorOptionId, "q_sc_experience_balanced");
+        var resolved = ResolveSpecialtyAnswers(triedOptionId, flavorOptionId, "q_sp_adventure_balanced");
 
         var hints = GuidedSommelierCatalog.MergeGuestHints(resolved);
         var ranked = GuidedSommelierRecommendationEngine.Rank(hints, resolved, rows, take: 1);
@@ -61,41 +61,32 @@ public class SpecialtyCoffeeContentTests
     }
 
     [Fact]
-    public void Specialty_cup_moment_origin_dot_name_format_matches_examples()
+    public void Specialty_client_catalog_includes_branch_tree()
     {
-        var cases = new[]
-        {
-            ("Rwanda", "Kinini Village — Dufatanye"),
-            ("Kenya", "Rift Valley Coffee Caucus"),
-            ("Ethiopia", "Nigussie Nare — Murago Outgrowers")
-        };
-
-        foreach (var (origin, name) in cases)
-            Assert.Equal($"{origin} · {name}", $"{origin} · {name}");
-    }
-
-    [Fact]
-    public void Specialty_client_catalog_includes_discovery_questions()
-    {
-        var merged = GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.Questions);
+        var merged = GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.AllQuestions);
         var json = GuidedSommelierExperienceCatalog.ToClientJson(merged, GuidedSommelierCatalog.QuestionSetId);
 
-        Assert.Contains("q_sc_flavor", json, StringComparison.Ordinal);
-        Assert.Contains("q_sc_experience", json, StringComparison.Ordinal);
+        Assert.Contains("atelier_v5", json, StringComparison.Ordinal);
+        Assert.Contains("q0", json, StringComparison.Ordinal);
+        Assert.Contains("q_sp_profile", json, StringComparison.Ordinal);
+        Assert.Contains("q_sp_adventure", json, StringComparison.Ordinal);
+        Assert.Contains("\"specialty\"", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("q_sc_flavor", json, StringComparison.Ordinal);
     }
 
     private static IReadOnlyList<GuidedOptionSeed> ResolveSpecialtyAnswers(
-        string moodOptionId,
+        string triedOptionId,
         string flavorOptionId,
         string experienceOptionId)
     {
-        var questions = GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.Questions);
+        var questions = GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.AllQuestions);
         var ids = new[]
         {
-            moodOptionId,
             GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId,
+            triedOptionId,
             flavorOptionId,
-            experienceOptionId
+            experienceOptionId,
+            "q_sp_format_one"
         };
         GuidedSommelierExperienceCatalog.TryResolveSommelierAnswers(
             questions,

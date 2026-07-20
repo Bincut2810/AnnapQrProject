@@ -30,4 +30,6 @@ COPY --from=build /app/publish .
 COPY docs/ /docs/
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+    CMD curl -fsS "http://localhost:${PORT:-8080}/health" || exit 1
 ENTRYPOINT ["dotnet", "Annap.CoffeeQrOrdering.Web.dll"]

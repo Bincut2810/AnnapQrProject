@@ -13,7 +13,7 @@ namespace Annap.CoffeeQrOrdering.Web.Pages.Admin.Menu;
 [Authorize(Policy = "Staff")]
 public sealed class EditModel(
     IApplicationDbContext db,
-    IWebHostEnvironment env,
+    IMenuImageStorage imageStorage,
     MenuMediaMaintenanceService mediaMaintenance) : PageModel
 {
     [BindProperty]
@@ -86,17 +86,21 @@ public sealed class EditModel(
             return NotFound();
 
         IsArchived = item.IsArchived;
+        string? removedHeroUrl = null;
+        string? removedPosterUrl = null;
+        var previousHeroUrl = item.ImageUrl;
+        var previousPosterUrl = item.DetailPosterImagePath;
 
         if (Input.RemoveHeroImage)
         {
-            MenuHeroImageStorage.TryDeleteIfManaged(env, item.ImageUrl);
+            removedHeroUrl = item.ImageUrl;
             item.ImageUrl = null;
             CurrentHeroUrl = null;
         }
 
         if (Input.RemoveDetailPosterImage)
         {
-            MenuHeroImageStorage.TryDeletePosterIfManaged(env, item.DetailPosterImagePath);
+            removedPosterUrl = item.DetailPosterImagePath;
             item.DetailPosterImagePath = null;
             CurrentDetailPosterUrl = null;
         }
@@ -106,7 +110,7 @@ public sealed class EditModel(
             if (Input.HeroImage is { Length: > 0 })
             {
                 var replaceDetailFromHero = !Input.RemoveDetailPosterImage && Input.DetailPosterImage is not { Length: > 0 };
-                var url = await MenuHeroImageStorage.TrySaveAsync(env, Input.HeroImage, item.Id, cancellationToken);
+                var url = await imageStorage.SaveHeroAsync(Input.HeroImage, item.Id, cancellationToken);
                 if (url is not null)
                 {
                     item.ImageUrl = url;
@@ -114,8 +118,7 @@ public sealed class EditModel(
 
                     if (replaceDetailFromHero)
                     {
-                        var posterUrl = await MenuHeroImageStorage.TryPosterSaveAsync(
-                            env,
+                        var posterUrl = await imageStorage.SavePosterAsync(
                             Input.HeroImage,
                             item.Id,
                             cancellationToken);
@@ -147,7 +150,7 @@ public sealed class EditModel(
         {
             if (Input.DetailPosterImage is { Length: > 0 })
             {
-                var url = await MenuHeroImageStorage.TryPosterSaveAsync(env, Input.DetailPosterImage, item.Id, cancellationToken);
+                var url = await imageStorage.SavePosterAsync(Input.DetailPosterImage, item.Id, cancellationToken);
                 if (url is not null)
                 {
                     item.DetailPosterImagePath = url;
@@ -178,6 +181,15 @@ public sealed class EditModel(
         await OperationalAudit.AppendAsync(db, "menu.updated", actor, null,
             $"menuItemId={item.Id};name={Summarize(item.Name)}", cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
+        if (removedHeroUrl is not null && item.ImageUrl is null)
+            await imageStorage.DeleteHeroAsync(item.Id, removedHeroUrl, cancellationToken);
+        else if (MenuImageStorage.ShouldDeleteSupersededUrl(previousHeroUrl, item.ImageUrl))
+            await imageStorage.DeleteHeroAsync(item.Id, previousHeroUrl, cancellationToken);
+
+        if (removedPosterUrl is not null && item.DetailPosterImagePath is null)
+            await imageStorage.DeletePosterAsync(item.Id, removedPosterUrl, cancellationToken);
+        else if (MenuImageStorage.ShouldDeleteSupersededUrl(previousPosterUrl, item.DetailPosterImagePath))
+            await imageStorage.DeletePosterAsync(item.Id, previousPosterUrl, cancellationToken);
 
         TempData["MenuCurationToast"] = "Đã lưu. Khách sẽ thấy phiên bản mới ở lần mở thực đơn tiếp theo.";
         return RedirectToPage("/Admin/Menu/Edit", new { id = item.Id });
@@ -190,13 +202,19 @@ public sealed class EditModel(
             return NotFound();
 
         item.IsArchived = true;
-        mediaMaintenance.PurgeManagedAssetsForItem(item.Id);
+        var archivedHeroUrl = item.ImageUrl;
+        var archivedPosterUrl = item.DetailPosterImagePath;
         item.ImageUrl = null;
         item.DetailPosterImagePath = null;
         var actor = User.Identity?.Name?.Trim();
         await OperationalAudit.AppendAsync(db, "menu.archived", actor, null,
             $"menuItemId={item.Id};name={Summarize(item.Name)}", cancellationToken);
         await db.SaveChangesAsync(cancellationToken);
+        await mediaMaintenance.PurgeManagedAssetsForItemAsync(
+            item.Id,
+            archivedHeroUrl,
+            archivedPosterUrl,
+            cancellationToken);
         TempData["MenuCurationToast"] = "Đã cất khỏi thực đơn khách. Ly vẫn được giữ trong hồ sơ quán.";
         return RedirectToPage("/Admin/Menu/Index");
     }

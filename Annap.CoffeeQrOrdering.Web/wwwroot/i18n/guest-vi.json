@@ -27,11 +27,7 @@
     "tapBrowse": "Chạm để xem"
   },
   "guest": {
-    "arrival": {
-      "slimTitle": "Chào mừng đến bàn của bạn",
-      "slimLead": "Mở thực đơn để chọn món — quầy bar sẽ nhận đơn từ bàn này.",
-      "slimMenuCta": "Mở thực đơn",
-      "slimSommelierCta": "Nhờ AI gợi ý món",
+    "tableNotice": {
       "qrInvalidTitle": "Không nhận diện được bàn",
       "handoffInvalidTitle": "Liên kết bàn không còn hiệu lực",
       "browseOnlyNote": "Bạn có thể xem thực đơn, nhưng cần quét QR tại bàn để gửi đơn."
@@ -70,41 +66,14 @@
   },
   "ge": {
     "arrival": {
-      "brandMark": "Annap Coffee Atelier · 106/1",
-      "heroTitle": "The 106/1 Tasting Atelier",
-      "heroLead": "Một nghi thức riêng của Annap Coffee — sân vườn yên, nét Bauhaus ấm, và quầy bar Nguyễn Thị Minh Khai.",
-      "ritualKicker": "NGHI THỨC ANNAP",
-      "ritualTitle": "Một lá thư nhỏ cho khẩu vị hôm nay.",
-      "ritualLead": "Annap sẽ gợi ý một ly hợp với bạn — nhịp chậm, như một lá thư từ xưởng.",
-      "invitationLine": "Lời mời nếm riêng tư",
-      "beginTasting": "Bắt đầu chọn gu",
-      "beginTastingSub": "Annap sẽ gợi ý một ly hợp với bạn",
-      "ritualFraming": "Nhịp chậm · dẫn cảm giác · một ly có chủ đích",
-      "beginHint": "Chọn gu · Annap gợi ý · một ly dành riêng",
-      "secondaryLabel": "Lối khác, lặng lẽ",
-      "secondaryMenu": "Xem thực đơn",
+      "inviteIn": "Mời bạn",
+      "menuWord": "Thực đơn",
+      "secondaryMenu": "Thực đơn",
       "secondaryGroup": "Đặt theo nhóm",
       "secondarySommelier": "Trò chuyện với Annapp",
       "secondaryDiscovery": "Bất ngờ có niêm phong",
-      "groupPath": "Nghi thức tại bàn",
-      "groupLabel": "Cùng nhau ở Annap",
-      "groupHint": "Truyền một khay nếm quanh bàn trước khi gửi về quầy 106/1.",
-      "soloPath": "Barista concierge",
-      "soloLabel": "Dẫn tôi đến một ly",
-      "soloHint": "Để quầy Annap đọc kết cấu, caffeine và tâm trạng trước khi gọi tên một ly.",
-      "discoveryPath": "Lối chữ ký 106/1",
-      "discoveryLabel": "Bất ngờ cho tôi",
-      "discoveryHint": "Để quầy gửi một bất ngờ nhẹ từ căn phòng Nguyễn Thị Minh Khai.",
-      "ledgerOrigin": "Mỗi ly giữ lại ghi chú nguồn gốc.",
-      "ledgerCraft": "Espresso, cold brew, Matcha Mood.",
-      "ledgerRoom": "Sân vườn yên giữa Hải Châu.",
-      "heroCuratedKicker": "Quầy mở tối nay",
-      "heroCuratedLead": "Quán đã sắp một lối cho bàn này — bước vào khi bạn sẵn sàng.",
-      "curatedEmptyKicker": "106/1 · tạm dừng sắp đặt",
       "curatedEmptyTitle": "Trải nghiệm đang được sắp đặt.",
-      "curatedEmptyLead": "Xưởng đang chỉnh lại lối tiếp đón tối nay — bàn của bạn vẫn được nhận. Hỏi quầy bar khi sẵn sàng.",
-      "sceneWelcome": "Bạn đã đến.",
-      "letterGreeting": "Có điều đặc biệt đã được chuẩn bị cho bàn này."
+      "beginTasting": "Mời bạn"
     },
     "duckPost": {
       "panelKicker": "Buổi nếm tối nay",

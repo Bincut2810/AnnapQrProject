@@ -67,8 +67,9 @@ public static class GuidedSommelierRecommendationEngine
                 if (IsSpecialtyCoffeePath(selectedAnswers))
                 {
                     var moodKey = selectedAnswers
-                        .FirstOrDefault(o => o.OptionId.StartsWith("q1_", StringComparison.OrdinalIgnoreCase))
-                        ?.MoodKey;
+                        .FirstOrDefault(o => o.OptionId.StartsWith("q_sp_tried_", StringComparison.OrdinalIgnoreCase))
+                        ?.MoodKey
+                        ?? selectedAnswers.FirstOrDefault(o => !string.IsNullOrWhiteSpace(o.MoodKey))?.MoodKey;
                     var flavorKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_flavor:");
                     var experienceKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_experience:");
                     raw += SpecialtyCoffeeMoodAffinity.Score(m.Name, null, moodKey, flavorKey, experienceKey);
@@ -143,18 +144,46 @@ public static class GuidedSommelierRecommendationEngine
         return rows;
     }
 
+    public static string? ExtractBranchKey(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
+    {
+        foreach (var opt in selectedAnswers)
+        {
+            if (!string.IsNullOrWhiteSpace(opt.BranchKey))
+                return opt.BranchKey.Trim();
+            var fromId = GuidedSommelierCatalog.ResolveBranchKey(opt.OptionId);
+            if (fromId is not null)
+                return fromId;
+        }
+
+        return null;
+    }
+
     public static bool IsSpecialtyCoffeePath(IReadOnlyList<GuidedOptionSeed> selectedAnswers) =>
+        string.Equals(ExtractBranchKey(selectedAnswers), GuidedSommelierCatalog.BranchSpecialty, StringComparison.OrdinalIgnoreCase)
+        || selectedAnswers.Any(o =>
+            string.Equals(o.OptionId, "q0_specialty", StringComparison.OrdinalIgnoreCase));
+
+    public static bool WantsCompareTwo(IReadOnlyList<GuidedOptionSeed> selectedAnswers) =>
         selectedAnswers.Any(o =>
-            string.Equals(o.OptionId, "q2_coffee", StringComparison.OrdinalIgnoreCase));
+            string.Equals(o.OptionId, "q_sp_format_compare", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(o.RefinementKey, "sc_format:compare", StringComparison.OrdinalIgnoreCase));
+
+    public static bool IsClassicCoffeePath(IReadOnlyList<GuidedOptionSeed> selectedAnswers) =>
+        string.Equals(ExtractBranchKey(selectedAnswers), GuidedSommelierCatalog.BranchCoffee, StringComparison.OrdinalIgnoreCase);
 
     public static string ComposeSpecialtyNamingLine(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
     {
-        var mood = selectedAnswers.Count > 0
-            ? selectedAnswers[0].EmotionalFragment.Trim()
-            : "";
-        if (mood.Length > 0)
-            return $"Với {mood} bạn mang vào tối nay — quầy mở một nguồn cho bàn bạn.";
-        return "Quầy gọi tên nguồn này cho bàn bạn tối nay.";
+        var profile = selectedAnswers
+            .FirstOrDefault(o => o.OptionId.StartsWith("q_sp_profile_", StringComparison.OrdinalIgnoreCase))
+            ?.EmotionalFragment.Trim() ?? "";
+        var adventure = selectedAnswers
+            .FirstOrDefault(o => o.OptionId.StartsWith("q_sp_adventure_", StringComparison.OrdinalIgnoreCase))
+            ?.EmotionalFragment.Trim() ?? "";
+        if (profile.Length > 0 && adventure.Length > 0)
+            return $"Với hướng {profile} và mức {adventure} — quầy mở một nguồn cho bàn bạn.";
+        if (profile.Length > 0)
+            return $"Với hướng {profile} — quầy gọi tên nguồn này cho bàn bạn.";
+        return "Quầy gọi tên nguồn này cho bàn bạn hôm nay.";
     }
 
     public static string ComposePersonalityReflection(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
@@ -165,10 +194,12 @@ public static class GuidedSommelierRecommendationEngine
         if (selectedAnswers.Count == 0)
             return "Annap đang chọn một ly hợp với ghi chú này.";
 
-        var mood = selectedAnswers[0].Label.Trim();
-        var family = selectedAnswers.Count > 1 ? selectedAnswers[1].Label.Trim().ToLowerInvariant() : "";
-        if (family.Length > 0 && mood.Length > 0)
-            return $"Vì bạn chọn {family} và muốn một ly {mood.ToLowerInvariant()}, Annap chọn cho bạn.";
+        var family = selectedAnswers[0].Label.Trim();
+        var detail = selectedAnswers.Count > 1 ? selectedAnswers[1].Label.Trim().ToLowerInvariant() : "";
+        if (family.Length > 0 && detail.Length > 0)
+            return $"Vì bạn chọn {family.ToLowerInvariant()} và nghiêng về {detail}, Annap chọn cho bạn.";
+        if (family.Length > 0)
+            return $"Vì bạn chọn {family.ToLowerInvariant()}, Annap chọn cho bạn.";
 
         return "Annap chọn cho bạn.";
     }
@@ -178,16 +209,16 @@ public static class GuidedSommelierRecommendationEngine
         if (selectedAnswers.Count == 0)
             return "Tìm theo sở thích của bạn trong menu.";
 
-        var mood = selectedAnswers[0].EmotionalFragment.Trim();
-        var drink = selectedAnswers.Count >= 2 ? selectedAnswers[1].EmotionalFragment.Trim() : "";
+        var family = selectedAnswers[0].EmotionalFragment.Trim();
+        var detail = selectedAnswers.Count >= 2 ? selectedAnswers[1].EmotionalFragment.Trim() : "";
 
-        if (mood.Length == 0 && drink.Length == 0)
+        if (family.Length == 0 && detail.Length == 0)
             return "Tìm theo sở thích của bạn trong menu.";
 
-        if (drink.Length > 0 && mood.Length > 0)
-            return $"{Capitalize(mood)} + {drink} — tìm trong menu theo hướng đó.";
+        if (detail.Length > 0 && family.Length > 0)
+            return $"{Capitalize(family)} · {detail} — tìm trong menu theo hướng đó.";
 
-        var primary = mood.Length > 0 ? mood : drink;
+        var primary = family.Length > 0 ? family : detail;
         return $"{Capitalize(primary)} — tìm trong menu theo hướng đó.";
     }
 
@@ -376,7 +407,7 @@ public static class GuidedSommelierRecommendationEngine
             BeverageFamilyGrounding.Coffee =>
                 "Vì bạn đang nghiêng về cà phê,",
             BeverageFamilyGrounding.Tea =>
-                "Vì bạn chọn trà và muốn một ly tỉnh táo,",
+                "Vì bạn chọn trà,",
             BeverageFamilyGrounding.Juice when isLow =>
                 "Vì bạn muốn một ly mát và ít ngọt,",
             BeverageFamilyGrounding.Juice =>
@@ -396,4 +427,13 @@ public static class GuidedSommelierRecommendationEngine
             _ => ""
         };
     }
+
+    /// <summary>Classic coffee menu (espresso / VN / cold brew) — exclude specialty lots.</summary>
+    public static IReadOnlyList<MenuItemScoringRow> ApplyClassicCoffeeFilter(
+        IReadOnlyList<MenuItemScoringRow> menu) =>
+        menu.Where(m =>
+        {
+            var cat = (m.CategoryName ?? "").Trim();
+            return !cat.Equals("Specialty Coffee", StringComparison.OrdinalIgnoreCase);
+        }).ToList();
 }

@@ -1,0 +1,1965 @@
+﻿
+========== DIFF: .env.example ==========
+
+diff --git a/.env.example b/.env.example
+index 558baa0..2adfa63 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1,6 +1,30 @@
+ POSTGRES_DB=annap_qr_ordering
+ POSTGRES_USER=postgres
+ POSTGRES_PASSWORD=change-this-local-or-production-password
+-STAFF_USER=host
+-STAFF_PASSWORD=change-this-staff-password
+-APPLY_MIGRATIONS_ON_STARTUP=true
++
++StaffAuth__UserName=host
++StaffAuth__Password=change-this-admin-password
++StaffAuth__CheckoutPassword=change-this-checkout-password
++StaffAuth__BaristaPassword=change-this-barista-password
++
++Database__ApplyMigrationsOnStartup=true
++AppUrl__PublicBaseUrl=https://coffee.example.com
++
++Cloudinary__CloudName=your-cloud-name
++Cloudinary__ApiKey=your-api-key
++Cloudinary__ApiSecret=your-api-secret
++Cloudinary__Folder=annap/menu-items
++
++DataProtection__KeysPath=/var/data/dataprotection-keys
++DataProtection__ApplicationName=Annap.CoffeeQrOrdering
++
++BankTransfer__Enabled=false
++BankTransfer__Provider=VietQR
++BankTransfer__BankBin=
++BankTransfer__BankName=
++BankTransfer__AccountNumber=
++BankTransfer__AccountName=
++BankTransfer__Webhook__DevWebhookEnabled=false
++BankTransfer__Webhook__Secret=
++
++Sommelier__ApiKey=
+
+========== DIFF: .gitignore ==========
+
+diff --git a/.gitignore b/.gitignore
+index ca5dec3..d15465e 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -9,3 +9,8 @@ _build_out*/
+ .vs/
+ .idea/
+ *.user
++
++# Local release/QA artifacts can contain cookies or credentials.
++tmp-*
++*.cookies.txt
++*cookie*.txt
+
+========== DIFF: docker-compose.yml ==========
+
+
+========== DIFF: docker-compose.prod.yml ==========
+
+diff --git a/docker-compose.prod.yml b/docker-compose.prod.yml
+index dc8cc7c..7177a94 100644
+--- a/docker-compose.prod.yml
++++ b/docker-compose.prod.yml
+@@ -32,11 +32,18 @@ services:
+       ANNAP_COMPOSE_MODE: production
+       ASPNETCORE_URLS: http://+:8080
+       ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=${POSTGRES_DB:-annap_qr_ordering};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD}"
+-      StaffAuth__UserName: ${STAFF_USER:-host}
+-      StaffAuth__Password: ${STAFF_PASSWORD:?STAFF_PASSWORD is required}
+-      StaffAuth__CheckoutPassword: ${STAFF_CHECKOUT_PASSWORD:?STAFF_CHECKOUT_PASSWORD is required}
+-      StaffAuth__BaristaPassword: ${STAFF_BARISTA_PASSWORD:?STAFF_BARISTA_PASSWORD is required}
+-      Database__ApplyMigrationsOnStartup: ${APPLY_MIGRATIONS_ON_STARTUP:-true}
++      StaffAuth__UserName: ${StaffAuth__UserName:-host}
++      StaffAuth__Password: ${StaffAuth__Password:?StaffAuth__Password is required}
++      StaffAuth__CheckoutPassword: ${StaffAuth__CheckoutPassword:?StaffAuth__CheckoutPassword is required}
++      StaffAuth__BaristaPassword: ${StaffAuth__BaristaPassword:?StaffAuth__BaristaPassword is required}
++      Database__ApplyMigrationsOnStartup: ${Database__ApplyMigrationsOnStartup:-true}
++      AppUrl__PublicBaseUrl: ${AppUrl__PublicBaseUrl:?AppUrl__PublicBaseUrl is required}
++      Cloudinary__CloudName: ${Cloudinary__CloudName:?Cloudinary__CloudName is required}
++      Cloudinary__ApiKey: ${Cloudinary__ApiKey:?Cloudinary__ApiKey is required}
++      Cloudinary__ApiSecret: ${Cloudinary__ApiSecret:?Cloudinary__ApiSecret is required}
++      Cloudinary__Folder: ${Cloudinary__Folder:-annap/menu-items}
++      DataProtection__KeysPath: /var/data/dataprotection-keys
++      DataProtection__ApplicationName: Annap.CoffeeQrOrdering
+     depends_on:
+       postgres:
+         condition: service_healthy
+@@ -48,10 +55,10 @@ services:
+       start_period: 40s
+     restart: unless-stopped
+     volumes:
+-      - annap_menu_media:/app/wwwroot/media/menu-items
++      - annap_data_protection:/var/data
+ 
+ volumes:
+   annap_pgdata:
+     name: annap_pgdata
+-  annap_menu_media:
+-    name: annap_menu_media
++  annap_data_protection:
++    name: annap_data_protection
+
+========== DIFF: Dockerfile ==========
+
+diff --git a/Dockerfile b/Dockerfile
+index f72ebee..a5eb15b 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -30,4 +30,6 @@ COPY --from=build /app/publish .
+ COPY docs/ /docs/
+ ENV ASPNETCORE_URLS=http://+:8080
+ EXPOSE 8080
++HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
++    CMD curl -fsS "http://localhost:${PORT:-8080}/health" || exit 1
+ ENTRYPOINT ["dotnet", "Annap.CoffeeQrOrdering.Web.dll"]
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Program.cs ==========
+
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/ProductionStartupGuard.cs ==========
+
+git : warning: in the working copy of 'Annap.CoffeeQrOrdering.Web/ProductionStartupGuard.cs', LF will be replaced by 
+CRLF the next time Git touches it
+At C:\Users\Lenovo\AppData\Local\Temp\ps-script-b4e7ce77-51f8-4fae-bb5e-73525aa67836.ps1:159 char:5
++     git diff HEAD -- $p 2>&1 | Out-File -FilePath $out -Append -Encod ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+diff --git a/Annap.CoffeeQrOrdering.Web/ProductionStartupGuard.cs b/Annap.CoffeeQrOrdering.Web/ProductionStartupGuard.cs
+index 8da4a40..814453c 100644
+--- a/Annap.CoffeeQrOrdering.Web/ProductionStartupGuard.cs
++++ b/Annap.CoffeeQrOrdering.Web/ProductionStartupGuard.cs
+@@ -1,4 +1,5 @@
+ using Annap.CoffeeQrOrdering.Web.Security;
++using Annap.CoffeeQrOrdering.Web.Services;
+ using Microsoft.Extensions.Configuration;
+ using Microsoft.Extensions.Hosting;
+ 
+@@ -45,5 +46,32 @@ public static class ProductionStartupGuard
+             throw new InvalidOperationException(
+                 "Production: default PostgreSQL password detected. Set POSTGRES_PASSWORD to a deployment-specific value.");
+         }
++
++        var cloudinary = configuration.GetSection(CloudinaryOptions.SectionName).Get<CloudinaryOptions>()
++            ?? new CloudinaryOptions();
++        if (!cloudinary.IsConfigured)
++        {
++            throw new InvalidOperationException(
++                "Production: Cloudinary:CloudName, Cloudinary:ApiKey, and Cloudinary:ApiSecret are required.");
++        }
++
++        var dataProtection = configuration
++            .GetSection(DataProtectionStorageOptions.SectionName)
++            .Get<DataProtectionStorageOptions>() ?? new DataProtectionStorageOptions();
++        if (string.IsNullOrWhiteSpace(dataProtection.KeysPath)
++            || !Path.IsPathRooted(dataProtection.KeysPath))
++        {
++            throw new InvalidOperationException(
++                "Production: DataProtection:KeysPath must be an absolute path on a Render persistent disk.");
++        }
++
++        var devWebhookEnabled = configuration.GetValue(
++            "BankTransfer:Webhook:DevWebhookEnabled",
++            false);
++        if (devWebhookEnabled)
++        {
++            throw new InvalidOperationException(
++                "Production: the development bank-transfer webhook must remain disabled.");
++        }
+     }
+ }
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/InfrastructureEnvironment.cs ==========
+
+diff --git a/Annap.CoffeeQrOrdering.Web/InfrastructureEnvironment.cs b/Annap.CoffeeQrOrdering.Web/InfrastructureEnvironment.cs
+index 4305ac2..7346f07 100644
+--- a/Annap.CoffeeQrOrdering.Web/InfrastructureEnvironment.cs
++++ b/Annap.CoffeeQrOrdering.Web/InfrastructureEnvironment.cs
+@@ -1,202 +1,219 @@
+-using Microsoft.AspNetCore.Builder;
+
+-using Microsoft.Extensions.Hosting;
+
+-using Npgsql;
+
+-
+
+-namespace Annap.CoffeeQrOrdering.Web;
+
+-
+
+-internal static class InfrastructureEnvironment
+
+-{
+
+-    internal static bool IsRenderDeployment { get; private set; }
+
+-
+
+-    internal static string DatabaseConnectionSource { get; private set; } = "ConnectionStrings:DefaultConnection (appsettings)";
+
+-
+
+-    public static void LoadDotEnvIfPresent()
+
+-    {
+
+-        var path = Path.Combine(AppContext.BaseDirectory, ".env");
+
+-        if (!File.Exists(path))
+
+-            path = Path.Combine(Directory.GetCurrentDirectory(), ".env");
+
+-        if (!File.Exists(path))
+
+-            return;
+
+-
+
+-        foreach (var rawLine in File.ReadAllLines(path))
+
+-        {
+
+-            var line = rawLine.Trim();
+
+-            if (line.Length == 0 || line.StartsWith('#'))
+
+-                continue;
+
+-
+
+-            var eq = line.IndexOf('=');
+
+-            if (eq <= 0)
+
+-                continue;
+
+-
+
+-            var key = line[..eq].Trim();
+
+-            var value = line[(eq + 1)..].Trim().Trim('"', '\'');
+
+-            if (key.Length == 0 || Environment.GetEnvironmentVariable(key) is not null)
+
+-                continue;
+
+-
+
+-            Environment.SetEnvironmentVariable(key, value);
+
+-        }
+
+-    }
+
+-
+
+-    public static void ApplyPostgresEnvironmentConnection(WebApplicationBuilder builder)
+
+-    {
+
+-        IsRenderDeployment = DetectRenderDeployment();
+
+-        ApplyStaffEnvironment(builder);
+
+-
+
+-        var explicitConn = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+
+-        if (!string.IsNullOrWhiteSpace(explicitConn))
+
+-        {
+
+-            builder.Configuration["ConnectionStrings:DefaultConnection"] = explicitConn;
+
+-            DatabaseConnectionSource = "ConnectionStrings__DefaultConnection";
+
+-            return;
+
+-        }
+
+-
+
+-        var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+-        if (!string.IsNullOrWhiteSpace(databaseUrl))
+
+-        {
+
+-            try
+
+-            {
+
+-                var npgsql = ConvertDatabaseUrlToNpgsql(databaseUrl);
+
+-                builder.Configuration["ConnectionStrings:DefaultConnection"] = npgsql;
+
+-                DatabaseConnectionSource = "DATABASE_URL";
+
+-                Console.WriteLine("Using DATABASE_URL-derived PostgreSQL connection.");
+
+-                return;
+
+-            }
+
+-            catch (Exception ex)
+
+-            {
+
+-                Console.WriteLine($"WARNING: DATABASE_URL could not be parsed: {ex.Message}");
+
+-            }
+
+-        }
+
+-
+
+-        var hasPostgresEnv =
+
+-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POSTGRES_DB")) ||
+
+-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POSTGRES_USER")) ||
+
+-            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POSTGRES_PASSWORD"));
+
+-
+
+-        if (!hasPostgresEnv)
+
+-            return;
+
+-
+
+-        var composeMode = Environment.GetEnvironmentVariable("ANNAP_COMPOSE_MODE") ?? "";
+
+-        var host = builder.Environment.IsProduction() || composeMode.Equals("production", StringComparison.OrdinalIgnoreCase)
+
+-            ? "postgres"
+
+-            : "localhost";
+
+-
+
+-        var csb = new NpgsqlConnectionStringBuilder
+
+-        {
+
+-            Host = host,
+
+-            Port = 5432,
+
+-            Database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "annap_qr_ordering",
+
+-            Username = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "postgres",
+
+-            Password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres",
+
+-            Timeout = 15
+
+-        };
+
+-
+
+-        builder.Configuration["ConnectionStrings:DefaultConnection"] = csb.ConnectionString;
+
+-        DatabaseConnectionSource = "POSTGRES_*";
+
+-    }
+
+-
+
+-    internal static string ConvertDatabaseUrlToNpgsql(string databaseUrl)
+
+-    {
+
+-        var trimmed = databaseUrl.Trim();
+
+-        if (trimmed.Length == 0)
+
+-            throw new ArgumentException("DATABASE_URL is empty.", nameof(databaseUrl));
+
+-
+
+-        if (!trimmed.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
+
+-            && !trimmed.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
+
+-        {
+
+-            throw new ArgumentException("DATABASE_URL must use postgres:// or postgresql:// scheme.", nameof(databaseUrl));
+
+-        }
+
+-
+
+-        var uri = new Uri(trimmed);
+
+-        var userInfo = uri.UserInfo;
+
+-        string username = "";
+
+-        string password = "";
+
+-        if (!string.IsNullOrEmpty(userInfo))
+
+-        {
+
+-            var colon = userInfo.IndexOf(':');
+
+-            if (colon >= 0)
+
+-            {
+
+-                username = Uri.UnescapeDataString(userInfo[..colon]);
+
+-                password = Uri.UnescapeDataString(userInfo[(colon + 1)..]);
+
+-            }
+
+-            else
+
+-            {
+
+-                username = Uri.UnescapeDataString(userInfo);
+
+-            }
+
+-        }
+
+-
+
+-        var database = uri.AbsolutePath.TrimStart('/');
+
+-        if (string.IsNullOrEmpty(database))
+
+-            database = "postgres";
+
+-
+
+-        var csb = new NpgsqlConnectionStringBuilder
+
+-        {
+
+-            Host = uri.Host,
+
+-            Port = uri.Port > 0 ? uri.Port : 5432,
+
+-            Database = database,
+
+-            Username = username,
+
+-            Password = password,
+
+-            Timeout = 15
+
+-        };
+
+-
+
+-        ApplySslFromQuery(csb, uri.Query);
+
+-
+
+-        if (csb.SslMode == SslMode.Prefer && IsRenderDeployment)
+
+-            csb.SslMode = SslMode.Require;
+
+-
+
+-        return csb.ConnectionString;
+
+-    }
+
+-
+
+-    private static void ApplySslFromQuery(NpgsqlConnectionStringBuilder csb, string query)
+
+-    {
+
+-        if (string.IsNullOrWhiteSpace(query))
+
+-            return;
+
+-
+
+-        foreach (var part in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
+
+-        {
+
+-            var kv = part.Split('=', 2);
+
+-            if (kv.Length != 2)
+
+-                continue;
+
+-
+
+-            if (!kv[0].Equals("sslmode", StringComparison.OrdinalIgnoreCase))
+
+-                continue;
+
+-
+
+-            csb.SslMode = kv[1].Trim().ToLowerInvariant() switch
+
+-            {
+
+-                "require" => SslMode.Require,
+
+-                "verify-ca" => SslMode.VerifyCA,
+
+-                "verify-full" => SslMode.VerifyFull,
+
+-                "prefer" => SslMode.Prefer,
+
+-                "disable" => SslMode.Disable,
+
+-                _ => csb.SslMode
+
+-            };
+
+-        }
+
+-    }
+
+-
+
+-    private static bool DetectRenderDeployment() =>
+
+-        string.Equals(Environment.GetEnvironmentVariable("RENDER"), "true", StringComparison.OrdinalIgnoreCase)
+
+-        || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("RENDER_SERVICE_ID"))
+
+-        || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("RENDER_EXTERNAL_URL"));
+
+-
+
+-    private static void ApplyStaffEnvironment(WebApplicationBuilder builder)
+
+-    {
+
+-        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("StaffAuth__UserName"))
+
+-            && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STAFF_USER")))
+
+-        {
+
+-            builder.Configuration["StaffAuth:UserName"] = Environment.GetEnvironmentVariable("STAFF_USER");
+
+-        }
+
+-
+
+-        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("StaffAuth__Password"))
+
+-            && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("STAFF_PASSWORD")))
+
+-        {
+
+-            builder.Configuration["StaffAuth:Password"] = Environment.GetEnvironmentVariable("STAFF_PASSWORD");
+
+-        }
+
+-
+
+-        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("Database__ApplyMigrationsOnStartup"))
+
+-            && !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("APPLY_MIGRATIONS_ON_STARTUP")))
+
+-        {
+
+-            builder.Configuration["Database:ApplyMigrationsOnStartup"] =
+
+-                Environment.GetEnvironmentVariable("APPLY_MIGRATIONS_ON_STARTUP");
+
+-        }
+
+-    }
+
+-}
+
+-
+\ No newline at end of file
++using Microsoft.AspNetCore.Builder;
++using Microsoft.Extensions.Hosting;
++using Npgsql;
++
++namespace Annap.CoffeeQrOrdering.Web;
++
++internal static class InfrastructureEnvironment
++{
++    internal static bool IsRenderDeployment { get; private set; }
++
++    internal static string DatabaseConnectionSource { get; private set; } = "ConnectionStrings:DefaultConnection (appsettings)";
++
++    public static void LoadDotEnvIfPresent()
++    {
++        var path = Path.Combine(AppContext.BaseDirectory, ".env");
++        if (!File.Exists(path))
++            path = Path.Combine(Directory.GetCurrentDirectory(), ".env");
++        if (!File.Exists(path))
++            return;
++
++        foreach (var rawLine in File.ReadAllLines(path))
++        {
++            var line = rawLine.Trim();
++            if (line.Length == 0 || line.StartsWith('#'))
++                continue;
++
++            var eq = line.IndexOf('=');
++            if (eq <= 0)
++                continue;
++
++            var key = line[..eq].Trim();
++            var value = line[(eq + 1)..].Trim().Trim('"', '\'');
++            if (key.Length == 0 || Environment.GetEnvironmentVariable(key) is not null)
++                continue;
++
++            Environment.SetEnvironmentVariable(key, value);
++        }
++    }
++
++    public static void ApplyPostgresEnvironmentConnection(WebApplicationBuilder builder)
++    {
++        IsRenderDeployment = DetectRenderDeployment();
++
++        var explicitConn = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
++        if (!string.IsNullOrWhiteSpace(explicitConn))
++        {
++            builder.Configuration["ConnectionStrings:DefaultConnection"] =
++                NormalizeConnectionString(explicitConn, builder.Environment.IsProduction());
++            DatabaseConnectionSource = "ConnectionStrings__DefaultConnection";
++            return;
++        }
++
++        var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
++        if (!string.IsNullOrWhiteSpace(databaseUrl))
++        {
++            try
++            {
++                var npgsql = ConvertDatabaseUrlToNpgsql(
++                    databaseUrl,
++                    builder.Environment.IsProduction());
++                builder.Configuration["ConnectionStrings:DefaultConnection"] = npgsql;
++                DatabaseConnectionSource = "DATABASE_URL";
++                Console.WriteLine("Using DATABASE_URL-derived PostgreSQL connection.");
++                return;
++            }
++            catch (Exception ex)
++            {
++                Console.WriteLine($"WARNING: DATABASE_URL could not be parsed: {ex.Message}");
++            }
++        }
++
++        var hasPostgresEnv =
++            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POSTGRES_DB")) ||
++            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POSTGRES_USER")) ||
++            !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("POSTGRES_PASSWORD"));
++
++        if (!hasPostgresEnv)
++            return;
++
++        var composeMode = Environment.GetEnvironmentVariable("ANNAP_COMPOSE_MODE") ?? "";
++        var host = builder.Environment.IsProduction() || composeMode.Equals("production", StringComparison.OrdinalIgnoreCase)
++            ? "postgres"
++            : "localhost";
++
++        var csb = new NpgsqlConnectionStringBuilder
++        {
++            Host = host,
++            Port = 5432,
++            Database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? "annap_qr_ordering",
++            Username = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? "postgres",
++            Password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? "postgres",
++            Timeout = 15,
++            SslMode = builder.Environment.IsProduction()
++                && !IsLocalOrComposePostgresHost(host)
++                ? SslMode.Require
++                : SslMode.Prefer
++        };
++
++        builder.Configuration["ConnectionStrings:DefaultConnection"] = csb.ConnectionString;
++        DatabaseConnectionSource = "POSTGRES_*";
++    }
++
++    internal static string ConvertDatabaseUrlToNpgsql(string databaseUrl, bool enforceSsl = false)
++    {
++        var trimmed = databaseUrl.Trim();
++        if (trimmed.Length == 0)
++            throw new ArgumentException("DATABASE_URL is empty.", nameof(databaseUrl));
++
++        if (!trimmed.StartsWith("postgres://", StringComparison.OrdinalIgnoreCase)
++            && !trimmed.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
++        {
++            throw new ArgumentException("DATABASE_URL must use postgres:// or postgresql:// scheme.", nameof(databaseUrl));
++        }
++
++        var uri = new Uri(trimmed);
++        var userInfo = uri.UserInfo;
++        string username = "";
++        string password = "";
++        if (!string.IsNullOrEmpty(userInfo))
++        {
++            var colon = userInfo.IndexOf(':');
++            if (colon >= 0)
++            {
++                username = Uri.UnescapeDataString(userInfo[..colon]);
++                password = Uri.UnescapeDataString(userInfo[(colon + 1)..]);
++            }
++            else
++            {
++                username = Uri.UnescapeDataString(userInfo);
++            }
++        }
++
++        var database = uri.AbsolutePath.TrimStart('/');
++        if (string.IsNullOrEmpty(database))
++            database = "postgres";
++
++        var csb = new NpgsqlConnectionStringBuilder
++        {
++            Host = uri.Host,
++            Port = uri.Port > 0 ? uri.Port : 5432,
++            Database = database,
++            Username = username,
++            Password = password,
++            Timeout = 15
++        };
++
++        ApplySslFromQuery(csb, uri.Query);
++
++        EnforceSslIfRequired(csb, enforceSsl || IsRenderDeployment);
++
++        return csb.ConnectionString;
++    }
++
++    internal static string NormalizeConnectionString(string connectionString, bool enforceSsl)
++    {
++        var csb = new NpgsqlConnectionStringBuilder(connectionString);
++        EnforceSslIfRequired(csb, enforceSsl);
++        return csb.ConnectionString;
++    }
++
++    private static void EnforceSslIfRequired(NpgsqlConnectionStringBuilder csb, bool enforceSsl)
++    {
++        if (!enforceSsl)
++            return;
++
++        // Docker Compose / local loopback Postgres is not TLS-terminated.
++        if (IsLocalOrComposePostgresHost(csb.Host))
++            return;
++
++        if (csb.SslMode == SslMode.Disable)
++        {
++            throw new InvalidOperationException(
++                "Production PostgreSQL connections cannot disable SSL.");
++        }
++
++        if (csb.SslMode == SslMode.Prefer)
++            csb.SslMode = SslMode.Require;
++    }
++
++    private static bool IsLocalOrComposePostgresHost(string? host) =>
++        !string.IsNullOrWhiteSpace(host)
++        && (host.Equals("postgres", StringComparison.OrdinalIgnoreCase)
++            || host.Equals("localhost", StringComparison.OrdinalIgnoreCase)
++            || host.Equals("127.0.0.1", StringComparison.OrdinalIgnoreCase)
++            || host.Equals("::1", StringComparison.OrdinalIgnoreCase));
++
++    private static void ApplySslFromQuery(NpgsqlConnectionStringBuilder csb, string query)
++    {
++        if (string.IsNullOrWhiteSpace(query))
++            return;
++
++        foreach (var part in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries))
++        {
++            var kv = part.Split('=', 2);
++            if (kv.Length != 2)
++                continue;
++
++            if (!kv[0].Equals("sslmode", StringComparison.OrdinalIgnoreCase))
++                continue;
++
++            csb.SslMode = kv[1].Trim().ToLowerInvariant() switch
++            {
++                "require" => SslMode.Require,
++                "verify-ca" => SslMode.VerifyCA,
++                "verify-full" => SslMode.VerifyFull,
++                "prefer" => SslMode.Prefer,
++                "disable" => SslMode.Disable,
++                _ => csb.SslMode
++            };
++        }
++    }
++
++    private static bool DetectRenderDeployment() =>
++        string.Equals(Environment.GetEnvironmentVariable("RENDER"), "true", StringComparison.OrdinalIgnoreCase)
++        || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("RENDER_SERVICE_ID"))
++        || !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("RENDER_EXTERNAL_URL"));
++
++}
++
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs ==========
+
+git : warning: in the working copy of 'Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs', LF 
+will be replaced by CRLF the next time Git touches it
+At C:\Users\Lenovo\AppData\Local\Temp\ps-script-b4e7ce77-51f8-4fae-bb5e-73525aa67836.ps1:159 char:5
++     git diff HEAD -- $p 2>&1 | Out-File -FilePath $out -Append -Encod ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+diff --git a/Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs b/Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs
+index e27a415..c8a6cd6 100644
+--- a/Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs
++++ b/Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs
+@@ -6,6 +6,7 @@ using Annap.CoffeeQrOrdering.Web.Internal;
+ using Annap.CoffeeQrOrdering.Web.Security;
+ using Annap.CoffeeQrOrdering.Web.Services;
+ using Microsoft.AspNetCore.Authentication.Cookies;
++using Microsoft.AspNetCore.DataProtection;
+ using Microsoft.AspNetCore.HttpOverrides;
+ using Microsoft.AspNetCore.Localization;
+ using Microsoft.AspNetCore.RateLimiting;
+@@ -31,8 +32,13 @@ public static class DependencyInjectionExtensions
+ 
+         builder.Services.AddHttpContextAccessor();
+ 
++        ConfigureDataProtection(builder);
+         builder.Services.Configure<LanDemoOptions>(builder.Configuration.GetSection(LanDemoOptions.SectionName));
+         builder.Services.Configure<AppUrlOptions>(builder.Configuration.GetSection(AppUrlOptions.SectionName));
++        builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection(CloudinaryOptions.SectionName));
++        builder.Services.Configure<DataProtectionStorageOptions>(
++            builder.Configuration.GetSection(DataProtectionStorageOptions.SectionName));
++        builder.Services.AddSingleton<IMenuImageStorage, MenuImageStorage>();
+         builder.Services.AddSingleton<ILanIpDetector, LanIpDetector>();
+         builder.Services.AddSingleton<IPostConfigureOptions<AppUrlOptions>, AppUrlDevelopmentPostConfigure>();
+         builder.Services.AddScoped<IAppUrlService, AppUrlService>();
+@@ -137,7 +143,8 @@ public static class DependencyInjectionExtensions
+         });
+         builder.Services.AddHealthChecks()
+             .AddDbContextCheck<AppDbContext>("database")
+-            .AddCheck<PaymentWorkflowSchemaHealthCheck>("payment_workflow_schema");
++            .AddCheck<PaymentWorkflowSchemaHealthCheck>("payment_workflow_schema")
++            .AddCheck<ProductionStorageHealthCheck>("production_storage");
+         builder.Services.AddHttpClient();
+         builder.Services.AddScoped<GoLiveVerificationService>();
+ 
+@@ -224,4 +231,24 @@ public static class DependencyInjectionExtensions
+ 
+         return builder;
+     }
++
++    private static void ConfigureDataProtection(WebApplicationBuilder builder)
++    {
++        var section = builder.Configuration.GetSection(DataProtectionStorageOptions.SectionName);
++        var keysPath = section[nameof(DataProtectionStorageOptions.KeysPath)]?.Trim();
++        var applicationName = section[nameof(DataProtectionStorageOptions.ApplicationName)]?.Trim();
++        if (string.IsNullOrWhiteSpace(applicationName))
++            applicationName = "Annap.CoffeeQrOrdering";
++
++        var dataProtection = builder.Services
++            .AddDataProtection()
++            .SetApplicationName(applicationName);
++
++        if (string.IsNullOrWhiteSpace(keysPath))
++            return;
++
++        var directory = new DirectoryInfo(Path.GetFullPath(keysPath));
++        Directory.CreateDirectory(directory.FullName);
++        dataProtection.PersistKeysToFileSystem(directory);
++    }
+ }
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs ==========
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs b/Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs
+index e22aca7..5005a5c 100644
+--- a/Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs
++++ b/Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs
+@@ -67,6 +67,18 @@ public static class StartupDiagnosticsExtensions
+     {
+         var env = app.Services.GetRequiredService<IWebHostEnvironment>();
+         var log = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup.Media");
++        var cloudinary = app.Configuration
++            .GetSection(CloudinaryOptions.SectionName)
++            .Get<CloudinaryOptions>() ?? new CloudinaryOptions();
++
++        if (cloudinary.IsConfigured)
++        {
++            log.LogInformation(
++                "Menu media storage: Cloudinary cloud={CloudName}; folder={Folder}",
++                cloudinary.CloudName,
++                cloudinary.Folder);
++            return;
++        }
+ 
+         var managed = MenuImagePaths.ManagedDirectory(env);
+         var originals = MenuImagePaths.OriginalsDirectory(env);
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Extensions/BankTransferWebhookEndpoints.cs ==========
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Extensions/BankTransferWebhookEndpoints.cs b/Annap.CoffeeQrOrdering.Web/Extensions/BankTransferWebhookEndpoints.cs
+index ddc23e2..27d094c 100644
+--- a/Annap.CoffeeQrOrdering.Web/Extensions/BankTransferWebhookEndpoints.cs
++++ b/Annap.CoffeeQrOrdering.Web/Extensions/BankTransferWebhookEndpoints.cs
+@@ -21,6 +21,9 @@ internal static class BankTransferWebhookEndpoints
+ 
+     public static void MapBankTransferWebhookEndpoints(this WebApplication app)
+     {
++        if (!app.Environment.IsDevelopment())
++            return;
++
+         app.MapPost("/api/webhooks/bank-transfer/dev", async (
+             HttpContext http,
+             DevBankTransferWebhookRequest? body,
+@@ -57,16 +60,7 @@ internal static class BankTransferWebhookEndpoints
+ 
+     internal static bool IsWebhookAuthorized(HttpContext http, IWebHostEnvironment env, BankTransferWebhookOptions webhook)
+     {
+-        if (env.IsDevelopment())
+-            return true;
+-
+-        var configured = webhook.Secret?.Trim() ?? "";
+-        if (string.IsNullOrEmpty(configured))
+-            return false;
+-
+-        var provided = http.Request.Headers[WebhookSecretHeader].FirstOrDefault()?.Trim() ?? "";
+-        return provided.Length > 0
+-               && string.Equals(provided, configured, StringComparison.Ordinal);
++        return env.IsDevelopment();
+     }
+ 
+     private static object MapWebhookResponse(BankTransferConfirmationResult result) =>
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Services/MenuImageStorage.cs ==========
+
+(UNTRACKED — showing full file as new)
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Services/MenuImageStorage.cs b/Annap.CoffeeQrOrdering.Web/Services/MenuImageStorage.cs
+new file mode 100644
+index 0000000..0624449
+--- /dev/null
++++ b/Annap.CoffeeQrOrdering.Web/Services/MenuImageStorage.cs
+@@ -0,0 +1,237 @@
++using CloudinaryDotNet;
++using CloudinaryDotNet.Actions;
++using Microsoft.Extensions.Options;
++
++namespace Annap.CoffeeQrOrdering.Web.Services;
++
++/// <summary>
++/// Stores menu uploads in Cloudinary when configured. Local storage remains available
++/// only for development so existing local workflows keep working without cloud credentials.
++/// Production startup validation requires Cloudinary configuration.
++/// </summary>
++public sealed class MenuImageStorage(
++    IWebHostEnvironment environment,
++    IOptions<CloudinaryOptions> options,
++    ILogger<MenuImageStorage> logger) : IMenuImageStorage
++{
++    private readonly CloudinaryOptions _options = options.Value;
++    private readonly Cloudinary? _cloudinary = CreateClient(options.Value);
++
++    public Task<string?> SaveHeroAsync(
++        IFormFile? file,
++        Guid itemId,
++        CancellationToken cancellationToken = default) =>
++        SaveAsync(file, itemId, isPoster: false, cancellationToken);
++
++    public Task<string?> SavePosterAsync(
++        IFormFile? file,
++        Guid itemId,
++        CancellationToken cancellationToken = default) =>
++        SaveAsync(file, itemId, isPoster: true, cancellationToken);
++
++    public async Task DeleteHeroAsync(
++        Guid itemId,
++        string? currentUrl,
++        CancellationToken cancellationToken = default)
++    {
++        if (_cloudinary is null)
++        {
++            MenuHeroImageStorage.TryDeleteIfManaged(environment, currentUrl);
++            return;
++        }
++
++        var publicId = TryGetCloudinaryPublicId(currentUrl) ?? PublicId(itemId, isPoster: false);
++        await DeleteCloudinaryAssetAsync(publicId, cancellationToken)
++            .ConfigureAwait(false);
++    }
++
++    public async Task DeletePosterAsync(
++        Guid itemId,
++        string? currentUrl,
++        CancellationToken cancellationToken = default)
++    {
++        if (_cloudinary is null)
++        {
++            MenuHeroImageStorage.TryDeletePosterIfManaged(environment, currentUrl);
++            return;
++        }
++
++        var publicId = TryGetCloudinaryPublicId(currentUrl) ?? PublicId(itemId, isPoster: true);
++        await DeleteCloudinaryAssetAsync(publicId, cancellationToken)
++            .ConfigureAwait(false);
++    }
++
++    private async Task<string?> SaveAsync(
++        IFormFile? file,
++        Guid itemId,
++        bool isPoster,
++        CancellationToken cancellationToken)
++    {
++        if (file is null || file.Length == 0)
++            return null;
++
++        MenuHeroImageStorage.ValidateUpload(file);
++        await MenuHeroImageStorage.ValidateImageContentAsync(file, cancellationToken)
++            .ConfigureAwait(false);
++
++        if (_cloudinary is null)
++        {
++            if (!environment.IsDevelopment())
++                throw new InvalidOperationException("Cloudinary image storage is not configured.");
++
++            return isPoster
++                ? await MenuHeroImageStorage.TryPosterSaveAsync(
++                    environment, file, itemId, cancellationToken, logger).ConfigureAwait(false)
++                : await MenuHeroImageStorage.TrySaveAsync(
++                    environment, file, itemId, cancellationToken, logger).ConfigureAwait(false);
++        }
++
++        try
++        {
++            await using var input = file.OpenReadStream();
++            var maxEdge = isPoster
++                ? MenuImagePipeline.DetailPosterMaxEdge
++                : MenuImagePipeline.CardMaxEdge;
++
++            var upload = new ImageUploadParams
++            {
++                File = new FileDescription(file.FileName, input),
++                PublicId = PublicId(itemId, isPoster),
++                Overwrite = true,
++                Invalidate = true,
++                UniqueFilename = false,
++                UseFilename = false,
++                Format = "webp",
++                Transformation = new Transformation()
++                    .Width(maxEdge)
++                    .Height(maxEdge)
++                    .Crop("limit")
++                    .Quality("auto:good")
++            };
++
++            var result = await _cloudinary.UploadAsync(upload, cancellationToken).ConfigureAwait(false);
++            if (result.Error is not null || result.SecureUrl is null)
++            {
++                var detail = result.Error?.Message ?? "Cloudinary returned no secure URL.";
++                logger.LogError(
++                    "Cloudinary menu image upload failed for {ItemId} ({Kind}): {Error}",
++                    itemId,
++                    isPoster ? "poster" : "hero",
++                    detail);
++                throw new InvalidOperationException("Image upload failed. Please try again.");
++            }
++
++            logger.LogInformation(
++                "Uploaded menu image to Cloudinary for {ItemId} ({Kind}); publicId={PublicId}",
++                itemId,
++                isPoster ? "poster" : "hero",
++                result.PublicId);
++
++            return result.SecureUrl.AbsoluteUri;
++        }
++        catch (OperationCanceledException)
++        {
++            throw;
++        }
++        catch (InvalidOperationException)
++        {
++            throw;
++        }
++        catch (Exception ex)
++        {
++            logger.LogError(
++                ex,
++                "Cloudinary menu image upload failed for {ItemId} ({Kind})",
++                itemId,
++                isPoster ? "poster" : "hero");
++            throw new InvalidOperationException("Image upload failed. Please try again.");
++        }
++    }
++
++    private async Task DeleteCloudinaryAssetAsync(string publicId, CancellationToken cancellationToken)
++    {
++        try
++        {
++            cancellationToken.ThrowIfCancellationRequested();
++            var result = await _cloudinary!.DestroyAsync(new DeletionParams(publicId)
++            {
++                ResourceType = ResourceType.Image,
++                Invalidate = true
++            }).ConfigureAwait(false);
++
++            if (result.Error is not null)
++            {
++                logger.LogWarning(
++                    "Cloudinary menu image delete failed for {PublicId}: {Error}",
++                    publicId,
++                    result.Error.Message);
++                return;
++            }
++
++            logger.LogInformation(
++                "Deleted Cloudinary menu image {PublicId}; result={Result}",
++                publicId,
++                result.Result);
++        }
++        catch (Exception ex) when (ex is not OperationCanceledException)
++        {
++            // Database cleanup must still proceed; a failed remote delete is logged for operations.
++            logger.LogWarning(ex, "Cloudinary menu image delete failed for {PublicId}", publicId);
++        }
++    }
++
++    private string PublicId(Guid itemId, bool isPoster)
++    {
++        var folder = (_options.Folder ?? "").Trim().Trim('/');
++        var name = $"{itemId:N}{(isPoster ? "-poster" : "")}";
++        return string.IsNullOrEmpty(folder) ? name : $"{folder}/{name}";
++    }
++
++    internal static string? TryGetCloudinaryPublicId(string? url)
++    {
++        if (!MenuMediaResolver.IsCloudinaryUrl(url)
++            || !Uri.TryCreate(url, UriKind.Absolute, out var uri))
++            return null;
++
++        const string uploadMarker = "/image/upload/";
++        var marker = uri.AbsolutePath.IndexOf(uploadMarker, StringComparison.Ordinal);
++        if (marker < 0)
++            return null;
++
++        var remainder = uri.AbsolutePath[(marker + uploadMarker.Length)..].Trim('/');
++        var segments = remainder.Split('/', StringSplitOptions.RemoveEmptyEntries).ToList();
++        if (segments.Count == 0)
++            return null;
++
++        if (segments[0].Length > 1
++            && segments[0][0] == 'v'
++            && segments[0].AsSpan(1).ToString().All(char.IsDigit))
++        {
++            segments.RemoveAt(0);
++        }
++
++        if (segments.Count == 0)
++            return null;
++
++        var last = Uri.UnescapeDataString(segments[^1]);
++        var extension = Path.GetExtension(last);
++        if (!string.IsNullOrEmpty(extension))
++            last = last[..^extension.Length];
++        segments[^1] = last;
++
++        return string.Join('/', segments.Select(Uri.UnescapeDataString));
++    }
++
++    private static Cloudinary? CreateClient(CloudinaryOptions options)
++    {
++        if (!options.IsConfigured)
++            return null;
++
++        var cloudinary = new Cloudinary(new Account(
++            options.CloudName.Trim(),
++            options.ApiKey.Trim(),
++            options.ApiSecret.Trim()));
++        cloudinary.Api.Secure = true;
++        return cloudinary;
++    }
++}
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Services/MenuMediaResolver.cs ==========
+
+git : warning: in the working copy of 'Annap.CoffeeQrOrdering.Web/Services/MenuMediaResolver.cs', LF will be replaced 
+by CRLF the next time Git touches it
+At C:\Users\Lenovo\AppData\Local\Temp\ps-script-b4e7ce77-51f8-4fae-bb5e-73525aa67836.ps1:159 char:5
++     git diff HEAD -- $p 2>&1 | Out-File -FilePath $out -Append -Encod ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+diff --git a/Annap.CoffeeQrOrdering.Web/Services/MenuMediaResolver.cs b/Annap.CoffeeQrOrdering.Web/Services/MenuMediaResolver.cs
+index ffca0ca..970c81f 100644
+--- a/Annap.CoffeeQrOrdering.Web/Services/MenuMediaResolver.cs
++++ b/Annap.CoffeeQrOrdering.Web/Services/MenuMediaResolver.cs
+@@ -3,8 +3,8 @@ using Annap.CoffeeQrOrdering.Domain.Entities;
+ namespace Annap.CoffeeQrOrdering.Web.Services;
+ 
+ /// <summary>
+-/// Guest-facing image pipeline ΓÇö local Annap drink assets only. No remote URLs or demo placeholders.
+-/// Menu cards prefer lightweight WebP thumbs; detail views use full poster/card WebP.
++/// Guest-facing image pipeline. Managed Cloudinary URLs are returned directly;
++/// legacy local assets remain supported during migration and development.
+ /// </summary>
+ public static class MenuMediaResolver
+ {
+@@ -26,6 +26,9 @@ public static class MenuMediaResolver
+         var sawManagedUpload = false;
+         foreach (var raw in new[] { thumbnailUrl, cardImageUrl, heroImageUrl, imageUrl })
+         {
++            if (IsCloudinaryUrl(raw))
++                return raw!.Trim();
++
+             if (IsManagedUploadUrl(raw))
+                 sawManagedUpload = true;
+ 
+@@ -50,6 +53,12 @@ public static class MenuMediaResolver
+         string categoryName)
+     {
+         var sawManagedUpload = false;
++        if (IsCloudinaryUrl(detailPosterImagePath))
++            return detailPosterImagePath!.Trim();
++
++        if (IsCloudinaryUrl(imageUrl))
++            return imageUrl!.Trim();
++
+         if (IsAllowedLocalUrl(detailPosterImagePath))
+         {
+             var poster = NormalizeWebRelative(detailPosterImagePath!);
+@@ -102,6 +111,16 @@ public static class MenuMediaResolver
+ 
+     public static bool HasLocalImage(string? url) => IsAllowedLocalUrl(url);
+ 
++    public static bool IsCloudinaryUrl(string? url)
++    {
++        if (!Uri.TryCreate(url?.Trim(), UriKind.Absolute, out var uri))
++            return false;
++
++        return uri.Scheme == Uri.UriSchemeHttps
++               && uri.Host.Equals("res.cloudinary.com", StringComparison.OrdinalIgnoreCase)
++               && uri.AbsolutePath.Contains("/image/upload/", StringComparison.Ordinal);
++    }
++
+     public static string NormalizeWebRelative(string url)
+     {
+         var t = url.Trim();
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Services/CloudinaryOptions.cs ==========
+
+(UNTRACKED — showing full file as new)
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Services/CloudinaryOptions.cs b/Annap.CoffeeQrOrdering.Web/Services/CloudinaryOptions.cs
+new file mode 100644
+index 0000000..7cd330b
+--- /dev/null
++++ b/Annap.CoffeeQrOrdering.Web/Services/CloudinaryOptions.cs
+@@ -0,0 +1,16 @@
++namespace Annap.CoffeeQrOrdering.Web.Services;
++
++public sealed class CloudinaryOptions
++{
++    public const string SectionName = "Cloudinary";
++
++    public string CloudName { get; set; } = "";
++    public string ApiKey { get; set; } = "";
++    public string ApiSecret { get; set; } = "";
++    public string Folder { get; set; } = "annap/menu-items";
++
++    public bool IsConfigured =>
++        !string.IsNullOrWhiteSpace(CloudName)
++        && !string.IsNullOrWhiteSpace(ApiKey)
++        && !string.IsNullOrWhiteSpace(ApiSecret);
++}
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Services/DataProtectionStorageOptions.cs ==========
+
+(UNTRACKED — showing full file as new)
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Services/DataProtectionStorageOptions.cs b/Annap.CoffeeQrOrdering.Web/Services/DataProtectionStorageOptions.cs
+new file mode 100644
+index 0000000..7b11c9b
+--- /dev/null
++++ b/Annap.CoffeeQrOrdering.Web/Services/DataProtectionStorageOptions.cs
+@@ -0,0 +1,9 @@
++namespace Annap.CoffeeQrOrdering.Web.Services;
++
++public sealed class DataProtectionStorageOptions
++{
++    public const string SectionName = "DataProtection";
++
++    public string KeysPath { get; set; } = "";
++    public string ApplicationName { get; set; } = "Annap.CoffeeQrOrdering";
++}
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Services/ProductionStorageHealthCheck.cs ==========
+
+(UNTRACKED — showing full file as new)
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Services/ProductionStorageHealthCheck.cs b/Annap.CoffeeQrOrdering.Web/Services/ProductionStorageHealthCheck.cs
+new file mode 100644
+index 0000000..406e0f3
+--- /dev/null
++++ b/Annap.CoffeeQrOrdering.Web/Services/ProductionStorageHealthCheck.cs
+@@ -0,0 +1,31 @@
++using Microsoft.Extensions.Diagnostics.HealthChecks;
++using Microsoft.Extensions.Options;
++
++namespace Annap.CoffeeQrOrdering.Web.Services;
++
++public sealed class ProductionStorageHealthCheck(
++    IWebHostEnvironment environment,
++    IOptions<CloudinaryOptions> cloudinaryOptions,
++    IOptions<DataProtectionStorageOptions> dataProtectionOptions) : IHealthCheck
++{
++    public Task<HealthCheckResult> CheckHealthAsync(
++        HealthCheckContext context,
++        CancellationToken cancellationToken = default)
++    {
++        if (!environment.IsProduction())
++            return Task.FromResult(HealthCheckResult.Healthy("Development storage fallback is active."));
++
++        if (!cloudinaryOptions.Value.IsConfigured)
++            return Task.FromResult(HealthCheckResult.Unhealthy("Cloudinary is not configured."));
++
++        var keysPath = dataProtectionOptions.Value.KeysPath?.Trim() ?? "";
++        if (!Path.IsPathRooted(keysPath) || !Directory.Exists(keysPath))
++        {
++            return Task.FromResult(
++                HealthCheckResult.Unhealthy("The Data Protection key directory is unavailable."));
++        }
++
++        return Task.FromResult(
++            HealthCheckResult.Healthy("Cloudinary and durable Data Protection storage are configured."));
++    }
++}
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs ==========
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs b/Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs
+index 9398721..76c89af 100644
+--- a/Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs
++++ b/Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs
+@@ -13,7 +13,7 @@ public sealed class StaffAuthOptions
+     /// <summary>Sign-in name for the staff back room.</summary>
+     public string UserName { get; set; } = "host";
+ 
+-    /// <summary>Local-dev default only ΓÇö override via <c>STAFF_PASSWORD</c> in production.</summary>
++    /// <summary>Local-dev default only ΓÇö override via <c>StaffAuth__Password</c> in production.</summary>
+     public string Password { get; set; } = "ChangeMe";
+ 
+     /// <summary>Checkout device password. Falls back to <see cref="Password"/> when empty in development.</summary>
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/appsettings.json ==========
+
+git : warning: in the working copy of 'Annap.CoffeeQrOrdering.Web/appsettings.json', LF will be replaced by CRLF the 
+next time Git touches it
+At C:\Users\Lenovo\AppData\Local\Temp\ps-script-b4e7ce77-51f8-4fae-bb5e-73525aa67836.ps1:159 char:5
++     git diff HEAD -- $p 2>&1 | Out-File -FilePath $out -Append -Encod ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+diff --git a/Annap.CoffeeQrOrdering.Web/appsettings.json b/Annap.CoffeeQrOrdering.Web/appsettings.json
+index 7f5b11e..e2cc437 100644
+--- a/Annap.CoffeeQrOrdering.Web/appsettings.json
++++ b/Annap.CoffeeQrOrdering.Web/appsettings.json
+@@ -27,12 +27,22 @@
+       "MaxDelayMilliseconds": 10000
+     }
+   },
++  "Cloudinary": {
++    "CloudName": "",
++    "ApiKey": "",
++    "ApiSecret": "",
++    "Folder": "annap/menu-items"
++  },
++  "DataProtection": {
++    "KeysPath": "",
++    "ApplicationName": "Annap.CoffeeQrOrdering"
++  },
+   "ConnectionStrings": {
+-    "DefaultConnection": "Host=localhost;Port=5432;Database=annap_qr_ordering;Username=postgres;Password=postgres;Timeout=15"
++    "DefaultConnection": ""
+   },
+   "StaffAuth": {
+     "UserName": "host",
+-    "Password": "ChangeMe",
++    "Password": "",
+     "CheckoutPassword": "",
+     "BaristaPassword": ""
+   },
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/appsettings.Production.json ==========
+
+git : warning: in the working copy of 'Annap.CoffeeQrOrdering.Web/appsettings.Production.json', LF will be replaced by 
+CRLF the next time Git touches it
+At C:\Users\Lenovo\AppData\Local\Temp\ps-script-b4e7ce77-51f8-4fae-bb5e-73525aa67836.ps1:159 char:5
++     git diff HEAD -- $p 2>&1 | Out-File -FilePath $out -Append -Encod ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+diff --git a/Annap.CoffeeQrOrdering.Web/appsettings.Production.json b/Annap.CoffeeQrOrdering.Web/appsettings.Production.json
+index 0c64177..b47d6d6 100644
+--- a/Annap.CoffeeQrOrdering.Web/appsettings.Production.json
++++ b/Annap.CoffeeQrOrdering.Web/appsettings.Production.json
+@@ -19,8 +19,8 @@
+     "LocalBaseUrl": ""
+   },
+   "Database": {
+-    // Payment workflow deploy: run `dotnet ef database update --project Annap.CoffeeQrOrdering.Infrastructure --startup-project Annap.CoffeeQrOrdering.Web`
+-    // before first start, or set ApplyMigrationsOnStartup to true for the initial deploy only.
+-    "ApplyMigrationsOnStartup": false
++    // First deployment creates a zero-state database automatically. Set
++    // Database__ApplyMigrationsOnStartup=false after the first healthy deployment.
++    "ApplyMigrationsOnStartup": true
+   }
+ }
+
+========== DIFF: Annap.CoffeeQrOrdering.Tests/ProductionStartupGuardTests.cs ==========
+
+diff --git a/Annap.CoffeeQrOrdering.Tests/ProductionStartupGuardTests.cs b/Annap.CoffeeQrOrdering.Tests/ProductionStartupGuardTests.cs
+index aa6d71a..ea54767 100644
+--- a/Annap.CoffeeQrOrdering.Tests/ProductionStartupGuardTests.cs
++++ b/Annap.CoffeeQrOrdering.Tests/ProductionStartupGuardTests.cs
+@@ -13,7 +13,10 @@ public sealed class ProductionStartupGuardTests
+         string staffPassword,
+         string? checkoutPassword = null,
+         string? baristaPassword = null,
+-        string? connectionString = null)
++        string? connectionString = null,
++        string? cloudName = "test-cloud",
++        string? dataProtectionKeysPath = null,
++        bool devWebhookEnabled = false)
+     {
+         var config = new ConfigurationBuilder()
+             .AddInMemoryCollection(new Dictionary<string, string?>
+@@ -23,7 +26,14 @@ public sealed class ProductionStartupGuardTests
+                 ["StaffAuth:CheckoutPassword"] = checkoutPassword ?? "CheckoutFloor-2026-Secure",
+                 ["StaffAuth:BaristaPassword"] = baristaPassword ?? "BaristaFloor-2026-Secure",
+                 ["ConnectionStrings:DefaultConnection"] = connectionString
+-                    ?? "Host=localhost;Database=test;Username=postgres;Password=deployment-secret-32"
++                    ?? "Host=localhost;Database=test;Username=postgres;Password=deployment-secret-32;SSL Mode=Require",
++                ["Cloudinary:CloudName"] = cloudName,
++                ["Cloudinary:ApiKey"] = "test-api-key",
++                ["Cloudinary:ApiSecret"] = "test-api-secret",
++                ["DataProtection:KeysPath"] = dataProtectionKeysPath
++                    ?? Path.Combine(Path.GetTempPath(), "annap-test-dp-keys"),
++                ["DataProtection:ApplicationName"] = "Annap.Tests",
++                ["BankTransfer:Webhook:DevWebhookEnabled"] = devWebhookEnabled.ToString()
+             })
+             .Build();
+ 
+@@ -102,6 +112,39 @@ public sealed class ProductionStartupGuardTests
+         Assert.Contains("PostgreSQL", ex.Message, StringComparison.OrdinalIgnoreCase);
+     }
+ 
++    [Fact]
++    public void Production_requires_Cloudinary()
++    {
++        var ex = Assert.Throws<InvalidOperationException>(() =>
++            Validate(Environments.Production, "CafeFloor-2026-Secure", cloudName: ""));
++
++        Assert.Contains("Cloudinary", ex.Message, StringComparison.OrdinalIgnoreCase);
++    }
++
++    [Fact]
++    public void Production_requires_durable_DataProtection_path()
++    {
++        var ex = Assert.Throws<InvalidOperationException>(() =>
++            Validate(
++                Environments.Production,
++                "CafeFloor-2026-Secure",
++                dataProtectionKeysPath: ""));
++
++        Assert.Contains("DataProtection", ex.Message, StringComparison.OrdinalIgnoreCase);
++    }
++
++    [Fact]
++    public void Production_rejects_development_bank_webhook()
++    {
++        var ex = Assert.Throws<InvalidOperationException>(() =>
++            Validate(
++                Environments.Production,
++                "CafeFloor-2026-Secure",
++                devWebhookEnabled: true));
++
++        Assert.Contains("webhook", ex.Message, StringComparison.OrdinalIgnoreCase);
++    }
++
+     [Theory]
+     [InlineData("checkout-dev")]
+     [InlineData("barista-dev")]
+
+========== DIFF: Annap.CoffeeQrOrdering.Tests/ProductionInfrastructureConfigurationTests.cs ==========
+
+(UNTRACKED — showing full file as new)
+
+diff --git a/Annap.CoffeeQrOrdering.Tests/ProductionInfrastructureConfigurationTests.cs b/Annap.CoffeeQrOrdering.Tests/ProductionInfrastructureConfigurationTests.cs
+new file mode 100644
+index 0000000..ddb1209
+--- /dev/null
++++ b/Annap.CoffeeQrOrdering.Tests/ProductionInfrastructureConfigurationTests.cs
+@@ -0,0 +1,155 @@
++using Annap.CoffeeQrOrdering.Web;
++using Annap.CoffeeQrOrdering.Web.Extensions;
++using Annap.CoffeeQrOrdering.Web.Services;
++using Microsoft.AspNetCore.Builder;
++using Microsoft.AspNetCore.DataProtection;
++using Microsoft.Extensions.Configuration;
++using Microsoft.Extensions.DependencyInjection;
++using Microsoft.Extensions.Hosting;
++using Npgsql;
++
++namespace Annap.CoffeeQrOrdering.Tests;
++
++public sealed class ProductionInfrastructureConfigurationTests
++{
++    [Fact]
++    public void Database_url_enforces_ssl_in_production()
++    {
++        var value = InfrastructureEnvironment.ConvertDatabaseUrlToNpgsql(
++            "postgresql://annap:secret@example.neon.tech/annap",
++            enforceSsl: true);
++
++        var csb = new NpgsqlConnectionStringBuilder(value);
++        Assert.Equal(SslMode.Require, csb.SslMode);
++    }
++
++    [Fact]
++    public void Explicit_connection_string_enforces_ssl_in_production()
++    {
++        var value = InfrastructureEnvironment.NormalizeConnectionString(
++            "Host=example.neon.tech;Database=annap;Username=annap;Password=secret",
++            enforceSsl: true);
++
++        var csb = new NpgsqlConnectionStringBuilder(value);
++        Assert.Equal(SslMode.Require, csb.SslMode);
++    }
++
++    [Fact]
++    public void Production_connection_rejects_disabled_ssl()
++    {
++        var ex = Assert.Throws<InvalidOperationException>(() =>
++            InfrastructureEnvironment.NormalizeConnectionString(
++                "Host=example.neon.tech;Database=annap;Username=annap;Password=secret;SSL Mode=Disable",
++                enforceSsl: true));
++
++        Assert.Contains("SSL", ex.Message, StringComparison.OrdinalIgnoreCase);
++    }
++
++    [Fact]
++    public void Compose_postgres_host_does_not_force_ssl_in_production()
++    {
++        var value = InfrastructureEnvironment.NormalizeConnectionString(
++            "Host=postgres;Database=annap;Username=postgres;Password=secret",
++            enforceSsl: true);
++
++        var csb = new NpgsqlConnectionStringBuilder(value);
++        Assert.NotEqual(SslMode.Require, csb.SslMode);
++    }
++
++    [Fact]
++    public void Menu_media_resolver_accepts_only_secure_Cloudinary_delivery_urls()
++    {
++        const string cloudinary =
++            "https://res.cloudinary.com/annap/image/upload/v1/annap/menu-items/item.webp";
++
++        var resolved = MenuMediaResolver.TryResolveCardImageUrl(
++            null,
++            null,
++            cloudinary,
++            null,
++            "Drink",
++            "Coffee");
++
++        Assert.Equal(cloudinary, resolved);
++        Assert.False(MenuMediaResolver.IsCloudinaryUrl(
++            "http://res.cloudinary.com/annap/image/upload/item.webp"));
++        Assert.False(MenuMediaResolver.IsCloudinaryUrl(
++            "https://example.com/image/upload/item.webp"));
++    }
++
++    [Fact]
++    public void Cloudinary_public_id_is_recovered_from_stored_url_for_delete()
++    {
++        var publicId = MenuImageStorage.TryGetCloudinaryPublicId(
++            "https://res.cloudinary.com/annap/image/upload/v1780000000/annap/menu-items/item-poster.webp");
++
++        Assert.Equal("annap/menu-items/item-poster", publicId);
++    }
++
++    [Theory]
++    [InlineData("https://res.cloudinary.com/annap/image/upload/v1/annap/menu-items/item.webp", false)]
++    [InlineData("/media/menu-items/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.webp", false)]
++    [InlineData("https://cdn.example.com/menu/item.webp", true)]
++    [InlineData("http://evil.example/x.png", true)]
++    public void Bootstrap_preserves_Cloudinary_and_local_urls_while_purging_other_remotes(
++        string url,
++        bool unsupported)
++    {
++        Assert.Equal(unsupported, AnnapMenuBootstrap.IsUnsupportedRemoteUrl(url));
++        if (!unsupported)
++            Assert.True(AnnapMenuBootstrap.IsManagedOrCloudinaryUrl(url));
++    }
++
++    [Fact]
++    public void DataProtection_keys_survive_a_new_application_instance()
++    {
++        var keysPath = Path.Combine(Path.GetTempPath(), $"annap-dp-{Guid.NewGuid():N}");
++        try
++        {
++            var protectedValue = ProtectWithNewApplication(keysPath, "release-cookie");
++            var unprotectedValue = UnprotectWithNewApplication(keysPath, protectedValue);
++
++            Assert.Equal("release-cookie", unprotectedValue);
++            Assert.NotEmpty(Directory.EnumerateFiles(keysPath, "key-*.xml"));
++        }
++        finally
++        {
++            if (Directory.Exists(keysPath))
++                Directory.Delete(keysPath, recursive: true);
++        }
++    }
++
++    private static string ProtectWithNewApplication(string keysPath, string value)
++    {
++        using var app = BuildApplication(keysPath);
++        return app.Services
++            .GetRequiredService<IDataProtectionProvider>()
++            .CreateProtector("release-test")
++            .Protect(value);
++    }
++
++    private static string UnprotectWithNewApplication(string keysPath, string value)
++    {
++        using var app = BuildApplication(keysPath);
++        return app.Services
++            .GetRequiredService<IDataProtectionProvider>()
++            .CreateProtector("release-test")
++            .Unprotect(value);
++    }
++
++    private static WebApplication BuildApplication(string keysPath)
++    {
++        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
++        {
++            EnvironmentName = Environments.Development,
++            ApplicationName = typeof(Program).Assembly.GetName().Name
++        });
++        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
++        {
++            ["DataProtection:KeysPath"] = keysPath,
++            ["DataProtection:ApplicationName"] = "Annap.Release.Tests"
++        });
++        builder.AddAnnapWebServices(8080);
++        return builder.Build();
++    }
++}
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs ==========
+
+git : warning: in the working copy of 'Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs', LF will be 
+replaced by CRLF the next time Git touches it
+At C:\Users\Lenovo\AppData\Local\Temp\ps-script-b4e7ce77-51f8-4fae-bb5e-73525aa67836.ps1:159 char:5
++     git diff HEAD -- $p 2>&1 | Out-File -FilePath $out -Append -Encod ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+diff --git a/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs b/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs
+index ae51eb9..3792286 100644
+--- a/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs
++++ b/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs
+@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
+ namespace Annap.CoffeeQrOrdering.Web.Pages.Admin.Menu;
+ 
+ [Authorize(Policy = "Staff")]
+-public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment env) : PageModel
++public sealed class CreateModel(IApplicationDbContext db, IMenuImageStorage imageStorage) : PageModel
+ {
+     [BindProperty]
+     public MenuCurationFormModel Input { get; set; } = new();
+@@ -80,14 +80,14 @@ public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment en
+         {
+             if (Input.HeroImage is { Length: > 0 })
+             {
+-                var url = await MenuHeroImageStorage.TrySaveAsync(env, Input.HeroImage, entity.Id, cancellationToken);
++                var url = await imageStorage.SaveHeroAsync(Input.HeroImage, entity.Id, cancellationToken);
+                 if (url is not null)
+                     entity.ImageUrl = url;
+             }
+ 
+             if (Input.DetailPosterImage is { Length: > 0 })
+             {
+-                var url = await MenuHeroImageStorage.TryPosterSaveAsync(env, Input.DetailPosterImage, entity.Id, cancellationToken);
++                var url = await imageStorage.SavePosterAsync(Input.DetailPosterImage, entity.Id, cancellationToken);
+                 if (url is not null)
+                     entity.DetailPosterImagePath = url;
+             }
+@@ -97,6 +97,8 @@ public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment en
+         }
+         catch (InvalidOperationException ex)
+         {
++            await imageStorage.DeleteHeroAsync(entity.Id, entity.ImageUrl, cancellationToken);
++            await imageStorage.DeletePosterAsync(entity.Id, entity.DetailPosterImagePath, cancellationToken);
+             db.MenuItems.Remove(entity);
+             await db.SaveChangesAsync(cancellationToken);
+             ModelState.AddModelError(nameof(Input.HeroImage), ex.Message);
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs ==========
+
+git : warning: in the working copy of 'Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs', LF will be 
+replaced by CRLF the next time Git touches it
+At C:\Users\Lenovo\AppData\Local\Temp\ps-script-b4e7ce77-51f8-4fae-bb5e-73525aa67836.ps1:159 char:5
++     git diff HEAD -- $p 2>&1 | Out-File -FilePath $out -Append -Encod ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (warning: in the... Git touches it:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+diff --git a/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs b/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs
+index 90ed01f..8114600 100644
+--- a/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs
++++ b/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs
+@@ -13,7 +13,7 @@ namespace Annap.CoffeeQrOrdering.Web.Pages.Admin.Menu;
+ [Authorize(Policy = "Staff")]
+ public sealed class EditModel(
+     IApplicationDbContext db,
+-    IWebHostEnvironment env,
++    IMenuImageStorage imageStorage,
+     MenuMediaMaintenanceService mediaMaintenance) : PageModel
+ {
+     [BindProperty]
+@@ -86,17 +86,19 @@ public sealed class EditModel(
+             return NotFound();
+ 
+         IsArchived = item.IsArchived;
++        string? removedHeroUrl = null;
++        string? removedPosterUrl = null;
+ 
+         if (Input.RemoveHeroImage)
+         {
+-            MenuHeroImageStorage.TryDeleteIfManaged(env, item.ImageUrl);
++            removedHeroUrl = item.ImageUrl;
+             item.ImageUrl = null;
+             CurrentHeroUrl = null;
+         }
+ 
+         if (Input.RemoveDetailPosterImage)
+         {
+-            MenuHeroImageStorage.TryDeletePosterIfManaged(env, item.DetailPosterImagePath);
++            removedPosterUrl = item.DetailPosterImagePath;
+             item.DetailPosterImagePath = null;
+             CurrentDetailPosterUrl = null;
+         }
+@@ -106,7 +108,7 @@ public sealed class EditModel(
+             if (Input.HeroImage is { Length: > 0 })
+             {
+                 var replaceDetailFromHero = !Input.RemoveDetailPosterImage && Input.DetailPosterImage is not { Length: > 0 };
+-                var url = await MenuHeroImageStorage.TrySaveAsync(env, Input.HeroImage, item.Id, cancellationToken);
++                var url = await imageStorage.SaveHeroAsync(Input.HeroImage, item.Id, cancellationToken);
+                 if (url is not null)
+                 {
+                     item.ImageUrl = url;
+@@ -114,8 +116,7 @@ public sealed class EditModel(
+ 
+                     if (replaceDetailFromHero)
+                     {
+-                        var posterUrl = await MenuHeroImageStorage.TryPosterSaveAsync(
+-                            env,
++                        var posterUrl = await imageStorage.SavePosterAsync(
+                             Input.HeroImage,
+                             item.Id,
+                             cancellationToken);
+@@ -147,7 +148,7 @@ public sealed class EditModel(
+         {
+             if (Input.DetailPosterImage is { Length: > 0 })
+             {
+-                var url = await MenuHeroImageStorage.TryPosterSaveAsync(env, Input.DetailPosterImage, item.Id, cancellationToken);
++                var url = await imageStorage.SavePosterAsync(Input.DetailPosterImage, item.Id, cancellationToken);
+                 if (url is not null)
+                 {
+                     item.DetailPosterImagePath = url;
+@@ -178,6 +179,10 @@ public sealed class EditModel(
+         await OperationalAudit.AppendAsync(db, "menu.updated", actor, null,
+             $"menuItemId={item.Id};name={Summarize(item.Name)}", cancellationToken);
+         await db.SaveChangesAsync(cancellationToken);
++        if (removedHeroUrl is not null && item.ImageUrl is null)
++            await imageStorage.DeleteHeroAsync(item.Id, removedHeroUrl, cancellationToken);
++        if (removedPosterUrl is not null && item.DetailPosterImagePath is null)
++            await imageStorage.DeletePosterAsync(item.Id, removedPosterUrl, cancellationToken);
+ 
+         TempData["MenuCurationToast"] = "─É├ú l╞░u. Kh├ích sß║╜ thß║Ñy phi├¬n bß║ún mß╗¢i ß╗ƒ lß║ºn mß╗ƒ thß╗▒c ─æ╞ín tiß║┐p theo.";
+         return RedirectToPage("/Admin/Menu/Edit", new { id = item.Id });
+@@ -190,13 +195,19 @@ public sealed class EditModel(
+             return NotFound();
+ 
+         item.IsArchived = true;
+-        mediaMaintenance.PurgeManagedAssetsForItem(item.Id);
++        var archivedHeroUrl = item.ImageUrl;
++        var archivedPosterUrl = item.DetailPosterImagePath;
+         item.ImageUrl = null;
+         item.DetailPosterImagePath = null;
+         var actor = User.Identity?.Name?.Trim();
+         await OperationalAudit.AppendAsync(db, "menu.archived", actor, null,
+             $"menuItemId={item.Id};name={Summarize(item.Name)}", cancellationToken);
+         await db.SaveChangesAsync(cancellationToken);
++        await mediaMaintenance.PurgeManagedAssetsForItemAsync(
++            item.Id,
++            archivedHeroUrl,
++            archivedPosterUrl,
++            cancellationToken);
+         TempData["MenuCurationToast"] = "─É├ú cß║Ñt khß╗Åi thß╗▒c ─æ╞ín kh├ích. Ly vß║½n ─æ╞░ß╗úc giß╗» trong hß╗ô s╞í qu├ín.";
+         return RedirectToPage("/Admin/Menu/Index");
+     }
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Services/IMenuImageStorage.cs ==========
+
+(UNTRACKED — showing full file as new)
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Services/IMenuImageStorage.cs b/Annap.CoffeeQrOrdering.Web/Services/IMenuImageStorage.cs
+new file mode 100644
+index 0000000..b279dd0
+--- /dev/null
++++ b/Annap.CoffeeQrOrdering.Web/Services/IMenuImageStorage.cs
+@@ -0,0 +1,24 @@
++namespace Annap.CoffeeQrOrdering.Web.Services;
++
++public interface IMenuImageStorage
++{
++    Task<string?> SaveHeroAsync(
++        IFormFile? file,
++        Guid itemId,
++        CancellationToken cancellationToken = default);
++
++    Task<string?> SavePosterAsync(
++        IFormFile? file,
++        Guid itemId,
++        CancellationToken cancellationToken = default);
++
++    Task DeleteHeroAsync(
++        Guid itemId,
++        string? currentUrl,
++        CancellationToken cancellationToken = default);
++
++    Task DeletePosterAsync(
++        Guid itemId,
++        string? currentUrl,
++        CancellationToken cancellationToken = default);
++}
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Services/MenuHeroImageStorage.cs ==========
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Services/MenuHeroImageStorage.cs b/Annap.CoffeeQrOrdering.Web/Services/MenuHeroImageStorage.cs
+index 3ed416c..26aa076 100644
+--- a/Annap.CoffeeQrOrdering.Web/Services/MenuHeroImageStorage.cs
++++ b/Annap.CoffeeQrOrdering.Web/Services/MenuHeroImageStorage.cs
+@@ -1,4 +1,5 @@
+ using Microsoft.Extensions.Logging;
++using SixLabors.ImageSharp;
+ 
+ namespace Annap.CoffeeQrOrdering.Web.Services;
+ 
+@@ -113,7 +114,7 @@ public static class MenuHeroImageStorage
+             TryDeleteFile(MenuImagePaths.ToPhysicalPath(env, imageUrl));
+     }
+ 
+-    private static void ValidateUpload(IFormFile file)
++    internal static void ValidateUpload(IFormFile file)
+     {
+         if (file.Length > MaxBytes)
+             throw new InvalidOperationException("Image must be 5 MB or smaller.");
+@@ -134,6 +135,38 @@ public static class MenuHeroImageStorage
+             throw new InvalidOperationException("Invalid file name.");
+     }
+ 
++    internal static async Task ValidateImageContentAsync(
++        IFormFile file,
++        CancellationToken cancellationToken)
++    {
++        try
++        {
++            await using var stream = file.OpenReadStream();
++            var info = await Image.IdentifyAsync(stream, cancellationToken).ConfigureAwait(false);
++            if (info is null)
++                throw new InvalidOperationException("File must contain a valid JPG, PNG, or WebP image.");
++
++            const int maxDimension = 12_000;
++            const long maxPixels = 50_000_000;
++            if (info.Width > maxDimension
++                || info.Height > maxDimension
++                || (long)info.Width * info.Height > maxPixels)
++            {
++                throw new InvalidOperationException("Image dimensions are too large.");
++            }
++        }
++        catch (InvalidOperationException)
++        {
++            throw;
++        }
++        catch (Exception ex) when (ex is not OperationCanceledException)
++        {
++            throw new InvalidOperationException(
++                "File must contain a valid JPG, PNG, or WebP image.",
++                ex);
++        }
++    }
++
+     private static async Task<string?> FallbackCopyBufferAsync(
+         IWebHostEnvironment env,
+         MemoryStream buffer,
+
+========== DIFF: Annap.CoffeeQrOrdering.Web/Services/MenuMediaMaintenanceService.cs ==========
+
+diff --git a/Annap.CoffeeQrOrdering.Web/Services/MenuMediaMaintenanceService.cs b/Annap.CoffeeQrOrdering.Web/Services/MenuMediaMaintenanceService.cs
+index 3066674..280c227 100644
+--- a/Annap.CoffeeQrOrdering.Web/Services/MenuMediaMaintenanceService.cs
++++ b/Annap.CoffeeQrOrdering.Web/Services/MenuMediaMaintenanceService.cs
+@@ -8,6 +8,7 @@ namespace Annap.CoffeeQrOrdering.Web.Services;
+ public sealed class MenuMediaMaintenanceService(
+     IApplicationDbContext db,
+     IWebHostEnvironment env,
++    IMenuImageStorage imageStorage,
+     ILogger<MenuMediaMaintenanceService> log)
+ {
+     public sealed record MaintenanceReport(
+@@ -105,10 +106,14 @@ public sealed class MenuMediaMaintenanceService(
+         return new MaintenanceReport(orphansRemoved, thumbsRebuilt, missing.Count, missing);
+     }
+ 
+-    public void PurgeManagedAssetsForItem(Guid itemId)
++    public async Task PurgeManagedAssetsForItemAsync(
++        Guid itemId,
++        string? heroUrl,
++        string? posterUrl,
++        CancellationToken cancellationToken = default)
+     {
+-        MenuHeroImageStorage.TryDeleteIfManaged(env, MenuImagePaths.HeroWebRelative(itemId));
+-        MenuHeroImageStorage.TryDeletePosterIfManaged(env, MenuImagePaths.PosterWebRelative(itemId));
++        await imageStorage.DeleteHeroAsync(itemId, heroUrl, cancellationToken).ConfigureAwait(false);
++        await imageStorage.DeletePosterAsync(itemId, posterUrl, cancellationToken).ConfigureAwait(false);
+     }
+ 
+     private async Task<HashSet<string>> CollectReferencedUrlsAsync(CancellationToken cancellationToken)
+
+========== DIFF: .dockerignore ==========
+
+diff --git a/.dockerignore b/.dockerignore
+index 71d7c7d..5c05225 100644
+--- a/.dockerignore
++++ b/.dockerignore
+@@ -10,3 +10,5 @@ terminals/
+ .env
+ .env.*
+ !.env.example
++tmp-*
++*cookie*.txt

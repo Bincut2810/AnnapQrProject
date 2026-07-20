@@ -265,6 +265,11 @@
 }
 
 @media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
   .admin-ambient,
   .admin-sidebar,
   .admin-drawer,
@@ -276,7 +281,7 @@
 
   .admin-main-surface {
     max-width: none !important;
-    padding: 0.5rem !important;
+    padding: 0 !important;
   }
 
   .admin-frame {
@@ -288,43 +293,128 @@
   }
 
   .demo-qr-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.35in;
+    display: block;
+  }
+
+  .demo-qr-card {
+    break-after: page;
+    page-break-after: always;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .demo-qr-card:last-child {
+    break-after: auto;
+    page-break-after: auto;
   }
 
   .demo-qr-card__inner {
     box-shadow: none;
-    border: 1px solid #ccc;
+    border: 1px solid #c8bfb2;
     background: #fff;
+    min-height: 240mm;
+    justify-content: center;
+    padding: 18mm 14mm;
   }
 
+  .demo-qr-card__brand-name,
   .demo-qr-card__code,
-  .demo-qr-card__eyebrow {
-    color: #111 !important;
+  .demo-qr-card__eyebrow,
+  .demo-qr-card__code-meta {
+    color: #1e1610 !important;
   }
 
   .demo-qr-card__urltext {
     color: #333 !important;
-    font-size: 9pt;
-  }
-
-  .demo-qr-card__qr img {
-    image-rendering: auto;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    font-size: 10pt;
   }
 
   .demo-qr-card__qr {
+    max-width: 78mm;
+    margin-top: 10mm;
+    padding: 4mm;
     background: #fff;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+  }
+
+  .demo-qr-card__qr img {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .demo-qr-card--hidden-print {
     display: none !important;
   }
 }
+
+.demo-qr-card__brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.demo-qr-card__logo {
+  width: 2.75rem;
+  height: 2.75rem;
+  display: block;
+}
+
+.demo-qr-card__brand-name {
+  margin: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgb(var(--muted-2));
+}
+
+.demo-qr-card__code-meta {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  color: rgb(var(--muted));
+}
+
+.demo-qr-toolbar {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.demo-qr-toolbar__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgb(var(--muted-2));
+}
+
+.demo-qr-toolbar__field--grow {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+}
+
+.demo-qr-toolbar__field select,
+.demo-qr-toolbar__field input {
+  min-height: 2.75rem;
+  padding: 0 0.85rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgb(var(--fg));
+  font-size: 0.9rem;
+  letter-spacing: normal;
+  text-transform: none;
+}
+
 
 .demo-qr-localhost-banner {
   margin-top: 1rem;

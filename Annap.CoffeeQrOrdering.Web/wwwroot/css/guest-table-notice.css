@@ -1,6 +1,4 @@
-/* Phase 1B — lightweight seated QR arrival (no ritual chrome). */
-
-.guest-arrival-slim {
+.guest-table-notice {
   padding-top: max(0.5rem, env(safe-area-inset-top));
   padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   min-height: min(100dvh, 100vh);
@@ -9,7 +7,7 @@
   gap: 1.75rem;
 }
 
-.guest-arrival-slim__head {
+.guest-table-notice__head {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -17,7 +15,7 @@
   gap: 0.75rem 1rem;
 }
 
-.guest-arrival-slim__brand {
+.guest-table-notice__brand {
   margin: 0;
   font-family: var(--font-ui);
   font-size: 0.72rem;
@@ -28,34 +26,7 @@
   color: rgb(var(--muted));
 }
 
-.guest-arrival-slim__table {
-  flex: 1 1 100%;
-  margin: 0.25rem 0 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.35rem 0.5rem;
-}
-
-.guest-arrival-slim__table-kicker {
-  font-size: 0.625rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: rgb(var(--muted-2));
-}
-
-.guest-arrival-slim__table-name {
-  font-family: var(--font-code);
-  font-size: clamp(1.35rem, 5vw, 1.75rem);
-  line-height: 1.15;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  font-weight: 700;
-  color: rgb(var(--accent));
-}
-
-.guest-arrival-slim__body {
+.guest-table-notice__body {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -64,7 +35,7 @@
   max-width: 22rem;
 }
 
-.guest-arrival-slim__title {
+.guest-table-notice__title {
   margin: 0;
   font-family: var(--font-display);
   font-size: clamp(1.5rem, 5.5vw, 2rem);
@@ -74,14 +45,14 @@
   color: rgb(var(--fg));
 }
 
-.guest-arrival-slim__lead {
+.guest-table-notice__lead {
   margin: 0;
   font-size: 0.9375rem;
   line-height: 1.55;
   color: rgb(var(--muted));
 }
 
-.guest-arrival-slim__cta {
+.guest-table-notice__cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -101,48 +72,28 @@
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.guest-arrival-slim__cta:hover,
-.guest-arrival-slim__cta:focus-visible {
+.guest-table-notice__cta:hover,
+.guest-table-notice__cta:focus-visible {
   opacity: 0.92;
   outline: 2px solid rgb(var(--accent));
   outline-offset: 2px;
 }
 
-.guest-arrival-slim__cta:active {
+.guest-table-notice__cta:active {
   transform: scale(0.98);
 }
 
-.guest-arrival-slim__cta--secondary {
+.guest-table-notice__cta--secondary {
   background: transparent;
   color: rgb(var(--fg));
   border-color: rgba(190, 165, 130, 0.55);
 }
 
-.guest-arrival-slim__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  margin-top: 0.5rem;
-}
-
-.guest-arrival-slim__actions .guest-arrival-slim__cta {
-  margin-top: 0;
-  width: 100%;
-}
-
-.guest-arrival-slim__somm-unavailable {
-  margin: 0;
-  padding: 0.75rem 0.25rem 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: rgb(var(--muted));
-}
-
-.guest-arrival-slim__browse-note {
+.guest-table-notice__browse-note {
   margin: 0.25rem 0 0;
 }
 
-.guest-arrival-slim--notice .guest-arrival-slim__title {
+.guest-table-notice--alert .guest-table-notice__title {
   font-size: clamp(1.25rem, 4.8vw, 1.65rem);
 }
 
@@ -159,21 +110,21 @@
   color: rgb(var(--fg));
 }
 
-html.annap-seated-arrival .guest-main--seated {
+html.annap-table-notice .guest-main--seated {
   padding-top: max(0.35rem, env(safe-area-inset-top));
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .guest-arrival-slim__cta {
+  .guest-table-notice__cta {
     transition: none;
   }
-  .guest-arrival-slim__cta:active {
+  .guest-table-notice__cta:active {
     transform: none;
   }
 }
 
 @media (max-width: 360px) {
-  .guest-arrival-slim__lead {
+  .guest-table-notice__lead {
     font-size: 0.875rem;
   }
 }

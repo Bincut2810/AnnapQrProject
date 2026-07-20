@@ -321,8 +321,10 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
         if (questions.Count == 0)
             return;
 
-        var defaultIds = new List<string>(questions.Count);
-        foreach (var q in questions)
+        // Preview a complete specialty branch path (first option of each step).
+        var path = GuidedSommelierCatalog.QuestionsForBranch(GuidedSommelierCatalog.BranchSpecialty);
+        var defaultIds = new List<string>(path.Count);
+        foreach (var q in path)
         {
             var first = q.Options.FirstOrDefault();
             if (first is null)
@@ -330,7 +332,7 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
             defaultIds.Add(first.OptionId);
         }
 
-        if (!GuidedSommelierExperienceCatalog.TryResolveOptions(questions, defaultIds, out var resolved, out _))
+        if (!GuidedSommelierExperienceCatalog.TryResolveSommelierAnswers(questions, defaultIds, out var resolved, out _))
             return;
 
         var guestHints = GuidedSommelierCatalog.MergeGuestHints(resolved);

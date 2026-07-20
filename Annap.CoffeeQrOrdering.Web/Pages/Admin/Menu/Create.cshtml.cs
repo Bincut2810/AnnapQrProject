@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Annap.CoffeeQrOrdering.Web.Pages.Admin.Menu;
 
 [Authorize(Policy = "Staff")]
-public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment env) : PageModel
+public sealed class CreateModel(IApplicationDbContext db, IMenuImageStorage imageStorage) : PageModel
 {
     [BindProperty]
     public MenuCurationFormModel Input { get; set; } = new();
@@ -80,14 +80,14 @@ public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment en
         {
             if (Input.HeroImage is { Length: > 0 })
             {
-                var url = await MenuHeroImageStorage.TrySaveAsync(env, Input.HeroImage, entity.Id, cancellationToken);
+                var url = await imageStorage.SaveHeroAsync(Input.HeroImage, entity.Id, cancellationToken);
                 if (url is not null)
                     entity.ImageUrl = url;
             }
 
             if (Input.DetailPosterImage is { Length: > 0 })
             {
-                var url = await MenuHeroImageStorage.TryPosterSaveAsync(env, Input.DetailPosterImage, entity.Id, cancellationToken);
+                var url = await imageStorage.SavePosterAsync(Input.DetailPosterImage, entity.Id, cancellationToken);
                 if (url is not null)
                     entity.DetailPosterImagePath = url;
             }
@@ -97,6 +97,8 @@ public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment en
         }
         catch (InvalidOperationException ex)
         {
+            await imageStorage.DeleteHeroAsync(entity.Id, entity.ImageUrl, cancellationToken);
+            await imageStorage.DeletePosterAsync(entity.Id, entity.DetailPosterImagePath, cancellationToken);
             db.MenuItems.Remove(entity);
             await db.SaveChangesAsync(cancellationToken);
             ModelState.AddModelError(nameof(Input.HeroImage), ex.Message);

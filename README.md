@@ -47,12 +47,22 @@ npm run build:css
 POSTGRES_DB=annap_qr_ordering
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=your-strong-password
-STAFF_PASSWORD=your-staff-password-at-least-12-chars
-STAFF_USER=host
-APPLY_MIGRATIONS_ON_STARTUP=true
+StaffAuth__UserName=host
+StaffAuth__Password=your-admin-password-at-least-12-chars
+StaffAuth__CheckoutPassword=your-checkout-password-at-least-12-chars
+StaffAuth__BaristaPassword=your-barista-password-at-least-12-chars
+Database__ApplyMigrationsOnStartup=true
+AppUrl__PublicBaseUrl=https://order.example.com
+Cloudinary__CloudName=your-cloud-name
+Cloudinary__ApiKey=your-api-key
+Cloudinary__ApiSecret=your-api-secret
+DataProtection__KeysPath=/var/data/dataprotection-keys
 ```
 
-**Production checklist:** `STAFF_PASSWORD` must be at least 12 characters and must not be a known weak value (`ChangeMe`, `password`, `admin`, etc.). The app refuses to start in Production otherwise (`ProductionStartupGuard`). `docker-compose.prod.yml` requires `STAFF_PASSWORD` to be set.
+**Production checklist:** all three `StaffAuth__*Password` values must be at
+least 12 characters and not known weak values. Production also requires
+Cloudinary credentials and an absolute `DataProtection__KeysPath` on durable
+storage. `ProductionStartupGuard` refuses to start with unsafe configuration.
 
 **2. Start stack:**
 
@@ -80,7 +90,7 @@ dotnet run --project Annap.CoffeeQrOrdering.Web -- --migrate-images-only
 - **Drinks** — add, edit, archive, upload images, category, availability, tasting copy, origin, ingredients, seasonal/signature flags
 - **Bakery (Bánh)** — lightweight form (name, price, image) in bakery category
 - **Menu order** — `DisplaySortOrder` per item; category order at `/admin/menu/categories`
-- **Images** — JPG/PNG/WebP upload → auto WebP encode, resize, thumbnail
+- **Images** — JPG/PNG/WebP upload → Cloudinary WebP resize and durable HTTPS URL
 
 Pairing suggestions on drink detail are algorithmic (bakery items in the Bánh category); no manual pairing CMS yet.
 
@@ -100,8 +110,10 @@ Prototype chat and generic recommendation APIs have been removed.
 | Key | Purpose |
 |-----|---------|
 | `ConnectionStrings:DefaultConnection` | PostgreSQL |
-| `StaffAuth:UserName` / `StaffAuth:Password` | Admin login |
+| `StaffAuth:UserName` / `StaffAuth:*Password` | Shared role login |
 | `Database:ApplyMigrationsOnStartup` | Auto-migrate on boot |
+| `Cloudinary:*` | Durable menu image storage |
+| `DataProtection:KeysPath` | Durable staff-cookie key ring |
 
 Canonical Docker topology:
 
@@ -135,6 +147,6 @@ Enables boot checklist logs and guest-experience diagnostics. Do not enable in p
 
 ## Operational notes
 
-- Upload directory: `wwwroot/media/menu-items/` (persist via volume in production if using containers)
+- Production menu uploads are stored in Cloudinary. `wwwroot/media/menu-items/` is a Development/legacy fallback only.
 - Demo menu cleanup runs once via `DbInitializer` when no orders reference legacy demo data
 - Mobile stability: no page reload on detail open/close; images released on overlay unmount

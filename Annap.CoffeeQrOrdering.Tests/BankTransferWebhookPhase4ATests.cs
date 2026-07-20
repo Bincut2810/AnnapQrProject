@@ -232,8 +232,8 @@ public sealed class BankTransferWebhookPhase4ATests(BankTransferWebhookPostgresW
     [InlineData("Development", null, null, true)]
     [InlineData("Production", "test-webhook-secret-16", null, false)]
     [InlineData("Production", "test-webhook-secret-16", "wrong-secret", false)]
-    [InlineData("Production", "test-webhook-secret-16", "test-webhook-secret-16", true)]
-    public void Webhook_authorization_respects_environment_and_secret(
+    [InlineData("Production", "test-webhook-secret-16", "test-webhook-secret-16", false)]
+    public void Dev_webhook_authorization_is_development_only(
         string environmentName,
         string? configuredSecret,
         string? providedSecret,

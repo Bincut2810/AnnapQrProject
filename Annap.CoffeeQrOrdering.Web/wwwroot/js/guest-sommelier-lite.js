@@ -181,23 +181,11 @@
 
 
     function readVt() {
-
-        var slim = document.getElementById("guest-arrival-slim");
-
-        var vt = slim ? (slim.getAttribute("data-vt") || "").trim() : "";
-
-        if (vt) return vt;
-
         try {
-
             return (sessionStorage.getItem("annap_venue_table_id") || "").trim();
-
         } catch (_e) {
-
             return "";
-
         }
-
     }
 
 
@@ -503,16 +491,6 @@
         var root = document.getElementById(ROOT_ID);
 
         if (!openBtn || !root) return;
-
-
-
-        var slim = document.getElementById("guest-arrival-slim");
-
-        if (slim && slim.getAttribute("data-somm-lite-compatible") === "false") {
-
-            state.compatible = false;
-
-        }
 
 
 

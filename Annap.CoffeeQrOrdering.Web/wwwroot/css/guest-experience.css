@@ -3779,7 +3779,7 @@ html.annap-mode-pending .guest-header {
 }
 
 /* Gentle reveal when mode-focus state ends */
-html:not(.annap-arrival-scene-active):not(.annap-mode-focus):not(.annap-mode-pending) .guest-header {
+html:not(.annap-arrival-active):not(.annap-mode-focus):not(.annap-mode-pending) .guest-header {
     transition: opacity 700ms ease-out, visibility 0s linear 0s;
 }
 
@@ -7221,3 +7221,4 @@ body.guest-app:has(#guest-experience-root):not(.ge-sommelier-flow) .order-tray-r
         min-height: 2.85rem;
     }
 }
+

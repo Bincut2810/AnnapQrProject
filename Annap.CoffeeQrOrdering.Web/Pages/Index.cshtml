@@ -32,7 +32,7 @@
 else if (Model.HasSeatedTable)
 {
     <partial name="Shared/_GuestExperienceEntry" model="Model" />
-    <partial name="Shared/_ArrivalScene" />
+    <partial name="Shared/_Arrival" model="Model" />
     <script type="application/json" id="menu-catalog-json">@Html.Raw(cartCatalogJson)</script>
     <script type="application/json" id="menu-guest-context">@Html.Raw(guestCtxJson)</script>
     <partial name="Shared/_OrderTrayDock" />
@@ -1888,7 +1888,7 @@ else
     </script>
 @if (Model.HasSeatedTable)
 {
-    <script src="~/js/arrival/choreography.js" asp-append-version="true"></script>
+    <script src="~/js/arrival/arrival.js" asp-append-version="true"></script>
     <script src="~/js/guest-discovery-duck.js" asp-append-version="true"></script>
     <script src="~/js/guest-experience.js" asp-append-version="true"></script>
     <script src="~/js/annap-runtime-report.js" asp-append-version="true"></script>

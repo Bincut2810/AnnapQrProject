@@ -110,7 +110,7 @@ Exit code: **1**
 Common failures:
 
 - **Database FAIL** — Postgres down, wrong connection string, or network/firewall between web and DB.
-- **Specialty Lots / Bootstrap FAIL** — Run production bootstrap once (`APPLY_MIGRATIONS_ON_STARTUP=true` on first deploy) or restore from a known-good backup.
+- **Specialty Lots / Bootstrap FAIL** — Run production bootstrap once (`Database__ApplyMigrationsOnStartup=true` on first deploy) or restore from a known-good backup.
 - **Signature Integrity FAIL** — A non-flagship coffee item was marked `IsSignature=true`; clear the flag in staff admin or SQL.
 - **Pool Size FAIL** — Usually signature contamination or missing specialty rows; fix Specialty Lots and Signature Integrity first.
 - **Editorial Content FAIL** — Re-run specialty bootstrap or restore editorial fields for the four catalog keys.

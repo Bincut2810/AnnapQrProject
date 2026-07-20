@@ -358,6 +358,9 @@ public sealed class ProductionDataAuditService(
             return null;
 
         var trimmed = webRelativeUrl.Trim();
+        if (MenuMediaResolver.IsCloudinaryUrl(trimmed))
+            return true;
+
         if (trimmed.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
             || trimmed.StartsWith("https://", StringComparison.OrdinalIgnoreCase)
             || trimmed.StartsWith("//", StringComparison.Ordinal))

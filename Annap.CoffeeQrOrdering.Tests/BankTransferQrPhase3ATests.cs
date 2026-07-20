@@ -118,8 +118,8 @@ public sealed class BankTransferQrPhase3ATests(AnnapPostgresWebApplicationFactor
         Assert.StartsWith("https://", url, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("amount=65000", url, StringComparison.Ordinal);
         Assert.Contains(Uri.EscapeDataString(memo), url, StringComparison.Ordinal);
-        Assert.Contains(Uri.EscapeDataString("HO KINH DOANH ANNAP"), url, StringComparison.Ordinal);
-        Assert.Contains("970416-7385268", url, StringComparison.Ordinal);
+        Assert.Contains(Uri.EscapeDataString("TEST COFFEE ACCOUNT"), url, StringComparison.Ordinal);
+        Assert.Contains("970000-0000000000", url, StringComparison.Ordinal);
         Assert.DoesNotContain("guest", url, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("token", url, StringComparison.OrdinalIgnoreCase);
     }
@@ -347,10 +347,10 @@ public sealed class BankTransferQrPhase3ATests(AnnapPostgresWebApplicationFactor
     {
         Enabled = true,
         Provider = "VietQR",
-        BankBin = "970416",
-        BankName = "ACB",
-        AccountNumber = "7385268",
-        AccountName = "HO KINH DOANH ANNAP",
+        BankBin = "970000",
+        BankName = "TEST BANK",
+        AccountNumber = "0000000000",
+        AccountName = "TEST COFFEE ACCOUNT",
         DescriptionTemplate = "ANNAP {Reference}",
         QrImageUrlTemplate = "https://img.vietqr.io/image/{bankBin}-{accountNumber}-compact2.png?amount={amount}&addInfo={memo}&accountName={accountName}"
     };

@@ -21,6 +21,9 @@ internal static class BankTransferWebhookEndpoints
 
     public static void MapBankTransferWebhookEndpoints(this WebApplication app)
     {
+        if (!app.Environment.IsDevelopment())
+            return;
+
         app.MapPost("/api/webhooks/bank-transfer/dev", async (
             HttpContext http,
             DevBankTransferWebhookRequest? body,
@@ -57,16 +60,7 @@ internal static class BankTransferWebhookEndpoints
 
     internal static bool IsWebhookAuthorized(HttpContext http, IWebHostEnvironment env, BankTransferWebhookOptions webhook)
     {
-        if (env.IsDevelopment())
-            return true;
-
-        var configured = webhook.Secret?.Trim() ?? "";
-        if (string.IsNullOrEmpty(configured))
-            return false;
-
-        var provided = http.Request.Headers[WebhookSecretHeader].FirstOrDefault()?.Trim() ?? "";
-        return provided.Length > 0
-               && string.Equals(provided, configured, StringComparison.Ordinal);
+        return env.IsDevelopment();
     }
 
     private static object MapWebhookResponse(BankTransferConfirmationResult result) =>

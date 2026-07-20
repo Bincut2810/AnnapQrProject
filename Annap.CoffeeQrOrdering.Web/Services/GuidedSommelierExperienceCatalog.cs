@@ -13,24 +13,30 @@ namespace Annap.CoffeeQrOrdering.Web.Services;
 /// <summary>Loads guided sommelier definition from the experience CMS, with fallback to <see cref="GuidedSommelierCatalog"/>.</summary>
 public static class GuidedSommelierExperienceCatalog
 {
-    public const string SpecialtyCoffeeOptionId = "q2_coffee";
-    public const string SpecialtyFlavorQuestionId = "q_sc_flavor";
-    public const string SpecialtyExperienceQuestionId = "q_sc_experience";
+    public const string SpecialtyCoffeeOptionId = "q0_specialty";
+    public const string SpecialtyFlavorQuestionId = "q_sp_profile";
+    public const string SpecialtyExperienceQuestionId = "q_sp_adventure";
 
     public sealed record SpecialtyShortcutExpansion(
         IReadOnlyList<string> OptionIds,
         bool Applied,
         IReadOnlyList<string> InjectedDefaults);
 
-    public static bool HasCompleteSpecialtyDiscovery(IReadOnlyList<string> optionIds) =>
-        optionIds.Any(id => string.Equals(id, SpecialtyCoffeeOptionId, StringComparison.OrdinalIgnoreCase))
-        && optionIds.Any(id => id.StartsWith("q_sc_flavor_", StringComparison.OrdinalIgnoreCase))
-        && optionIds.Any(id => id.StartsWith("q_sc_experience_", StringComparison.OrdinalIgnoreCase))
-        && optionIds.Count == 4;
+    public static bool HasCompleteSpecialtyDiscovery(IReadOnlyList<string> optionIds)
+    {
+        if (optionIds is null || optionIds.Count == 0)
+            return false;
 
-    /// <summary>
-    /// Legacy no-op: specialty discovery paths send four explicit answers; incomplete coffee payloads fail at resolve.
-    /// </summary>
+        var branch = GuidedSommelierCatalog.ResolveBranchKey(optionIds[0]);
+        if (!string.Equals(branch, GuidedSommelierCatalog.BranchSpecialty, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var expected = GuidedSommelierCatalog.QuestionsForBranch(GuidedSommelierCatalog.BranchSpecialty);
+        return optionIds.Count == expected.Count
+            && optionIds.Any(id => id.StartsWith("q_sp_profile_", StringComparison.OrdinalIgnoreCase))
+            && optionIds.Any(id => id.StartsWith("q_sp_adventure_", StringComparison.OrdinalIgnoreCase));
+    }
+
     public static SpecialtyShortcutExpansion ExpandSpecialtyCoffeeShortcut(
         IReadOnlyList<GuidedQuestionSeed> questions,
         IReadOnlyList<string> optionIds)
@@ -38,9 +44,6 @@ public static class GuidedSommelierExperienceCatalog
         _ = questions;
         if (optionIds is null || optionIds.Count == 0)
             return new SpecialtyShortcutExpansion(optionIds ?? Array.Empty<string>(), false, []);
-
-        if (HasCompleteSpecialtyDiscovery(optionIds))
-            return new SpecialtyShortcutExpansion(optionIds, false, []);
 
         return new SpecialtyShortcutExpansion(optionIds, false, []);
     }
@@ -51,59 +54,15 @@ public static class GuidedSommelierExperienceCatalog
         out IReadOnlyList<GuidedOptionSeed> resolved,
         out string? error)
     {
-        resolved = Array.Empty<GuidedOptionSeed>();
-        if (optionIds is null || optionIds.Count == 0)
-        {
-            error = "Please complete each step of the tasting.";
-            return false;
-        }
-
-        if (HasCompleteSpecialtyDiscovery(optionIds))
-            return TryResolveSpecialtyCoffeeDiscovery(optionIds, out resolved, out error);
-
-        var core = ExtractCoreQuestions(loadedQuestions);
-        return TryResolveOptions(core, optionIds, out resolved, out error);
+        _ = loadedQuestions;
+        return GuidedSommelierCatalog.TryResolveBranchPath(optionIds, out resolved, out error);
     }
 
     public static bool TryResolveSpecialtyCoffeeDiscovery(
         IReadOnlyList<string> optionIds,
         out IReadOnlyList<GuidedOptionSeed> resolved,
-        out string? error)
-    {
-        resolved = Array.Empty<GuidedOptionSeed>();
-        if (!HasCompleteSpecialtyDiscovery(optionIds))
-        {
-            error = "Please complete each step of the tasting.";
-            return false;
-        }
-
-        var coffeeQuestions = new[]
-        {
-            GuidedSommelierCatalog.Questions[0],
-            GuidedSommelierCatalog.Questions[1],
-            GuidedSommelierCatalog.SpecialtyCoffeeDiscoveryQuestions[0],
-            GuidedSommelierCatalog.SpecialtyCoffeeDiscoveryQuestions[1]
-        };
-
-        return TryResolveOptions(coffeeQuestions, optionIds, out resolved, out error);
-    }
-
-    private static IReadOnlyList<GuidedQuestionSeed> ExtractCoreQuestions(IReadOnlyList<GuidedQuestionSeed> loaded)
-    {
-        var merged = GuidedSommelierCatalog.MergeClientCatalogQuestions(loaded);
-        return merged
-            .Where(q => !GuidedSommelierCatalog.IsSpecialtyDiscoveryQuestionId(q.QuestionId))
-            .OrderBy(q => q.QuestionId switch
-            {
-                "q1" => 0,
-                "q2" => 1,
-                "q3" => 2,
-                "q4" => 3,
-                _ => 99
-            })
-            .Take(4)
-            .ToList();
-    }
+        out string? error) =>
+        GuidedSommelierCatalog.TryResolveBranchPath(optionIds, out resolved, out error);
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -127,7 +86,7 @@ public static class GuidedSommelierExperienceCatalog
                 .ToListAsync(cancellationToken);
 
             if (rows.Count == 0)
-                return GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.Questions);
+                return GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.AllQuestions);
 
             var opts = await db.ExperienceGuidedOptions
                 .AsNoTracking()
@@ -154,6 +113,7 @@ public static class GuidedSommelierExperienceCatalog
                     var guestReflection = hasSubline && !string.IsNullOrWhiteSpace(o.Description)
                         ? o.Description.Trim()
                         : null;
+                    var branchKey = GuidedSommelierCatalog.ResolveBranchKey(o.ExternalKey);
                     seeds.Add(new GuidedOptionSeed(
                         o.ExternalKey,
                         o.Label,
@@ -163,21 +123,32 @@ public static class GuidedSommelierExperienceCatalog
                         string.IsNullOrWhiteSpace(o.RefinementKey) ? null : o.RefinementKey.Trim(),
                         wm,
                         string.IsNullOrWhiteSpace(o.FlavorTagsJson) ? null : o.FlavorTagsJson.Trim(),
-                        BeverageFamilyGrounding.ResolveFamilyKey(o.ExternalKey, o.Label, o.Subline, o.Description),
-                        guestReflection));
+                        BeverageFamilyGrounding.ResolveFamilyKey(o.ExternalKey, o.Label, o.Subline, o.Description)
+                            ?? GuidedSommelierCatalog.ResolveBranchKey(o.ExternalKey) switch
+                            {
+                                GuidedSommelierCatalog.BranchSpecialty => BeverageFamilyGrounding.Coffee,
+                                GuidedSommelierCatalog.BranchCoffee => BeverageFamilyGrounding.Coffee,
+                                GuidedSommelierCatalog.BranchTea => BeverageFamilyGrounding.Tea,
+                                GuidedSommelierCatalog.BranchMatcha => BeverageFamilyGrounding.Matcha,
+                                GuidedSommelierCatalog.BranchFruit => BeverageFamilyGrounding.Fruit,
+                                GuidedSommelierCatalog.BranchSignature => BeverageFamilyGrounding.Signature,
+                                _ => null
+                            },
+                        guestReflection,
+                        branchKey));
                 }
 
                 list.Add(new GuidedQuestionSeed(q.ExternalKey, q.Prompt, seeds, q.Description));
             }
 
             if (list.Count == 0)
-                return GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.Questions);
+                return GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.AllQuestions);
 
             return GuidedSommelierCatalog.MergeClientCatalogQuestions(list);
         }
         catch (PostgresException ex) when (ex.SqlState == "42P01")
         {
-            return GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.Questions);
+            return GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.AllQuestions);
         }
     }
 
@@ -207,30 +178,8 @@ public static class GuidedSommelierExperienceCatalog
         }
     }
 
-    /// <summary>
-    /// Serializes the guest-facing catalog (core + specialty discovery questions).
-    /// </summary>
-    public static string ToClientJson(IReadOnlyList<GuidedQuestionSeed> questions, string setId)
-    {
-        var merged = GuidedSommelierCatalog.MergeClientCatalogQuestions(questions);
-        var dto = new ClientCatalogDto(
-            setId,
-            merged.Select(q => new ClientQuestionDto(
-                q.QuestionId,
-                q.Prompt,
-                q.Options.Select(o =>
-                {
-                    var mapped = GuidedSommelierCatalog.ToClientOption(o);
-                    return new ClientOptionDto(mapped.OptionId, mapped.Label, mapped.Reflection);
-                }).ToList())).ToList());
-        return JsonSerializer.Serialize(
-            dto,
-            new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            });
-    }
+    public static string ToClientJson(IReadOnlyList<GuidedQuestionSeed> questions, string setId) =>
+        GuidedSommelierCatalog.ToClientJson(questions, setId);
 
     public static bool TryResolveOptions(
         IReadOnlyList<GuidedQuestionSeed> questions,
@@ -238,10 +187,15 @@ public static class GuidedSommelierExperienceCatalog
         out IReadOnlyList<GuidedOptionSeed> resolved,
         out string? error)
     {
+        // Prefer built-in branch validation so CMS reorder cannot break path length.
+        if (GuidedSommelierCatalog.TryResolveBranchPath(optionIds, out resolved, out error))
+            return true;
+
+        // Fallback: strict sequential resolve against provided question list.
         resolved = Array.Empty<GuidedOptionSeed>();
         if (optionIds is null || optionIds.Count != questions.Count)
         {
-            error = "Please complete each step of the tasting.";
+            error ??= "Please complete each step of the tasting.";
             return false;
         }
 
@@ -318,10 +272,4 @@ public static class GuidedSommelierExperienceCatalog
             return new DrinkSensoryProfile();
         }
     }
-
-    private sealed record ClientCatalogDto(string SetId, IReadOnlyList<ClientQuestionDto> Questions);
-
-    private sealed record ClientQuestionDto(string QuestionId, string Prompt, IReadOnlyList<ClientOptionDto> Options);
-
-    private sealed record ClientOptionDto(string OptionId, string Label, string? Reflection = null);
 }

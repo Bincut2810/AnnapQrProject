@@ -10,12 +10,14 @@ public static class MiddlewareExtensions
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Error");
+            app.UseStatusCodePagesWithReExecute("/Error", "?statusCode={0}");
             app.UseHsts();
         }
 
         // Development is often HTTP-only (LAN demo on :8080). HTTPS redirection breaks phones hitting http://<LAN>:8080.
         if (!app.Environment.IsDevelopment())
             app.UseHttpsRedirection();
+        app.UseResponseCompression();
         app.UseRequestLocalization();
         if (!app.Environment.IsDevelopment())
         {

@@ -106,9 +106,11 @@
 
         var answers = [];
         var stepIdx = 0;
+        var sommBranchKey = "";
         var sommSpecialtyPath = false;
         var sommCalibrationBranch = "";
-        var SOMM_COFFEE_OPTION_ID = "q2_coffee";
+        var SOMM_ENTRY_SPECIALTY_ID = "q0_specialty";
+        var SOMM_COFFEE_OPTION_ID = "q0_specialty";
         var discNonce = 1;
         var discLastMs = 0;
         var discTimers = [];
@@ -423,10 +425,6 @@
         var groupCfg = geParseJsonScript("ge-group-settings-json") || {};
         var homepageCfg = geParseJsonScript("ge-homepage-settings-json") || {};
         var geHomepageEmpty = geById("ge-homepage-curated-empty");
-        var geRitualInvitation = geById("ge-ritual-invitation");
-        var geRitualBegin = geById("ge-ritual-begin");
-        var geRitualSecondary = geById("ge-ritual-secondary");
-        var geRitualMenu = geById("ge-ritual-menu");
 
         function homepageFlag(key, fallback) {
             if (!homepageCfg || typeof homepageCfg !== "object") return fallback !== false;
@@ -443,88 +441,28 @@
             return false;
         }
 
-        function gePickPrimaryFlow() {
-            if (geFlowEnabled("sommelier")) return "sommelier";
-            if (geFlowEnabled("discovery")) return "discovery";
-            if (geFlowEnabled("group")) return "group";
-            return null;
-        }
-
-        function applyHomepageModes(opts) {
-            opts = opts || {};
-            var animate = opts.animate !== false;
-            var primary = gePickPrimaryFlow();
+        function applyHomepageModes() {
             var count =
                 (geFlowEnabled("group") ? 1 : 0) +
                 (geFlowEnabled("sommelier") ? 1 : 0) +
                 (geFlowEnabled("discovery") ? 1 : 0);
-
-            if (landing) {
-                landing.classList.remove(
-                    "ge-landing--solo-hero",
-                    "ge-landing--modes-empty",
-                    "ge-landing--primary-discovery",
-                    "ge-landing--primary-sommelier",
-                    "ge-landing--primary-group"
-                );
-                landing.classList.toggle("ge-landing--modes-empty", count === 0);
-                if (primary) landing.classList.add("ge-landing--primary-" + primary);
-            }
-
-            if (geRitualBegin) {
-                if (primary) {
-                    geRitualBegin.setAttribute("data-ge-flow", primary);
-                    geRitualBegin.removeAttribute("hidden");
-                    geRitualBegin.hidden = false;
-                    geRitualBegin.disabled = false;
-                    geRitualBegin.setAttribute("aria-hidden", "false");
-                } else {
-                    geRitualBegin.setAttribute("hidden", "hidden");
-                    geRitualBegin.hidden = true;
-                    geRitualBegin.disabled = true;
-                    geRitualBegin.setAttribute("aria-hidden", "true");
-                }
-            }
-
-            if (geRitualSecondary) {
-                var secondaries = [].slice.call(
-                    geRitualSecondary.querySelectorAll("[data-ritual-secondary]")
-                );
-                secondaries.forEach(function (btn) {
-                    btn.setAttribute("hidden", "hidden");
-                    btn.hidden = true;
-                    btn.setAttribute("aria-hidden", "true");
-                    btn.tabIndex = -1;
-                });
-                geShow(geRitualMenu, !!geRitualMenu);
-                geShow(geRitualSecondary, !!geRitualMenu && count > 0);
-            }
-
             if (geHomepageEmpty) geShow(geHomepageEmpty, count === 0);
-            if (geRitualInvitation) geShow(geRitualInvitation, count > 0);
+        }
 
-            if (geRitualInvitation && animate) {
-                geRitualInvitation.classList.add("ge-ritual-invitation--pulse");
-                window.setTimeout(function () {
-                    geRitualInvitation.classList.remove("ge-ritual-invitation--pulse");
-                }, 520);
-            }
+        function arrivalAlreadyDismissed() {
+            try {
+                if (sessionStorage.getItem("annap_arrival_done") === "1") return true;
+            } catch (_) {}
+            var scene = document.getElementById("annap-arrival");
+            if (!scene) return true;
+            return !!(scene.hidden || scene.classList.contains("is-done"));
+        }
 
-            if (animate) {
-                window.setTimeout(function () {
-                    try {
-                        centerArrivalModes();
-                    } catch (_ca) {
-                        /* ignore */
-                    }
-                }, 420);
-            } else {
-                try {
-                    centerArrivalModes();
-                } catch (_cb) {
-                    /* ignore */
-                }
-            }
+        var enteredAfterArrival = false;
+        function enterAfterArrival() {
+            if (enteredAfterArrival) return;
+            enteredAfterArrival = true;
+            openFlow("sommelier");
         }
 
         var geGroupSetup = geById("ge-group-setup");
@@ -1059,22 +997,26 @@
             sommClearNoteCardAnim();
             sommSetWaitingQuietTray(false);
             geSetSommelierFlowActive(false);
-            geSetLandingVisible(true);
+            geSetLandingVisible(false);
             geShow(panelGroup, false);
             geShow(panelSomm, false);
             geShow(panelDisc, false);
             if (discLetterDesk) geShow(discLetterDesk, false);
-            enterModePending();
+            try {
+                if (root) root.classList.remove("ge-root--flow-active");
+            } catch (_cf2) { /* ignore */ }
+            // No welcome landing — leave flows via menu.
+            try {
+                var vtLeave = root.getAttribute("data-vt");
+                if (vtLeave) {
+                    window.location.href = "/Menu/Index?vt=" + encodeURIComponent(vtLeave);
+                }
+            } catch (_nav) { /* ignore */ }
         }
 
-        // Canonical Home scene restoration on bfcache restore.
-        // When the guest navigates to Menu and presses browser back, the page is
-        // thawed from bfcache with whatever flow panel was open. This restores
-        // the landing state so language controls and entry actions are fully present.
+        // bfcache restore: Arrival stays dismissed; reopen Sommelier (no welcome landing).
         window.addEventListener("pageshow", function (ev) {
             if (!ev.persisted) return;
-            // Discard any pending mode-focus timer — bfcache restore means the
-            // guest is returning from another page and should see the full UI.
             try {
                 if (window.__annapModeFocusTimer) {
                     clearTimeout(window.__annapModeFocusTimer);
@@ -1082,22 +1024,21 @@
                 }
                 exitModePending();
             } catch (_mfps) { /* ignore */ }
-            hideFlow();
-            // Clear any atmosphere mode that was committed inside a flow — the guest
-            // is back at the home landing and has not yet chosen a path.
             try {
                 if (window.AnnapAtmosphereManager && typeof window.AnnapAtmosphereManager.clearSession === "function") {
                     window.AnnapAtmosphereManager.clearSession();
                 }
             } catch (_atm) { /* ignore */ }
-            // Keep the arrival scene dismissed — do not replay choreography.
             try {
-                var scene = document.getElementById("annap-arrival-scene");
+                var scene = document.getElementById("annap-arrival");
                 if (scene) {
-                    scene.classList.add("annap-arrival-scene--done");
+                    scene.classList.add("is-done");
+                    scene.hidden = true;
                     scene.setAttribute("aria-hidden", "true");
                 }
+                document.documentElement.classList.remove("annap-arrival-active");
             } catch (_sc) { /* ignore */ }
+            enterAfterArrival();
         });
 
         function openFlow(name) {
@@ -1148,6 +1089,7 @@
             if (name === "sommelier") {
                 answers = [];
                 stepIdx = 0;
+                sommBranchKey = "";
                 sommSpecialtyPath = false;
                 sommCalibrationBranch = "";
                 if (sommSettleTimer) {
@@ -1192,41 +1134,29 @@
             }
         }
 
-        geSetLandingVisible(true);
+        geSetLandingVisible(false);
         geShow(panelGroup, false);
         geShow(panelSomm, false);
         geShow(panelDisc, false);
         if (discLetterDesk) geShow(discLetterDesk, false);
-        try {
-            if (window.__ANNAP_DEBUG === true && typeof console !== "undefined" && console.log) {
-                var nFlow = root.querySelectorAll ? root.querySelectorAll("[data-ge-flow]").length : 0;
-                console.log("[annap-ge] geInit landing state", {
-                    vt: root.getAttribute("data-vt"),
-                    tableLabel: root.getAttribute("data-table-label"),
-                    hasLanding: !!landing,
-                    pathwayButtons: nFlow,
-                    sommelierQuestions: catalog && catalog.questions ? catalog.questions.length : 0
-                });
-            }
-        } catch (_glog) {}
-        if (!landing) {
+
+        /* Arrival → Sommelier only. No intermediate welcome landing. */
+        window.addEventListener("annap-arrival-complete", function () {
             try {
-                if (typeof console !== "undefined" && console.error) {
-                    console.error("[annap-ge] RENDER FAIL: #ge-landing missing — three arrival paths not in DOM");
-                }
-            } catch (_gl2) {}
-        }
+                enterAfterArrival();
+            } catch (_ae) { /* ignore */ }
+        });
 
-        /* Arrival complete — landing stays immediately interactive (no mode-focus stagger). */
-
-        applyHomepageModes({ animate: false });
+        applyHomepageModes();
         gePaintLandingHostNotice();
+
+        if (arrivalAlreadyDismissed()) {
+            enterAfterArrival();
+        }
 
         root.addEventListener("click", function (ev) {
             var t = ev.target;
             if (!t || !t.closest) return;
-            var ritualMenu = t.closest("#ge-ritual-menu");
-            if (ritualMenu && ritualMenu.href) return;
             var back = t.closest("[data-ge-back]");
             if (back) {
                 ev.preventDefault();
@@ -1753,26 +1683,33 @@
         }
 
         function sommActiveQuestions() {
-            var qs = catalog.questions || [];
-            if (!sommSpecialtyPath) {
-                return qs.filter(function (q) {
-                    return (
-                        q &&
-                        (q.questionId === "q1" ||
-                            q.questionId === "q2" ||
-                            q.questionId === "q3" ||
-                            q.questionId === "q4")
-                    );
-                });
+            var entryId = (catalog && catalog.entryQuestionId) || "q0";
+            var entry = sommFindQuestion(entryId);
+            if (!sommBranchKey) {
+                return entry ? [entry] : [];
             }
-            return [
-                sommFindQuestion("q1"),
-                sommFindQuestion("q2"),
-                sommFindQuestion("q_sc_flavor"),
-                sommFindQuestion("q_sc_experience")
-            ].filter(function (q) {
-                return !!q;
-            });
+            var branchIds =
+                (catalog && catalog.branches && catalog.branches[sommBranchKey]) || [];
+            var list = entry ? [entry] : [];
+            var bi;
+            for (bi = 0; bi < branchIds.length; bi++) {
+                var q = sommFindQuestion(branchIds[bi]);
+                if (q) list.push(q);
+            }
+            return list;
+        }
+
+        function sommResolveBranchFromOption(optionId) {
+            var opt = sommFindCatalogOption(optionId);
+            if (opt && opt.branchKey) return String(opt.branchKey).trim();
+            var id = String(optionId || "").toLowerCase();
+            if (id === "q0_specialty") return "specialty";
+            if (id === "q0_coffee") return "coffee";
+            if (id === "q0_tea") return "tea";
+            if (id === "q0_matcha") return "matcha";
+            if (id === "q0_fruit") return "fruit";
+            if (id === "q0_signature") return "signature";
+            return "";
         }
 
         function sommAnswerLabels() {
@@ -1801,7 +1738,7 @@
 
         function sommIsSpecialtyCalibrationQuestionId(questionId) {
             var qid = String(questionId || "").toLowerCase();
-            return qid === "q_sc_flavor" || qid === "q_sc_experience";
+            return qid.indexOf("q_sp_") === 0;
         }
 
         function sommFindCatalogOption(optionId) {
@@ -1819,7 +1756,8 @@
         }
 
         function sommReflectionI18nFallback(optionId) {
-            if (String(optionId || "").indexOf("q_sc_") === 0) return "";
+            if (String(optionId || "").indexOf("q_sp_") === 0) return "";
+            if (String(optionId || "").indexOf("q0_") === 0) return "";
             var path = "ge.sommelier.tasting.reflection." + optionId;
             return geFlowT(path, "", "");
         }
@@ -1849,11 +1787,10 @@
         function sommLatestNoteSoftLine() {
             if (!answers.length) return "";
             var lastOid = answers[answers.length - 1];
-            if (String(lastOid || "").indexOf("q_sc_") === 0) return "";
+            if (String(lastOid || "").indexOf("q_sp_") === 0) return "";
             var qs = sommActiveQuestions();
             var lastQi = answers.length - 1;
             var q = qs[lastQi];
-            var opt = sommFindCatalogOption(lastOid);
             if (q && sommIsSpecialtyCalibrationQuestionId(q.questionId)) {
                 return "";
             }
@@ -1862,50 +1799,78 @@
 
         function sommNoteFieldLabel(questionId, index) {
             var qid = String(questionId || "").toLowerCase();
-            if (qid.indexOf("q1") === 0) {
+            if (qid === "q0") {
                 return geFlowT(
-                    "ge.sommelier.tasting.note.mood",
-                    "Cảm giác",
-                    "Feeling"
+                    "ge.sommelier.tasting.note.base",
+                    "Hướng",
+                    "Direction"
                 );
             }
-            if (qid.indexOf("q2") === 0) {
+            if (qid.indexOf("q_sp_tried") === 0) {
+                return geFlowT(
+                    "ge.sommelier.tasting.note.mood",
+                    "Trải nghiệm",
+                    "Experience"
+                );
+            }
+            if (qid.indexOf("q_sp_profile") === 0) {
+                return geFlowT(
+                    "ge.sommelier.tasting.note.flavor",
+                    "Hồ sơ",
+                    "Profile"
+                );
+            }
+            if (qid.indexOf("q_sp_adventure") === 0) {
+                return geFlowT(
+                    "ge.sommelier.tasting.note.experience",
+                    "Mạo hiểm",
+                    "Adventure"
+                );
+            }
+            if (qid.indexOf("q_cf_style") === 0 || qid.indexOf("q_ma_style") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.base",
                     "Kiểu ly",
                     "Cup style"
                 );
             }
-            if (qid.indexOf("q3") === 0) {
+            if (qid.indexOf("q_cf_sweet") === 0 || qid.indexOf("q_ma_sweet") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.sweet",
-                    "Vị sữa",
-                    "Milk tone"
+                    "Độ ngọt",
+                    "Sweetness"
                 );
             }
-            if (qid.indexOf("q_sc_flavor") === 0) {
-                return geFlowT(
-                    "ge.sommelier.tasting.note.flavor",
-                    "Hương vị",
-                    "Flavor"
-                );
-            }
-            if (qid.indexOf("q_sc_experience") === 0) {
-                return geFlowT(
-                    "ge.sommelier.tasting.note.experience",
-                    "Cảm giác",
-                    "Experience"
-                );
-            }
-            if (qid.indexOf("q4") === 0) {
+            if (qid.indexOf("q_cf_temp") === 0 || qid.indexOf("q_ma_temp") === 0 || qid.indexOf("q_fr_cold") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.caffeine",
                     "Nhiệt độ",
                     "Temperature"
                 );
             }
-            var fallbacksVi = ["Cảm giác", "Kiểu ly", "Vị sữa", "Nhiệt độ"];
-            var fallbacksEn = ["Feeling", "Cup style", "Milk tone", "Temperature"];
+            if (qid.indexOf("q_te_feel") === 0 || qid.indexOf("q_fr_profile") === 0) {
+                return geFlowT(
+                    "ge.sommelier.tasting.note.flavor",
+                    "Hướng vị",
+                    "Flavor"
+                );
+            }
+            if (qid.indexOf("q_te_moment") === 0) {
+                return geFlowT(
+                    "ge.sommelier.tasting.note.mood",
+                    "Thời điểm",
+                    "Moment"
+                );
+            }
+            if (qid.indexOf("q_sg_intent") === 0) {
+                return geFlowT(
+                    "ge.sommelier.tasting.note.mood",
+                    "Trải nghiệm",
+                    "Experience"
+                );
+            }
+            var fallbacksVi = ["Hướng", "Chi tiết", "Sở thích", "Kết"];
+            var fallbacksEn = ["Direction", "Detail", "Preference", "Finish"];
             var fb = geGuestLangVi() ? fallbacksVi : fallbacksEn;
             return fb[index] || fb[0] || "";
         }
@@ -2365,34 +2330,74 @@
 
         function sommFlavorBranchKey(optionId) {
             var oid = String(optionId || "");
-            if (oid === "q_sc_flavor_floral" || oid === "q_sc_flavor_fruit") {
+            if (
+                oid === "q_sp_profile_floral" ||
+                oid === "q_sp_profile_fruit" ||
+                oid === "q_sc_flavor_floral" ||
+                oid === "q_sc_flavor_fruit"
+            ) {
                 return "rwanda";
             }
-            if (oid === "q_sc_flavor_wine" || oid === "q_sc_flavor_blueberry") {
+            if (
+                oid === "q_sp_profile_chocolate" ||
+                oid === "q_sp_profile_surprise" ||
+                oid === "q_sc_flavor_wine" ||
+                oid === "q_sc_flavor_blueberry"
+            ) {
                 return "natural";
             }
             return "";
         }
 
         function sommExperienceInBranch(optionId, branch) {
-            if (branch === "rwanda") {
-                return (
-                    optionId === "q_sc_experience_soft" ||
-                    optionId === "q_sc_experience_balanced"
-                );
-            }
-            if (branch === "natural") {
-                return (
-                    optionId === "q_sc_experience_complex" ||
-                    optionId === "q_sc_experience_surprising"
-                );
-            }
             return true;
         }
 
         function sommCalibrationCardCopy(optionId) {
             var base = "ge.sommelier.tasting.calibration.cards." + optionId;
             var fallbacks = {
+                q_sp_profile_floral: [
+                    "Hoa nhài & cam quýt",
+                    ["Hoa nhài", "Cam quýt"],
+                    "Floral",
+                    ["Jasmine", "Citrus"]
+                ],
+                q_sp_profile_fruit: [
+                    "Trái mọng",
+                    ["Đào", "Sốt chanh"],
+                    "Stone Fruit",
+                    ["Peach", "Lemon curd"]
+                ],
+                q_sp_profile_chocolate: [
+                    "Cacao & trái đen",
+                    ["Cacao", "Trái đen"],
+                    "Cocoa & Dark Fruit",
+                    ["Cocoa", "Dark fruit"]
+                ],
+                q_sp_profile_surprise: [
+                    "Quả mọng & mật ong",
+                    ["Việt quất", "Mật ong"],
+                    "Berry & Honey",
+                    ["Blueberry", "Honey"]
+                ],
+                q_sp_adventure_safe: [
+                    "Thanh như trà",
+                    [],
+                    "Tea-like",
+                    []
+                ],
+                q_sp_adventure_balanced: [
+                    "Tròn đều",
+                    [],
+                    "Round",
+                    []
+                ],
+                q_sp_adventure_experimental: [
+                    "Mở dần",
+                    [],
+                    "Layered",
+                    []
+                ],
                 q_sc_flavor_floral: [
                     "Hoa nhài & cam quýt",
                     ["Hoa nhài", "Cam quýt"],
@@ -2468,17 +2473,18 @@
 
         function sommRenderCalibration(q, depthIdx) {
             if (!sommStepHost || !q) return;
-            var isFlavor = q.questionId === "q_sc_flavor";
+            var isFlavor =
+                q.questionId === "q_sp_profile" || q.questionId === "q_sc_flavor";
             var question = geFlowT(
                 isFlavor
                     ? "ge.sommelier.tasting.calibration.flavor.question"
                     : "ge.sommelier.tasting.calibration.feel.question",
                 isFlavor
-                    ? "Điều gì nên dẫn đầu trong ly?"
-                    : "Bạn thích cảm giác ly cà phê thế nào?",
+                    ? "Hồ sơ nào nghe thú vị nhất với bạn?"
+                    : "Bạn muốn mạo hiểm đến mức nào?",
                 isFlavor
-                    ? "What should lead in the cup?"
-                    : "How do you like the cup to feel?"
+                    ? "Which profile sounds most interesting?"
+                    : "How adventurous are you?"
             );
             var parts = [];
             parts.push(
@@ -2503,14 +2509,8 @@
             for (j = 0; j < opts.length; j++) {
                 var o = opts[j];
                 var oid = o && o.optionId ? o.optionId : "";
-                if (
-                    !isFlavor &&
-                    !sommExperienceInBranch(oid, sommCalibrationBranch)
-                ) {
-                    continue;
-                }
                 var copy = sommCalibrationCardCopy(oid);
-                var ariaParts = [copy.title].concat(copy.notes);
+                var ariaParts = [copy.title || (o && o.label) || ""].concat(copy.notes);
                 var ariaLabel = ariaParts.filter(Boolean).join(". ");
                 parts.push(
                     '<button type="button" class="ge-calibration-card ge-host-choice guest-hit" data-ge-opt="' +
@@ -2523,6 +2523,12 @@
                     parts.push(
                         '<span class="ge-calibration-card__title">' +
                             geEsc(copy.title) +
+                            "</span>"
+                    );
+                } else if (o && o.label) {
+                    parts.push(
+                        '<span class="ge-calibration-card__title">' +
+                            geEsc(o.label) +
                             "</span>"
                     );
                 }
@@ -2560,7 +2566,10 @@
             if (
                 sommSpecialtyPath &&
                 q &&
-                sommIsSpecialtyCalibrationQuestionId(q.questionId)
+                (q.questionId === "q_sp_profile" ||
+                    q.questionId === "q_sp_adventure" ||
+                    q.questionId === "q_sc_flavor" ||
+                    q.questionId === "q_sc_experience")
             ) {
                 sommSetCalibrationPanel(true);
                 sommRenderCalibration(q, stepIdx);
@@ -2620,8 +2629,14 @@
                 if (!oid) return;
                 var completedStep = stepIdx;
                 if (oid) answers.push(oid);
-                if (oid === SOMM_COFFEE_OPTION_ID) {
+                var branchFromOpt = sommResolveBranchFromOption(oid);
+                if (branchFromOpt) {
+                    sommBranchKey = branchFromOpt;
+                    sommSpecialtyPath = branchFromOpt === "specialty";
+                }
+                if (oid === SOMM_ENTRY_SPECIALTY_ID || oid === SOMM_COFFEE_OPTION_ID) {
                     sommSpecialtyPath = true;
+                    sommBranchKey = sommBranchKey || "specialty";
                 }
                 var flavorBranch = sommFlavorBranchKey(oid);
                 if (flavorBranch) {
@@ -2782,6 +2797,7 @@
                         rb.addEventListener("click", function () {
                             answers = [];
                             stepIdx = 0;
+                            sommBranchKey = "";
                             sommSpecialtyPath = false;
                             sommCalibrationBranch = "";
                             sommRecognitionReadyAt = 0;

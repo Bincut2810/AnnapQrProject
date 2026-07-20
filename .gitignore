@@ -9,3 +9,8 @@ _build_out*/
 .vs/
 .idea/
 *.user
+
+# Local release/QA artifacts can contain cookies or credentials.
+tmp-*
+*.cookies.txt
+*cookie*.txt

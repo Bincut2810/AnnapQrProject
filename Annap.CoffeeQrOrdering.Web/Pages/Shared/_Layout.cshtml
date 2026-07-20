@@ -19,13 +19,13 @@
     // The home page (Index) must NEVER get annap-seated-guest, even when ?vt= is present in the URL
     // or after a non-bfcache back-navigation from Menu.
     var isSeatedContext = ViewData["IsSeatedPage"] is true;
-    var slimSeatedArrival = ViewData["SlimSeatedChrome"] is true;
+    var slimSeatedChrome = ViewData["SlimSeatedChrome"] is true;
     var compactGuestHeader = ViewData["CompactGuestHeader"] is true;
-    var seatedSlimChrome = isSeatedContext || slimSeatedArrival;
-    var isSeatedArrival = slimSeatedArrival && !isSeatedContext;
+    var seatedSlimChrome = isSeatedContext || slimSeatedChrome;
+    var isTableNotice = slimSeatedChrome && !isSeatedContext;
 }
 <!DOCTYPE html>
-<html lang="en" class="annap-correspond-ui@(guestNoMotion ? " annap-guest-no-motion" : "")@(isSeatedContext ? " annap-seated-guest" : "")@(isSeatedArrival ? " annap-seated-arrival" : "")@(compactGuestHeader ? " annap-compact-guest-header" : "")">
+<html lang="en" class="annap-correspond-ui@(guestNoMotion ? " annap-guest-no-motion" : "")@(isSeatedContext ? " annap-seated-guest" : "")@(isTableNotice ? " annap-table-notice" : "")@(compactGuestHeader ? " annap-compact-guest-header" : "")">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />

@@ -44,6 +44,10 @@ public sealed class ShiftCloseConfiguration : IEntityTypeConfiguration<ShiftClos
 
         builder.HasIndex(x => x.ClosedByAccountId);
 
+        // Every close opens where the previous close ended, so two rows with the same
+        // OpenedAtUtc are always a duplicated window. Unique index makes the race lose at the DB.
+        builder.HasIndex(x => x.OpenedAtUtc).IsUnique();
+
     }
 
 }

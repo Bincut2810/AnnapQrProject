@@ -67,6 +67,18 @@ public static class StartupDiagnosticsExtensions
     {
         var env = app.Services.GetRequiredService<IWebHostEnvironment>();
         var log = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup.Media");
+        var cloudinary = app.Configuration
+            .GetSection(CloudinaryOptions.SectionName)
+            .Get<CloudinaryOptions>() ?? new CloudinaryOptions();
+
+        if (cloudinary.IsConfigured)
+        {
+            log.LogInformation(
+                "Menu media storage: Cloudinary cloud={CloudName}; folder={Folder}",
+                cloudinary.CloudName,
+                cloudinary.Folder);
+            return;
+        }
 
         var managed = MenuImagePaths.ManagedDirectory(env);
         var originals = MenuImagePaths.OriginalsDirectory(env);

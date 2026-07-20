@@ -28,7 +28,7 @@ public static class ExperienceCatalogBootstrapper
 
         var now = DateTimeOffset.UtcNow;
         var sort = 0;
-        foreach (var q in GuidedSommelierCatalog.Questions)
+        foreach (var q in GuidedSommelierCatalog.AllQuestions)
         {
             db.ExperienceGuidedQuestions.Add(new ExperienceGuidedQuestion
             {
@@ -37,7 +37,7 @@ public static class ExperienceCatalogBootstrapper
                 Prompt = q.Prompt,
                 Description = string.IsNullOrWhiteSpace(q.Description) ? null : q.Description.Trim(),
                 SortOrder = sort++,
-                IsOptional = false,
+                IsOptional = GuidedSommelierCatalog.IsBranchQuestionId(q.QuestionId),
                 IsEnabled = true,
                 CreatedAtUtc = now
             });
@@ -49,80 +49,9 @@ public static class ExperienceCatalogBootstrapper
             .Where(q => q.SetKey == setKey)
             .ToDictionaryAsync(x => x.ExternalKey, x => x.Id, cancellationToken);
 
-        foreach (var q in GuidedSommelierCatalog.Questions)
+        foreach (var q in GuidedSommelierCatalog.AllQuestions)
         {
             var qid = qMap[q.QuestionId];
-            var oSort = 0;
-            foreach (var o in q.Options)
-            {
-                var sensoryJson = JsonSerializer.Serialize(o.SensoryHints, JsonOpts);
-                db.ExperienceGuidedOptions.Add(new ExperienceGuidedOption
-                {
-                    QuestionId = qid,
-                    ExternalKey = o.OptionId,
-                    Label = o.Label,
-                    Description = null,
-                    Subline = o.EmotionalFragment,
-                    SortOrder = oSort++,
-                    IsEnabled = true,
-                    MoodKey = string.IsNullOrWhiteSpace(o.MoodKey) ? null : o.MoodKey.Trim(),
-                    RefinementKey = string.IsNullOrWhiteSpace(o.RefinementKey) ? null : o.RefinementKey.Trim(),
-                    FlavorTagsJson = null,
-                    WeightMultiplier = o.WeightMultiplier <= 0 ? 1m : o.WeightMultiplier,
-                    SensoryProfileJson = string.IsNullOrWhiteSpace(sensoryJson) ? "{}" : sensoryJson,
-                    CreatedAtUtc = now
-                });
-            }
-        }
-
-        await db.SaveChangesAsync(cancellationToken);
-    }
-
-    public static async Task EnsureSpecialtyCoffeeDiscoveryQuestionsAsync(
-        IApplicationDbContext db,
-        CancellationToken cancellationToken = default)
-    {
-        var setKey = GuidedSommelierCatalog.QuestionSetId;
-        var exists = await db.ExperienceGuidedQuestions
-            .AnyAsync(q => q.SetKey == setKey && q.ExternalKey == "q_sc_flavor", cancellationToken)
-            .ConfigureAwait(false);
-        if (exists)
-            return;
-
-        var maxSort = await db.ExperienceGuidedQuestions
-            .Where(q => q.SetKey == setKey)
-            .Select(q => (int?)q.SortOrder)
-            .MaxAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        var now = DateTimeOffset.UtcNow;
-        var sort = (maxSort ?? 3) + 1;
-        foreach (var q in GuidedSommelierCatalog.SpecialtyCoffeeDiscoveryQuestions)
-        {
-            db.ExperienceGuidedQuestions.Add(new ExperienceGuidedQuestion
-            {
-                ExternalKey = q.QuestionId,
-                SetKey = setKey,
-                Prompt = q.Prompt,
-                Description = string.IsNullOrWhiteSpace(q.Description) ? null : q.Description.Trim(),
-                SortOrder = sort++,
-                IsOptional = true,
-                IsEnabled = true,
-                CreatedAtUtc = now
-            });
-        }
-
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-        var qMap = await db.ExperienceGuidedQuestions
-            .Where(q => q.SetKey == setKey && (q.ExternalKey == "q_sc_flavor" || q.ExternalKey == "q_sc_experience"))
-            .ToDictionaryAsync(x => x.ExternalKey, x => x.Id, cancellationToken)
-            .ConfigureAwait(false);
-
-        foreach (var q in GuidedSommelierCatalog.SpecialtyCoffeeDiscoveryQuestions)
-        {
-            if (!qMap.TryGetValue(q.QuestionId, out var qid))
-                continue;
             var oSort = 0;
             foreach (var o in q.Options)
             {
@@ -146,7 +75,19 @@ public static class ExperienceCatalogBootstrapper
             }
         }
 
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public static async Task EnsureSpecialtyCoffeeDiscoveryQuestionsAsync(
+        IApplicationDbContext db,
+        CancellationToken cancellationToken = default)
+    {
+        // atelier_v5 seeds specialty questions with AllQuestions in EnsureGuidedAndDiscoveryAsync.
+        var setKey = GuidedSommelierCatalog.QuestionSetId;
+        if (await db.ExperienceGuidedQuestions.AnyAsync(q => q.SetKey == setKey && q.ExternalKey == "q_sp_profile", cancellationToken))
+            return;
+
+        await EnsureGuidedAndDiscoveryAsync(db, cancellationToken);
     }
 
     /// <summary>
@@ -162,9 +103,7 @@ public static class ExperienceCatalogBootstrapper
             return;
 
         var setKey = GuidedSommelierCatalog.QuestionSetId;
-        var defaults = GuidedSommelierCatalog.Questions
-            .Concat(GuidedSommelierCatalog.SpecialtyCoffeeDiscoveryQuestions)
-            .ToList();
+        var defaults = GuidedSommelierCatalog.AllQuestions.ToList();
 
         var dbQuestions = await db.ExperienceGuidedQuestions
             .Where(q => q.SetKey == setKey)
@@ -180,34 +119,36 @@ public static class ExperienceCatalogBootstrapper
         {
             if (!qMap.TryGetValue(q.QuestionId, out var qid))
                 continue;
-
             var dbQ = dbQuestions.First(x => x.Id == qid);
-            dbQ.Prompt = q.Prompt;
+            if (!string.Equals(dbQ.Prompt, q.Prompt, StringComparison.Ordinal))
+                dbQ.Prompt = q.Prompt;
+            if (!string.Equals(dbQ.Description ?? "", q.Description ?? "", StringComparison.Ordinal))
+                dbQ.Description = string.IsNullOrWhiteSpace(q.Description) ? null : q.Description.Trim();
             dbQ.UpdatedAtUtc = now;
+        }
 
-            var dbOpts = await db.ExperienceGuidedOptions
-                .Where(o => o.QuestionId == qid)
-                .ToListAsync(cancellationToken);
+        var dbOptions = await db.ExperienceGuidedOptions
+            .Where(o => qMap.Values.Contains(o.QuestionId))
+            .ToListAsync(cancellationToken);
 
+        foreach (var q in defaults)
+        {
+            if (!qMap.TryGetValue(q.QuestionId, out var qid))
+                continue;
             foreach (var o in q.Options)
             {
-                var dbO = dbOpts.FirstOrDefault(x =>
-                    string.Equals(x.ExternalKey, o.OptionId, StringComparison.OrdinalIgnoreCase));
-                if (dbO is null)
+                var row = dbOptions.FirstOrDefault(x =>
+                    x.QuestionId == qid
+                    && string.Equals(x.ExternalKey, o.OptionId, StringComparison.OrdinalIgnoreCase));
+                if (row is null)
                     continue;
-                dbO.Label = o.Label;
-                dbO.Subline = o.EmotionalFragment;
-                dbO.IsEnabled = true;
-                dbO.UpdatedAtUtc = now;
-            }
-
-            var defaultOptionIds = q.Options.Select(o => o.OptionId).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (var dbO in dbOpts)
-            {
-                if (defaultOptionIds.Contains(dbO.ExternalKey))
-                    continue;
-                dbO.IsEnabled = false;
-                dbO.UpdatedAtUtc = now;
+                row.Label = o.Label;
+                row.Subline = o.EmotionalFragment;
+                row.MoodKey = string.IsNullOrWhiteSpace(o.MoodKey) ? null : o.MoodKey.Trim();
+                row.RefinementKey = string.IsNullOrWhiteSpace(o.RefinementKey) ? null : o.RefinementKey.Trim();
+                row.FlavorTagsJson = string.IsNullOrWhiteSpace(o.FlavorTagsJson) ? null : o.FlavorTagsJson.Trim();
+                row.SensoryProfileJson = JsonSerializer.Serialize(o.SensoryHints, JsonOpts);
+                row.UpdatedAtUtc = now;
             }
         }
 

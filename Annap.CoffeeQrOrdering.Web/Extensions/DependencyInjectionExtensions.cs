@@ -6,11 +6,10 @@ using Annap.CoffeeQrOrdering.Web.Internal;
 using Annap.CoffeeQrOrdering.Web.Security;
 using Annap.CoffeeQrOrdering.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Globalization;
-using System.Net;
 using System.Threading.RateLimiting;
 
 namespace Annap.CoffeeQrOrdering.Web.Extensions;
@@ -30,9 +29,18 @@ public static class DependencyInjectionExtensions
         }
 
         builder.Services.AddHttpContextAccessor();
+        builder.Services.AddResponseCompression(options =>
+        {
+            options.EnableForHttps = true;
+        });
 
+        ConfigureDataProtection(builder);
         builder.Services.Configure<LanDemoOptions>(builder.Configuration.GetSection(LanDemoOptions.SectionName));
         builder.Services.Configure<AppUrlOptions>(builder.Configuration.GetSection(AppUrlOptions.SectionName));
+        builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection(CloudinaryOptions.SectionName));
+        builder.Services.Configure<DataProtectionStorageOptions>(
+            builder.Configuration.GetSection(DataProtectionStorageOptions.SectionName));
+        builder.Services.AddSingleton<IMenuImageStorage, MenuImageStorage>();
         builder.Services.AddSingleton<ILanIpDetector, LanIpDetector>();
         builder.Services.AddSingleton<IPostConfigureOptions<AppUrlOptions>, AppUrlDevelopmentPostConfigure>();
         builder.Services.AddScoped<IAppUrlService, AppUrlService>();
@@ -50,12 +58,7 @@ public static class DependencyInjectionExtensions
             builder.Configuration.GetSection(DiagnosticsOptions.SectionName));
         builder.Services.Configure<GuestOperationalOptions>(
             builder.Configuration.GetSection(GuestOperationalOptions.SectionName));
-        builder.Services.Configure<ForwardedHeadersOptions>(options =>
-        {
-            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-            options.KnownNetworks.Clear();
-            options.KnownProxies.Clear();
-        });
+        builder.Services.Configure<ForwardedHeadersOptions>(TrustedProxyNetworks.Apply);
 
         builder.Services.Configure<RequestLocalizationOptions>(options =>
         {
@@ -137,7 +140,8 @@ public static class DependencyInjectionExtensions
         });
         builder.Services.AddHealthChecks()
             .AddDbContextCheck<AppDbContext>("database")
-            .AddCheck<PaymentWorkflowSchemaHealthCheck>("payment_workflow_schema");
+            .AddCheck<PaymentWorkflowSchemaHealthCheck>("payment_workflow_schema")
+            .AddCheck<ProductionStorageHealthCheck>("production_storage");
         builder.Services.AddHttpClient();
         builder.Services.AddScoped<GoLiveVerificationService>();
 
@@ -161,19 +165,7 @@ public static class DependencyInjectionExtensions
                     cancellationToken: http.RequestAborted);
             };
 
-            static string Partition(HttpContext http)
-            {
-                var xff = http.Request.Headers["X-Forwarded-For"].FirstOrDefault();
-                if (!string.IsNullOrWhiteSpace(xff))
-                {
-                    var first = xff.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                        .FirstOrDefault();
-                    if (!string.IsNullOrEmpty(first))
-                        return first;
-                }
-
-                return http.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-            }
+            static string Partition(HttpContext http) => RateLimitClientKey.Resolve(http);
 
             options.AddPolicy("anon-order-post", httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
@@ -223,5 +215,25 @@ public static class DependencyInjectionExtensions
         builder.Services.AddScoped<MenuMediaMaintenanceService>();
 
         return builder;
+    }
+
+    private static void ConfigureDataProtection(WebApplicationBuilder builder)
+    {
+        var section = builder.Configuration.GetSection(DataProtectionStorageOptions.SectionName);
+        var keysPath = section[nameof(DataProtectionStorageOptions.KeysPath)]?.Trim();
+        var applicationName = section[nameof(DataProtectionStorageOptions.ApplicationName)]?.Trim();
+        if (string.IsNullOrWhiteSpace(applicationName))
+            applicationName = "Annap.CoffeeQrOrdering";
+
+        var dataProtection = builder.Services
+            .AddDataProtection()
+            .SetApplicationName(applicationName);
+
+        if (string.IsNullOrWhiteSpace(keysPath))
+            return;
+
+        var directory = new DirectoryInfo(Path.GetFullPath(keysPath));
+        Directory.CreateDirectory(directory.FullName);
+        dataProtection.PersistKeysToFileSystem(directory);
     }
 }

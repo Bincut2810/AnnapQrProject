@@ -39,11 +39,11 @@ public static class AnnapMenuBootstrap
             (cat, name) => assetResolver.ResolveWebUrl(cat, name),
             log,
             cancellationToken,
-            MenuImagePaths.IsManagedUrl).ConfigureAwait(false);
+            IsManagedOrCloudinaryUrl).ConfigureAwait(false);
 
         if (imported > 0)
         {
-            await PurgeRemoteImageUrlsAsync(db, cancellationToken).ConfigureAwait(false);
+            await PurgeUnsupportedRemoteImageUrlsAsync(db, cancellationToken).ConfigureAwait(false);
             log.LogInformation("Real data mode: {Count} drinks loaded from CSV; JSON catalog import skipped.", imported);
         }
         else
@@ -58,19 +58,21 @@ public static class AnnapMenuBootstrap
             db, assetResolver, log, cancellationToken).ConfigureAwait(false);
     }
 
-    private static async Task PurgeRemoteImageUrlsAsync(IApplicationDbContext db, CancellationToken cancellationToken)
+    private static async Task PurgeUnsupportedRemoteImageUrlsAsync(
+        IApplicationDbContext db,
+        CancellationToken cancellationToken)
     {
         var items = await db.MenuItems.ToListAsync(cancellationToken).ConfigureAwait(false);
         var changed = false;
         foreach (var item in items)
         {
-            if (IsRemoteUrl(item.ImageUrl))
+            if (IsUnsupportedRemoteUrl(item.ImageUrl))
             {
                 item.ImageUrl = null;
                 changed = true;
             }
 
-            if (IsRemoteUrl(item.DetailPosterImagePath))
+            if (IsUnsupportedRemoteUrl(item.DetailPosterImagePath))
             {
                 item.DetailPosterImagePath = null;
                 changed = true;
@@ -81,10 +83,17 @@ public static class AnnapMenuBootstrap
             await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private static bool IsRemoteUrl(string? url)
+    internal static bool IsManagedOrCloudinaryUrl(string? url) =>
+        MenuImagePaths.IsManagedUrl(url) || MenuMediaResolver.IsCloudinaryUrl(url);
+
+    internal static bool IsUnsupportedRemoteUrl(string? url)
     {
         if (string.IsNullOrWhiteSpace(url))
             return false;
+
+        if (IsManagedOrCloudinaryUrl(url))
+            return false;
+
         var t = url.Trim();
         return t.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
                || t.StartsWith("https://", StringComparison.OrdinalIgnoreCase)

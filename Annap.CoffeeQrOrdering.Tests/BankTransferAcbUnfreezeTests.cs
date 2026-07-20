@@ -23,10 +23,10 @@ public sealed class BankTransferAcbUnfreezeTests(AnnapPostgresWebApplicationFact
     {
         var opts = AnnapAcbOptions();
         Assert.True(opts.IsConfigured);
-        Assert.Equal("970416", opts.BankBin);
-        Assert.Equal("ACB", opts.BankName);
-        Assert.Equal("7385268", opts.AccountNumber);
-        Assert.Equal("HO KINH DOANH ANNAP", opts.AccountName);
+        Assert.Equal("970000", opts.BankBin);
+        Assert.Equal("TEST BANK", opts.BankName);
+        Assert.Equal("0000000000", opts.AccountNumber);
+        Assert.Equal("TEST COFFEE ACCOUNT", opts.AccountName);
     }
 
     [Fact]
@@ -39,10 +39,10 @@ public sealed class BankTransferAcbUnfreezeTests(AnnapPostgresWebApplicationFact
         var dto = builder.Build(order);
         Assert.True(dto.Enabled);
         Assert.Equal("pending", dto.Status);
-        Assert.Equal("ACB", dto.BankName);
-        Assert.Equal("970416", dto.BankBin);
-        Assert.Equal("7385268", dto.AccountNumber);
-        Assert.Equal("HO KINH DOANH ANNAP", dto.AccountName);
+        Assert.Equal("TEST BANK", dto.BankName);
+        Assert.Equal("970000", dto.BankBin);
+        Assert.Equal("0000000000", dto.AccountNumber);
+        Assert.Equal("TEST COFFEE ACCOUNT", dto.AccountName);
         Assert.Equal(165000, dto.Amount);
         Assert.Equal("ANNAP A8402E1E3", dto.Memo);
         Assert.Contains("nhân viên xác nhận nhanh hơn", dto.Message, StringComparison.OrdinalIgnoreCase);
@@ -57,10 +57,10 @@ public sealed class BankTransferAcbUnfreezeTests(AnnapPostgresWebApplicationFact
         var memo = builder.BuildMemoForOrder(order);
         var url = builder.BuildQrImageUrl(order, order.BillNumber!, memo)!;
 
-        Assert.Contains("970416-7385268", url, StringComparison.Ordinal);
+        Assert.Contains("970000-0000000000", url, StringComparison.Ordinal);
         Assert.Contains("amount=165000", url, StringComparison.Ordinal);
         Assert.Contains(Uri.EscapeDataString(memo), url, StringComparison.Ordinal);
-        Assert.Contains(Uri.EscapeDataString("HO KINH DOANH ANNAP"), url, StringComparison.Ordinal);
+        Assert.Contains(Uri.EscapeDataString("TEST COFFEE ACCOUNT"), url, StringComparison.Ordinal);
         Assert.DoesNotContain("token", url, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("guest", url, StringComparison.OrdinalIgnoreCase);
     }
@@ -89,12 +89,12 @@ public sealed class BankTransferAcbUnfreezeTests(AnnapPostgresWebApplicationFact
             $"/api/orders/{orderId}/transfer-qr?token={Uri.EscapeDataString(token)}");
 
         Assert.True(qr.GetProperty("enabled").GetBoolean());
-        Assert.Equal("ACB", qr.GetProperty("bankName").GetString());
-        Assert.Equal("970416", qr.GetProperty("bankBin").GetString());
-        Assert.Equal("7385268", qr.GetProperty("accountNumber").GetString());
-        Assert.Equal("HO KINH DOANH ANNAP", qr.GetProperty("accountName").GetString());
+        Assert.Equal("TEST BANK", qr.GetProperty("bankName").GetString());
+        Assert.Equal("970000", qr.GetProperty("bankBin").GetString());
+        Assert.Equal("0000000000", qr.GetProperty("accountNumber").GetString());
+        Assert.Equal("TEST COFFEE ACCOUNT", qr.GetProperty("accountName").GetString());
         Assert.StartsWith("ANNAP ", qr.GetProperty("memo").GetString());
-        Assert.Contains("970416-7385268", qr.GetProperty("qrImageUrl").GetString());
+        Assert.Contains("970000-0000000000", qr.GetProperty("qrImageUrl").GetString());
     }
 
     [Fact]
@@ -139,10 +139,10 @@ public sealed class BankTransferAcbUnfreezeTests(AnnapPostgresWebApplicationFact
     {
         Enabled = true,
         Provider = "VietQR",
-        BankBin = "970416",
-        BankName = "ACB",
-        AccountNumber = "7385268",
-        AccountName = "HO KINH DOANH ANNAP",
+        BankBin = "970000",
+        BankName = "TEST BANK",
+        AccountNumber = "0000000000",
+        AccountName = "TEST COFFEE ACCOUNT",
         DescriptionTemplate = "ANNAP {Reference}",
         QrImageUrlTemplate =
             "https://img.vietqr.io/image/{bankBin}-{accountNumber}-compact2.png?amount={amount}&addInfo={memo}&accountName={accountName}"

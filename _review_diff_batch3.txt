@@ -1,0 +1,231 @@
+﻿diff --git a/Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs b/Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs
+index e27a415..c8a6cd6 100644
+--- a/Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs
++++ b/Annap.CoffeeQrOrdering.Web/Extensions/DependencyInjectionExtensions.cs
+@@ -6,6 +6,7 @@ using Annap.CoffeeQrOrdering.Web.Internal;
+ using Annap.CoffeeQrOrdering.Web.Security;
+ using Annap.CoffeeQrOrdering.Web.Services;
+ using Microsoft.AspNetCore.Authentication.Cookies;
++using Microsoft.AspNetCore.DataProtection;
+ using Microsoft.AspNetCore.HttpOverrides;
+ using Microsoft.AspNetCore.Localization;
+ using Microsoft.AspNetCore.RateLimiting;
+@@ -31,8 +32,13 @@ public static class DependencyInjectionExtensions
+ 
+         builder.Services.AddHttpContextAccessor();
+ 
++        ConfigureDataProtection(builder);
+         builder.Services.Configure<LanDemoOptions>(builder.Configuration.GetSection(LanDemoOptions.SectionName));
+         builder.Services.Configure<AppUrlOptions>(builder.Configuration.GetSection(AppUrlOptions.SectionName));
++        builder.Services.Configure<CloudinaryOptions>(builder.Configuration.GetSection(CloudinaryOptions.SectionName));
++        builder.Services.Configure<DataProtectionStorageOptions>(
++            builder.Configuration.GetSection(DataProtectionStorageOptions.SectionName));
++        builder.Services.AddSingleton<IMenuImageStorage, MenuImageStorage>();
+         builder.Services.AddSingleton<ILanIpDetector, LanIpDetector>();
+         builder.Services.AddSingleton<IPostConfigureOptions<AppUrlOptions>, AppUrlDevelopmentPostConfigure>();
+         builder.Services.AddScoped<IAppUrlService, AppUrlService>();
+@@ -137,7 +143,8 @@ public static class DependencyInjectionExtensions
+         });
+         builder.Services.AddHealthChecks()
+             .AddDbContextCheck<AppDbContext>("database")
+-            .AddCheck<PaymentWorkflowSchemaHealthCheck>("payment_workflow_schema");
++            .AddCheck<PaymentWorkflowSchemaHealthCheck>("payment_workflow_schema")
++            .AddCheck<ProductionStorageHealthCheck>("production_storage");
+         builder.Services.AddHttpClient();
+         builder.Services.AddScoped<GoLiveVerificationService>();
+ 
+@@ -224,4 +231,24 @@ public static class DependencyInjectionExtensions
+ 
+         return builder;
+     }
++
++    private static void ConfigureDataProtection(WebApplicationBuilder builder)
++    {
++        var section = builder.Configuration.GetSection(DataProtectionStorageOptions.SectionName);
++        var keysPath = section[nameof(DataProtectionStorageOptions.KeysPath)]?.Trim();
++        var applicationName = section[nameof(DataProtectionStorageOptions.ApplicationName)]?.Trim();
++        if (string.IsNullOrWhiteSpace(applicationName))
++            applicationName = "Annap.CoffeeQrOrdering";
++
++        var dataProtection = builder.Services
++            .AddDataProtection()
++            .SetApplicationName(applicationName);
++
++        if (string.IsNullOrWhiteSpace(keysPath))
++            return;
++
++        var directory = new DirectoryInfo(Path.GetFullPath(keysPath));
++        Directory.CreateDirectory(directory.FullName);
++        dataProtection.PersistKeysToFileSystem(directory);
++    }
+ }
+diff --git a/Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs b/Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs
+index e22aca7..5005a5c 100644
+--- a/Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs
++++ b/Annap.CoffeeQrOrdering.Web/Extensions/StartupDiagnosticsExtensions.cs
+@@ -67,6 +67,18 @@ public static class StartupDiagnosticsExtensions
+     {
+         var env = app.Services.GetRequiredService<IWebHostEnvironment>();
+         var log = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("Startup.Media");
++        var cloudinary = app.Configuration
++            .GetSection(CloudinaryOptions.SectionName)
++            .Get<CloudinaryOptions>() ?? new CloudinaryOptions();
++
++        if (cloudinary.IsConfigured)
++        {
++            log.LogInformation(
++                "Menu media storage: Cloudinary cloud={CloudName}; folder={Folder}",
++                cloudinary.CloudName,
++                cloudinary.Folder);
++            return;
++        }
+ 
+         var managed = MenuImagePaths.ManagedDirectory(env);
+         var originals = MenuImagePaths.OriginalsDirectory(env);
+diff --git a/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs b/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs
+index ae51eb9..3792286 100644
+--- a/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs
++++ b/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Create.cshtml.cs
+@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
+ namespace Annap.CoffeeQrOrdering.Web.Pages.Admin.Menu;
+ 
+ [Authorize(Policy = "Staff")]
+-public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment env) : PageModel
++public sealed class CreateModel(IApplicationDbContext db, IMenuImageStorage imageStorage) : PageModel
+ {
+     [BindProperty]
+     public MenuCurationFormModel Input { get; set; } = new();
+@@ -80,14 +80,14 @@ public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment en
+         {
+             if (Input.HeroImage is { Length: > 0 })
+             {
+-                var url = await MenuHeroImageStorage.TrySaveAsync(env, Input.HeroImage, entity.Id, cancellationToken);
++                var url = await imageStorage.SaveHeroAsync(Input.HeroImage, entity.Id, cancellationToken);
+                 if (url is not null)
+                     entity.ImageUrl = url;
+             }
+ 
+             if (Input.DetailPosterImage is { Length: > 0 })
+             {
+-                var url = await MenuHeroImageStorage.TryPosterSaveAsync(env, Input.DetailPosterImage, entity.Id, cancellationToken);
++                var url = await imageStorage.SavePosterAsync(Input.DetailPosterImage, entity.Id, cancellationToken);
+                 if (url is not null)
+                     entity.DetailPosterImagePath = url;
+             }
+@@ -97,6 +97,8 @@ public sealed class CreateModel(IApplicationDbContext db, IWebHostEnvironment en
+         }
+         catch (InvalidOperationException ex)
+         {
++            await imageStorage.DeleteHeroAsync(entity.Id, entity.ImageUrl, cancellationToken);
++            await imageStorage.DeletePosterAsync(entity.Id, entity.DetailPosterImagePath, cancellationToken);
+             db.MenuItems.Remove(entity);
+             await db.SaveChangesAsync(cancellationToken);
+             ModelState.AddModelError(nameof(Input.HeroImage), ex.Message);
+diff --git a/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs b/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs
+index 90ed01f..8114600 100644
+--- a/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs
++++ b/Annap.CoffeeQrOrdering.Web/Pages/Admin/Menu/Edit.cshtml.cs
+@@ -13,7 +13,7 @@ namespace Annap.CoffeeQrOrdering.Web.Pages.Admin.Menu;
+ [Authorize(Policy = "Staff")]
+ public sealed class EditModel(
+     IApplicationDbContext db,
+-    IWebHostEnvironment env,
++    IMenuImageStorage imageStorage,
+     MenuMediaMaintenanceService mediaMaintenance) : PageModel
+ {
+     [BindProperty]
+@@ -86,17 +86,19 @@ public sealed class EditModel(
+             return NotFound();
+ 
+         IsArchived = item.IsArchived;
++        string? removedHeroUrl = null;
++        string? removedPosterUrl = null;
+ 
+         if (Input.RemoveHeroImage)
+         {
+-            MenuHeroImageStorage.TryDeleteIfManaged(env, item.ImageUrl);
++            removedHeroUrl = item.ImageUrl;
+             item.ImageUrl = null;
+             CurrentHeroUrl = null;
+         }
+ 
+         if (Input.RemoveDetailPosterImage)
+         {
+-            MenuHeroImageStorage.TryDeletePosterIfManaged(env, item.DetailPosterImagePath);
++            removedPosterUrl = item.DetailPosterImagePath;
+             item.DetailPosterImagePath = null;
+             CurrentDetailPosterUrl = null;
+         }
+@@ -106,7 +108,7 @@ public sealed class EditModel(
+             if (Input.HeroImage is { Length: > 0 })
+             {
+                 var replaceDetailFromHero = !Input.RemoveDetailPosterImage && Input.DetailPosterImage is not { Length: > 0 };
+-                var url = await MenuHeroImageStorage.TrySaveAsync(env, Input.HeroImage, item.Id, cancellationToken);
++                var url = await imageStorage.SaveHeroAsync(Input.HeroImage, item.Id, cancellationToken);
+                 if (url is not null)
+                 {
+                     item.ImageUrl = url;
+@@ -114,8 +116,7 @@ public sealed class EditModel(
+ 
+                     if (replaceDetailFromHero)
+                     {
+-                        var posterUrl = await MenuHeroImageStorage.TryPosterSaveAsync(
+-                            env,
++                        var posterUrl = await imageStorage.SavePosterAsync(
+                             Input.HeroImage,
+                             item.Id,
+                             cancellationToken);
+@@ -147,7 +148,7 @@ public sealed class EditModel(
+         {
+             if (Input.DetailPosterImage is { Length: > 0 })
+             {
+-                var url = await MenuHeroImageStorage.TryPosterSaveAsync(env, Input.DetailPosterImage, item.Id, cancellationToken);
++                var url = await imageStorage.SavePosterAsync(Input.DetailPosterImage, item.Id, cancellationToken);
+                 if (url is not null)
+                 {
+                     item.DetailPosterImagePath = url;
+@@ -178,6 +179,10 @@ public sealed class EditModel(
+         await OperationalAudit.AppendAsync(db, "menu.updated", actor, null,
+             $"menuItemId={item.Id};name={Summarize(item.Name)}", cancellationToken);
+         await db.SaveChangesAsync(cancellationToken);
++        if (removedHeroUrl is not null && item.ImageUrl is null)
++            await imageStorage.DeleteHeroAsync(item.Id, removedHeroUrl, cancellationToken);
++        if (removedPosterUrl is not null && item.DetailPosterImagePath is null)
++            await imageStorage.DeletePosterAsync(item.Id, removedPosterUrl, cancellationToken);
+ 
+         TempData["MenuCurationToast"] = "─É├ú l╞░u. Kh├ích sß║╜ thß║Ñy phi├¬n bß║ún mß╗¢i ß╗ƒ lß║ºn mß╗ƒ thß╗▒c ─æ╞ín tiß║┐p theo.";
+         return RedirectToPage("/Admin/Menu/Edit", new { id = item.Id });
+@@ -190,13 +195,19 @@ public sealed class EditModel(
+             return NotFound();
+ 
+         item.IsArchived = true;
+-        mediaMaintenance.PurgeManagedAssetsForItem(item.Id);
++        var archivedHeroUrl = item.ImageUrl;
++        var archivedPosterUrl = item.DetailPosterImagePath;
+         item.ImageUrl = null;
+         item.DetailPosterImagePath = null;
+         var actor = User.Identity?.Name?.Trim();
+         await OperationalAudit.AppendAsync(db, "menu.archived", actor, null,
+             $"menuItemId={item.Id};name={Summarize(item.Name)}", cancellationToken);
+         await db.SaveChangesAsync(cancellationToken);
++        await mediaMaintenance.PurgeManagedAssetsForItemAsync(
++            item.Id,
++            archivedHeroUrl,
++            archivedPosterUrl,
++            cancellationToken);
+         TempData["MenuCurationToast"] = "─É├ú cß║Ñt khß╗Åi thß╗▒c ─æ╞ín kh├ích. Ly vß║½n ─æ╞░ß╗úc giß╗» trong hß╗ô s╞í qu├ín.";
+         return RedirectToPage("/Admin/Menu/Index");
+     }
+diff --git a/Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs b/Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs
+index 9398721..76c89af 100644
+--- a/Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs
++++ b/Annap.CoffeeQrOrdering.Web/Security/StaffAuthOptions.cs
+@@ -13,7 +13,7 @@ public sealed class StaffAuthOptions
+     /// <summary>Sign-in name for the staff back room.</summary>
+     public string UserName { get; set; } = "host";
+ 
+-    /// <summary>Local-dev default only ΓÇö override via <c>STAFF_PASSWORD</c> in production.</summary>
++    /// <summary>Local-dev default only ΓÇö override via <c>StaffAuth__Password</c> in production.</summary>
+     public string Password { get; set; } = "ChangeMe";
+ 
+     /// <summary>Checkout device password. Falls back to <see cref="Password"/> when empty in development.</summary>
