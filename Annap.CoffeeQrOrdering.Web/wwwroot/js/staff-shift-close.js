@@ -1,11 +1,6 @@
 (function () {
-    function t(key) {
-        if (window.LuxuryI18n && typeof window.LuxuryI18n.t === "function") {
-            const v = window.LuxuryI18n.t(key);
-            if (v) return v;
-        }
-        return key;
-    }
+    const confirmMessage =
+        "Bạn chắc chắn muốn kết ca? Các bill trong ca hiện tại sẽ được chốt vào báo cáo ca.";
 
     function wireCloseConfirm(form) {
         if (!form) return;
@@ -15,7 +10,7 @@
                 e.preventDefault();
                 return;
             }
-            if (!window.confirm(t("ops.staff.shiftClose.confirmClose"))) e.preventDefault();
+            if (!window.confirm(confirmMessage)) e.preventDefault();
         });
     }
 
@@ -61,12 +56,12 @@
                     document.body.removeChild(ta);
                 }
                 const prev = copyBtn.textContent;
-                copyBtn.textContent = t("ops.staff.shiftClose.copied");
+                copyBtn.textContent = "Đã sao chép";
                 window.setTimeout(function () {
                     copyBtn.textContent = prev;
                 }, 1800);
             } catch {
-                window.alert(t("ops.staff.shiftClose.copyFailed"));
+                window.alert("Không sao chép được. Hãy chọn và copy thủ công.");
             }
         });
     }

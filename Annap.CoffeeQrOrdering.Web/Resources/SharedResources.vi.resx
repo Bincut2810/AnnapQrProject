@@ -107,6 +107,19 @@
   <data name="drink.sourcedFrom" xml:space="preserve"><value>Nguồn gốc</value></data>
   <data name="drink.sweetness" xml:space="preserve"><value>Độ ngọt</value></data>
   <data name="drink.tastingNotes" xml:space="preserve"><value>Ghi chú nếm</value></data>
+  <data name="errors.403Lede" xml:space="preserve"><value>Bạn không thể mở trang này.</value></data>
+  <data name="errors.403Title" xml:space="preserve"><value>Không có quyền truy cập</value></data>
+  <data name="errors.404Lede" xml:space="preserve"><value>Liên kết có thể đã đổi hoặc bàn chưa được cấu hình. Quay lại menu để tiếp tục.</value></data>
+  <data name="errors.404Title" xml:space="preserve"><value>Không tìm thấy trang</value></data>
+  <data name="errors.503Lede" xml:space="preserve"><value>Quán đang bảo trì hệ thống trong giây lát. Vui lòng thử lại sau.</value></data>
+  <data name="errors.503Title" xml:space="preserve"><value>Tạm bảo trì</value></data>
+  <data name="errors.backToMenu" xml:space="preserve"><value>Quay lại menu</value></data>
+  <data name="errors.genericLede" xml:space="preserve"><value>Chúng tôi không thể hoàn tất yêu cầu của bạn. Vui lòng thử lại hoặc quay lại thực đơn.</value></data>
+  <data name="errors.genericTitle" xml:space="preserve"><value>Đã xảy ra lỗi</value></data>
+  <data name="errors.offlineLede" xml:space="preserve"><value>Không có kết nối mạng. Kiểm tra Wi‑Fi rồi thử lại.</value></data>
+  <data name="errors.offlineTitle" xml:space="preserve"><value>Bạn đang offline</value></data>
+  <data name="errors.referenceId" xml:space="preserve"><value>Mã tham chiếu</value></data>
+  <data name="errors.retry" xml:space="preserve"><value>Thử lại</value></data>
   <data name="errors.sommelierEmptyPrompt" xml:space="preserve"><value>Cho chúng tôi vài dòng về bạn muốn cảm thấy thế nào hôm nay.</value></data>
   <data name="ge.arrival.beginTasting" xml:space="preserve"><value>Mời bạn</value></data>
   <data name="ge.arrival.curatedEmptyTitle" xml:space="preserve"><value>Trải nghiệm đang được sắp đặt.</value></data>
@@ -161,6 +174,7 @@
   <data name="ge.group.seatGuests" xml:space="preserve"><value>Bắt đầu cho cả bàn</value></data>
   <data name="ge.group.sigAddToTray" xml:space="preserve"><value>Gửi vào bàn thưởng thức</value></data>
   <data name="ge.group.sigDetail" xml:space="preserve"><value>Xem lá thư</value></data>
+  <data name="ge.group.signatureDrinksAria" xml:space="preserve"><value>Ly signature</value></data>
   <data name="ge.group.signatureHeading" xml:space="preserve"><value>Ly đặc trưng cho cả bàn</value></data>
   <data name="ge.group.summaryKickerFallback" xml:space="preserve"><value>Bàn của bạn</value></data>
   <data name="ge.group.summaryTitleFallback" xml:space="preserve"><value>Tổng lựa chọn bàn</value></data>
@@ -290,9 +304,13 @@
   <data name="ge.sommelier.tasting.micro3" xml:space="preserve"><value>Chọn ly dành riêng cho hôm nay</value></data>
   <data name="ge.sommelier.tasting.note.base" xml:space="preserve"><value>Kiểu ly</value></data>
   <data name="ge.sommelier.tasting.note.caffeine" xml:space="preserve"><value>Nhiệt độ</value></data>
+  <data name="ge.sommelier.tasting.note.detail" xml:space="preserve"><value>Chi tiết</value></data>
+  <data name="ge.sommelier.tasting.note.direction" xml:space="preserve"><value>Hướng</value></data>
   <data name="ge.sommelier.tasting.note.experience" xml:space="preserve"><value>Cảm giác</value></data>
+  <data name="ge.sommelier.tasting.note.finish" xml:space="preserve"><value>Kết</value></data>
   <data name="ge.sommelier.tasting.note.flavor" xml:space="preserve"><value>Hương vị</value></data>
   <data name="ge.sommelier.tasting.note.mood" xml:space="preserve"><value>Cảm giác</value></data>
+  <data name="ge.sommelier.tasting.note.preference" xml:space="preserve"><value>Sở thích</value></data>
   <data name="ge.sommelier.tasting.note.prepare" xml:space="preserve"><value>Chuẩn bị ly dành riêng cho hôm nay</value></data>
   <data name="ge.sommelier.tasting.note.sweet" xml:space="preserve"><value>Vị sữa</value></data>
   <data name="ge.sommelier.tasting.note.title" xml:space="preserve"><value>Đang viết lá thư vị giác của bạn</value></data>
@@ -508,113 +526,8 @@
   <data name="moods.slow.title" xml:space="preserve"><value>Ấm và chậm</value></data>
   <data name="nav.menu" xml:space="preserve"><value>Thực đơn</value></data>
   <data name="nav.privacy" xml:space="preserve"><value>Riêng tư</value></data>
+  <data name="nav.siteAria" xml:space="preserve"><value>Điều hướng trang</value></data>
   <data name="nav.staff" xml:space="preserve"><value>Đội phục vụ</value></data>
-  <data name="ops.admin.dashboard.eyebrow" xml:space="preserve"><value>Quản trị</value></data>
-  <data name="ops.admin.dashboard.returnGuest" xml:space="preserve"><value>← Về trang khách</value></data>
-  <data name="ops.admin.dashboard.title" xml:space="preserve"><value>Bảng điều hành</value></data>
-  <data name="ops.admin.nav.close" xml:space="preserve"><value>Đóng</value></data>
-  <data name="ops.admin.nav.mobileLabel" xml:space="preserve"><value>Điều hướng di động</value></data>
-  <data name="ops.admin.nav.navigation" xml:space="preserve"><value>Điều hướng</value></data>
-  <data name="ops.admin.nav.openNav" xml:space="preserve"><value>Mở điều hướng</value></data>
-  <data name="ops.admin.nav.primary" xml:space="preserve"><value>Primary</value></data>
-  <data name="ops.admin.topbar.floor" xml:space="preserve"><value>Sàn phục vụ</value></data>
-  <data name="ops.admin.topbar.logout" xml:space="preserve"><value>Đăng xuất</value></data>
-  <data name="ops.admin.topbar.manage" xml:space="preserve"><value>Quản lý</value></data>
-  <data name="ops.admin.topbar.searchLabel" xml:space="preserve"><value>Tìm kiếm</value></data>
-  <data name="ops.admin.topbar.searchPlaceholder" xml:space="preserve"><value>Tìm món, bàn hoặc ghi chú…</value></data>
-  <data name="ops.common.adminSuffix" xml:space="preserve"><value>Quản trị</value></data>
-  <data name="ops.common.backToMenu" xml:space="preserve"><value>Quay lại menu</value></data>
-  <data name="ops.common.brand" xml:space="preserve"><value>Annap Coffee Atelier</value></data>
-  <data name="ops.common.cancel" xml:space="preserve"><value>Hủy</value></data>
-  <data name="ops.common.close" xml:space="preserve"><value>Đóng</value></data>
-  <data name="ops.common.langEn" xml:space="preserve"><value>EN</value></data>
-  <data name="ops.common.language" xml:space="preserve"><value>Ngôn ngữ</value></data>
-  <data name="ops.common.langVi" xml:space="preserve"><value>VI</value></data>
-  <data name="ops.common.loading" xml:space="preserve"><value>Đang tải…</value></data>
-  <data name="ops.common.referenceId" xml:space="preserve"><value>Mã tham chiếu</value></data>
-  <data name="ops.common.retry" xml:space="preserve"><value>Thử lại</value></data>
-  <data name="ops.common.save" xml:space="preserve"><value>Lưu</value></data>
-  <data name="ops.common.staffSuffix" xml:space="preserve"><value>Quầy</value></data>
-  <data name="ops.error.403Lede" xml:space="preserve"><value>Bạn không thể mở trang này. Nếu bạn là nhân viên, hãy đăng nhập lại.</value></data>
-  <data name="ops.error.403Title" xml:space="preserve"><value>Không có quyền truy cập</value></data>
-  <data name="ops.error.404Lede" xml:space="preserve"><value>Liên kết có thể đã đổi hoặc bàn chưa được cấu hình. Quay lại menu để tiếp tục.</value></data>
-  <data name="ops.error.404Title" xml:space="preserve"><value>Không tìm thấy trang</value></data>
-  <data name="ops.error.503Lede" xml:space="preserve"><value>Quán đang bảo trì hệ thống trong giây lát. Vui lòng thử lại sau.</value></data>
-  <data name="ops.error.503Title" xml:space="preserve"><value>Tạm bảo trì</value></data>
-  <data name="ops.error.genericLede" xml:space="preserve"><value>Chúng tôi không thể hoàn tất yêu cầu của bạn. Vui lòng thử lại hoặc quay lại thực đơn.</value></data>
-  <data name="ops.error.genericTitle" xml:space="preserve"><value>Đã xảy ra lỗi</value></data>
-  <data name="ops.error.offlineLede" xml:space="preserve"><value>Không có kết nối mạng. Kiểm tra Wi‑Fi rồi thử lại.</value></data>
-  <data name="ops.error.offlineTitle" xml:space="preserve"><value>Bạn đang offline</value></data>
-  <data name="ops.staff.layout.adminLink" xml:space="preserve"><value>Quản lý</value></data>
-  <data name="ops.staff.layout.adminLinkTitle" xml:space="preserve"><value>Quản trị quán</value></data>
-  <data name="ops.staff.layout.login" xml:space="preserve"><value>Đăng nhập nhân viên</value></data>
-  <data name="ops.staff.layout.logout" xml:space="preserve"><value>Đăng xuất</value></data>
-  <data name="ops.staff.layout.menu" xml:space="preserve"><value>Thực đơn</value></data>
-  <data name="ops.staff.layout.staffActions" xml:space="preserve"><value>Thao tác nhân viên</value></data>
-  <data name="ops.staff.layout.switchStaff" xml:space="preserve"><value>Đổi nhân viên</value></data>
-  <data name="ops.staff.login.password" xml:space="preserve"><value>Mật khẩu</value></data>
-  <data name="ops.staff.login.passwordHint" xml:space="preserve"><value>Nếu dùng mật khẩu chung của quầy, có thể để trống tên đăng nhập.</value></data>
-  <data name="ops.staff.login.passwordPlaceholder" xml:space="preserve"><value>Mật khẩu nhân viên hoặc mật khẩu quầy</value></data>
-  <data name="ops.staff.login.submit" xml:space="preserve"><value>Đăng nhập</value></data>
-  <data name="ops.staff.login.subtitle" xml:space="preserve"><value>Dành cho nhân viên thu ngân, quản lý và pha chế.</value></data>
-  <data name="ops.staff.login.title" xml:space="preserve"><value>Đăng nhập quầy</value></data>
-  <data name="ops.staff.login.username" xml:space="preserve"><value>Tên đăng nhập</value></data>
-  <data name="ops.staff.login.usernameHint" xml:space="preserve"><value>Nhân viên dùng tên đăng nhập và mật khẩu được quản lý cấp.</value></data>
-  <data name="ops.staff.login.usernamePlaceholder" xml:space="preserve"><value>Ví dụ: thu-ngan-1</value></data>
-  <data name="ops.staff.orders.autoPayment" xml:space="preserve"><value>Thanh toán tự động</value></data>
-  <data name="ops.staff.orders.billLabel" xml:space="preserve"><value>Mã bill</value></data>
-  <data name="ops.staff.orders.colAwaitingPayBadge" xml:space="preserve"><value>CHỜ TT</value></data>
-  <data name="ops.staff.orders.colAwaitingPayEmpty" xml:space="preserve"><value>Chưa có đơn chờ thanh toán</value></data>
-  <data name="ops.staff.orders.colCompletedBadge" xml:space="preserve"><value>XONG</value></data>
-  <data name="ops.staff.orders.colCompletedEmpty" xml:space="preserve"><value>Chưa có đơn hoàn thành gần đây</value></data>
-  <data name="ops.staff.orders.colPaidBadge" xml:space="preserve"><value>ĐÃ TT</value></data>
-  <data name="ops.staff.orders.colPaidEmpty" xml:space="preserve"><value>Chưa có đơn đang pha chế</value></data>
-  <data name="ops.staff.orders.completedAt" xml:space="preserve"><value>Hoàn thành</value></data>
-  <data name="ops.staff.orders.completedBy" xml:space="preserve"><value>Hoàn thành bởi:</value></data>
-  <data name="ops.staff.orders.completeOrder" xml:space="preserve"><value>Hoàn thành đơn</value></data>
-  <data name="ops.staff.orders.confirmedBy" xml:space="preserve"><value>Xác nhận:</value></data>
-  <data name="ops.staff.orders.confirmPayment" xml:space="preserve"><value>Xác nhận thanh toán</value></data>
-  <data name="ops.staff.orders.emptyBill" xml:space="preserve"><value>Không có món</value></data>
-  <data name="ops.staff.orders.expandItems" xml:space="preserve"><value>Xem thêm {count} món</value></data>
-  <data name="ops.staff.orders.grandTotal" xml:space="preserve"><value>Tổng cộng</value></data>
-  <data name="ops.staff.orders.loadBillFailed" xml:space="preserve"><value>Không tải được bill.</value></data>
-  <data name="ops.staff.orders.noItems" xml:space="preserve"><value>Không có món</value></data>
-  <data name="ops.staff.orders.noteLabel" xml:space="preserve"><value>Ghi chú:</value></data>
-  <data name="ops.staff.orders.paidAt" xml:space="preserve"><value>Thanh toán</value></data>
-  <data name="ops.staff.orders.paidBadge" xml:space="preserve"><value>Đã thanh toán</value></data>
-  <data name="ops.staff.orders.paidShort" xml:space="preserve"><value>TT</value></data>
-  <data name="ops.staff.orders.paymentCard" xml:space="preserve"><value>Thẻ</value></data>
-  <data name="ops.staff.orders.paymentCash" xml:space="preserve"><value>Tiền mặt</value></data>
-  <data name="ops.staff.orders.paymentConfirmed" xml:space="preserve"><value>Thanh toán:</value></data>
-  <data name="ops.staff.orders.paymentCounter" xml:space="preserve"><value>Thanh toán tại quầy</value></data>
-  <data name="ops.staff.orders.paymentTransfer" xml:space="preserve"><value>Chuyển khoản</value></data>
-  <data name="ops.staff.orders.pendingCard" xml:space="preserve"><value>Thẻ · chờ thanh toán</value></data>
-  <data name="ops.staff.orders.pendingCash" xml:space="preserve"><value>Tiền mặt · chờ thanh toán</value></data>
-  <data name="ops.staff.orders.pendingCounter" xml:space="preserve"><value>Tại quầy · tiền mặt/thẻ</value></data>
-  <data name="ops.staff.orders.pendingPayment" xml:space="preserve"><value>Chờ thanh toán</value></data>
-  <data name="ops.staff.orders.pendingTransfer" xml:space="preserve"><value>Chuyển khoản · chờ xác nhận</value></data>
-  <data name="ops.staff.orders.preparedBy" xml:space="preserve"><value>Xong bởi:</value></data>
-  <data name="ops.staff.orders.prepCompleteHint" xml:space="preserve"><value>Tick đủ món để hoàn thành</value></data>
-  <data name="ops.staff.orders.prepDone" xml:space="preserve"><value>Xong</value></data>
-  <data name="ops.staff.orders.prepNotDone" xml:space="preserve"><value>Chưa xong</value></data>
-  <data name="ops.staff.orders.prepProgressCount" xml:space="preserve"><value>Đã xong {done}/{total} món</value></data>
-  <data name="ops.staff.orders.prepProgressLabel" xml:space="preserve"><value>Tiến độ pha chế</value></data>
-  <data name="ops.staff.orders.sentAt" xml:space="preserve"><value>Gửi lúc</value></data>
-  <data name="ops.staff.orders.statusPaid" xml:space="preserve"><value>Đã thanh toán</value></data>
-  <data name="ops.staff.orders.statusPending" xml:space="preserve"><value>Chờ thanh toán</value></data>
-  <data name="ops.staff.orders.table" xml:space="preserve"><value>Bàn</value></data>
-  <data name="ops.staff.orders.thanks" xml:space="preserve"><value>Cảm ơn bạn đã ghé Annap.</value></data>
-  <data name="ops.staff.orders.total" xml:space="preserve"><value>Tổng</value></data>
-  <data name="ops.staff.orders.transferMemo" xml:space="preserve"><value>CK:</value></data>
-  <data name="ops.staff.orders.viewBill" xml:space="preserve"><value>Xem bill</value></data>
-  <data name="ops.staff.orders.waitDays" xml:space="preserve"><value>Cũ · {days} ngày</value></data>
-  <data name="ops.staff.orders.waitHours" xml:space="preserve"><value>Chờ {hours} giờ</value></data>
-  <data name="ops.staff.orders.waitMinutes" xml:space="preserve"><value>Chờ {mins} phút</value></data>
-  <data name="ops.staff.orders.waitUnderOneMin" xml:space="preserve"><value>Chờ &lt;1 phút</value></data>
-  <data name="ops.staff.orders.waitUnknown" xml:space="preserve"><value>Chờ —</value></data>
-  <data name="ops.staff.shiftClose.confirmClose" xml:space="preserve"><value>Bạn chắc chắn muốn kết ca? Các bill trong ca hiện tại sẽ được chốt vào báo cáo ca.</value></data>
-  <data name="ops.staff.shiftClose.copied" xml:space="preserve"><value>Đã sao chép</value></data>
-  <data name="ops.staff.shiftClose.copyFailed" xml:space="preserve"><value>Không sao chép được. Hãy chọn và copy thủ công.</value></data>
   <data name="order.confirmBody" xml:space="preserve"><value>Quầy đã nhận order của bạn.</value></data>
   <data name="order.confirmKicker" xml:space="preserve"><value>Đã gửi</value></data>
   <data name="order.followLink" xml:space="preserve"><value>Theo dõi đơn</value></data>

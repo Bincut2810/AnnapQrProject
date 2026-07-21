@@ -22,7 +22,7 @@
 
 <!DOCTYPE html>
 
-<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
+<html lang="vi">
 
 <head>
 
@@ -103,31 +103,54 @@
 
 
 
-                <nav class="staff-topbar__actions" aria-label="@L["ops.staff.layout.staffActions"]">
-                    <partial name="Shared/_LanguageSwitcher" />
+                <nav class="staff-topbar__actions" aria-label="Thao tác nhân viên">
+
                     @if (isAuthenticated)
+
                     {
+
                         @if (isStaffAdmin)
+
                         {
+
                             <a class="staff-topbar__link staff-topbar__link--admin"
-                               asp-page="/Admin/Index" title="@L["ops.staff.layout.adminLinkTitle"]">@L["ops.staff.layout.adminLink"]</a>
+
+                               asp-page="/Admin/Index" title="Quản trị quán">Quản lý</a>
+
                         }
+
                         <form method="post" asp-page="/Staff/Logout" asp-route-returnToLogin="true" asp-route-returnUrl="/staff/orders" class="staff-topbar__form">
+
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="staff-topbar__btn staff-topbar__btn--switch">@L["ops.staff.layout.switchStaff"]</button>
+
+                            <button type="submit" class="staff-topbar__btn staff-topbar__btn--switch">Đổi nhân viên</button>
+
                         </form>
+
                         <form method="post" asp-page="/Staff/Logout" class="staff-topbar__form staff-topbar__form--logout">
+
                             @Html.AntiForgeryToken()
-                            <button type="submit" class="staff-topbar__link staff-topbar__link--quiet">@L["ops.staff.layout.logout"]</button>
+
+                            <button type="submit" class="staff-topbar__link staff-topbar__link--quiet">Đăng xuất</button>
+
                         </form>
+
                     }
+
                     else
+
                     {
+
                         <a class="staff-topbar__btn staff-topbar__btn--switch"
-                           href="/staff/login">@L["ops.staff.layout.login"]</a>
+
+                           href="/staff/login">Đăng nhập nhân viên</a>
+
                     }
+
                     <a class="staff-topbar__link staff-topbar__link--menu"
-                       asp-page="/Menu/Index">@L["ops.staff.layout.menu"]</a>
+
+                       asp-page="/Menu/Index">Thực đơn</a>
+
                 </nav>
 
             </div>
@@ -147,7 +170,6 @@
 
 
     <script src="~/js/annap-money.js" asp-append-version="true"></script>
-    <script src="~/js/guest-i18n.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @if (useDevUi && DiagOptions.Value.ShowLanDebugOverlay)

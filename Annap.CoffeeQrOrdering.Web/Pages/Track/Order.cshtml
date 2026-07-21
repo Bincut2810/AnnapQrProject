@@ -153,9 +153,6 @@
     <script>
 
         const POLL_MS = 12000;
-
-        const MILESTONE_FALLBACK = ["Order sent", "Paid", "Preparing", "Complete"];
-
         const MILESTONE_COUNT = 4;
 
 
@@ -298,7 +295,7 @@
 
             if (s) return s;
 
-            return MILESTONE_FALLBACK[step - 1] || "";
+            return "";
 
         }
 
@@ -381,7 +378,7 @@
 
         function billStatusLabel(bill) {
 
-            if (!bill) return trackT("track.statusPending") || "Chờ thanh toán";
+            if (!bill) return trackT("track.statusPending");
 
             const provisional = bill.billKind === "provisional" || bill.BillKind === "provisional";
 
@@ -389,13 +386,13 @@
 
                 if (trackLang() === "en" && bill.paymentStatusLabelEn) return bill.paymentStatusLabelEn;
 
-                return bill.paymentStatusLabelVi || trackT("track.statusPending") || "Chờ thanh toán";
+                return bill.paymentStatusLabelVi || trackT("track.statusPending");
 
             }
 
             if (trackLang() === "en" && bill.paymentStatusLabelEn) return bill.paymentStatusLabelEn;
 
-            return bill.paymentStatusLabelVi || trackT("checkout.paidReceiptTitle") || "Hóa đơn đã thanh toán";
+            return bill.paymentStatusLabelVi || trackT("checkout.paidReceiptTitle");
 
         }
 
@@ -403,11 +400,11 @@
 
         function billThanks(bill) {
 
-            if (!bill) return trackT("track.billThanks") || "";
+            if (!bill) return trackT("track.billThanks");
 
             if (trackLang() === "en" && bill.thankYouMessageEn) return bill.thankYouMessageEn;
 
-            return bill.thankYouMessageVi || trackT("track.billThanks") || "";
+            return bill.thankYouMessageVi || trackT("track.billThanks");
 
         }
 
@@ -427,17 +424,15 @@
 
 
 
-        function billTitle(bill, fallbackKey, fallbackVi, fallbackEn) {
+        function billTitle(bill, fallbackKey) {
 
-            if (!bill) return trackLang() === "en" ? fallbackEn : fallbackVi;
+            if (!bill) return trackT(fallbackKey);
 
             if (trackLang() === "en" && bill.titleEn) return bill.titleEn;
 
             if (bill.titleVi) return bill.titleVi;
 
-            const t = trackT(fallbackKey);
-
-            return t || (trackLang() === "en" ? fallbackEn : fallbackVi);
+            return trackT(fallbackKey);
 
         }
 
@@ -453,9 +448,9 @@
 
             }
 
-            if (provisional) return trackT("checkout.estimatedTotal") || "Tạm tính";
+            if (provisional) return trackT("checkout.estimatedTotal");
 
-            return trackT("track.billTotal") || "Tổng cộng";
+            return trackT("track.billTotal");
 
         }
 
@@ -511,13 +506,13 @@
 
                         ? data.pendingStatusLabelEn
 
-                        : data.pendingStatusLabelVi || trackT("track.statusPending") || "Chờ thanh toán";
+                        : data.pendingStatusLabelVi || trackT("track.statusPending");
 
-                } else label = trackT("track.statusPending") || "Chờ thanh toán";
+                } else label = trackT("track.statusPending");
 
-            else if (data.isComplete) label = trackT("track.statusComplete") || "Hoàn thành";
+            else if (data.isComplete) label = trackT("track.statusComplete");
 
-            else label = trackT("track.statusPaid") || "Đang chuẩn bị";
+            else label = trackT("track.statusPaid");
 
             text.textContent = label;
 
@@ -605,19 +600,19 @@
 
             const eyebrow = provisional
 
-                ? billTitle(bill, "checkout.checkBillTitle", "Phiếu kiểm đơn", "Order check bill")
+                ? billTitle(bill, "checkout.checkBillTitle")
 
-                : billTitle(bill, "checkout.paidReceiptTitle", "Hóa đơn đã thanh toán", "Paid receipt");
+                : billTitle(bill, "checkout.paidReceiptTitle");
 
-            const brand = bill.shopName || trackT("track.billBrand") || "Annap Coffee Atelier";
+            const brand = bill.shopName || trackT("track.billBrand");
 
-            const metaSent = trackT("track.billMetaSent") || "Gửi lúc";
+            const metaSent = trackT("track.billMetaSent");
 
-            const metaPaid = trackT("track.billMetaPaid") || "Thanh toán lúc";
+            const metaPaid = trackT("track.billMetaPaid");
 
-            const metaStatus = trackT("track.billMetaStatus") || "Trạng thái";
+            const metaStatus = trackT("track.billMetaStatus");
 
-            const metaMethod = trackT("checkout.paymentMethodLabel") || "Phương thức thanh toán";
+            const metaMethod = trackT("checkout.paymentMethodLabel");
 
             const totalLabel = billTotalLabel(bill, provisional);
 
@@ -629,7 +624,7 @@
 
                     ? bill.provisionalNoteEn
 
-                    : bill.provisionalNoteVi || trackT("checkout.provisionalBillBody") || "Phiếu này dùng để kiểm tra món, chưa phải hóa đơn đã thanh toán."
+                    : bill.provisionalNoteVi || trackT("checkout.provisionalBillBody")
 
                 : billThanks(bill);
 
@@ -801,7 +796,7 @@
 
             if (!items || !items.length) {
 
-                const d = trackT("track.detailsUnavailable") || "Details unavailable.";
+                const d = trackT("track.detailsUnavailable");
 
                 ul.innerHTML = `<li class="text-[rgb(var(--muted-2))]">${escapeHtml(d)}</li>`;
 
@@ -859,7 +854,7 @@
 
                 const msg = el("track-cancelled-msg");
 
-                if (msg) msg.textContent = data.message || trackT("track.cancelledFallback") || "This order is no longer active.";
+                if (msg) msg.textContent = data.message || trackT("track.cancelledFallback");
 
                 lastTrackPayload = null;
 
@@ -951,7 +946,7 @@
 
                 if (pendingNote) {
 
-                    pendingNote.textContent = trackT("track.keepOpenNote") || "Bạn có thể giữ màn hình này mở để nhận cập nhật.";
+                    pendingNote.textContent = trackT("track.keepOpenNote");
 
                     pendingNote.classList.remove("hidden");
 
@@ -1056,7 +1051,7 @@
 
                     if (errEl) {
 
-                        errEl.textContent = trackT("track.err404") || "We could not find this order.";
+                        errEl.textContent = trackT("track.err404");
 
                         errEl.classList.remove("hidden");
 
@@ -1088,7 +1083,7 @@
 
                 if (errEl && trackPollFailures >= 2) {
 
-                    errEl.textContent = trackT("track.errSoft") || "A quiet moment—connection is soft. We'll try again shortly.";
+                    errEl.textContent = trackT("track.errSoft");
 
                     errEl.classList.remove("hidden");
 
@@ -1382,7 +1377,7 @@
 
             if (pendingNote && lastTrackPayload.pendingPayment) {
 
-                pendingNote.textContent = trackT("track.keepOpenNote") || "";
+                pendingNote.textContent = trackT("track.keepOpenNote");
 
             }
 

@@ -30,18 +30,12 @@
 
 
 
-    function t(key, fallback) {
-
+    function t(key) {
         if (global.LuxuryI18n && typeof global.LuxuryI18n.t === "function") {
-
             var v = global.LuxuryI18n.t(key);
-
             if (v) return v;
-
         }
-
-        return fallback || key;
-
+        return key;
     }
 
 

@@ -126,47 +126,24 @@
         var discLetterRoomBoot = geParseJsonScript("ge-letter-room-desk-json");
         if (!discLetterRoomBoot || typeof discLetterRoomBoot !== "object") discLetterRoomBoot = {};
 
-        function geGuestLangVi() {
-            return (
-                (window.LuxuryI18n &&
-                    window.LuxuryI18n.getLang &&
-                    window.LuxuryI18n.getLang() === "vi") ||
-                (document.documentElement.lang || "")
-                    .toLowerCase()
-                    .indexOf("vi") === 0
-            );
-        }
-
-        function geFlowT(path, viFallback, enFallback) {
+        function geFlowT(path) {
             if (window.LuxuryI18n && typeof window.LuxuryI18n.t === "function") {
                 var s = window.LuxuryI18n.t(path);
                 if (s && String(s).trim()) return String(s).trim();
             }
-            return geGuestLangVi()
-                ? viFallback
-                : enFallback || viFallback;
+            return "";
         }
 
-        function geHouseT(path, viFallback, enFallback) {
-            return geFlowT(path, viFallback, enFallback);
+        function geHouseT(path) {
+            return geFlowT(path);
         }
 
-        function geFlowTf(path, vars, viFallback, enFallback) {
+        function geFlowTf(path, vars) {
             if (window.LuxuryI18n && typeof window.LuxuryI18n.tf === "function") {
                 var tf = window.LuxuryI18n.tf(path, vars);
                 if (tf && String(tf).trim()) return String(tf).trim();
             }
-            var tpl = geGuestLangVi()
-                ? viFallback
-                : enFallback || viFallback;
-            if (vars) {
-                for (var k in vars) {
-                    if (Object.prototype.hasOwnProperty.call(vars, k)) {
-                        tpl = tpl.split("{" + k + "}").join(String(vars[k]));
-                    }
-                }
-            }
-            return tpl;
+            return "";
         }
 
         function geSetSommelierFlowActive(on) {
@@ -182,13 +159,9 @@
             }
         }
 
-        /** Ritual copy — Vietnamese-first hospitality voice. */
-        function geRitualT(path, viFallback) {
-            if (window.LuxuryI18n && typeof window.LuxuryI18n.t === "function") {
-                var s = window.LuxuryI18n.t(path);
-                if (s && String(s).trim()) return String(s).trim();
-            }
-            return viFallback || "";
+        /** Ritual copy from guest i18n bundle. */
+        function geRitualT(path) {
+            return geFlowT(path);
         }
 
         var sommSettleTimer = null;
@@ -1861,10 +1834,13 @@
                     "Experience"
                 );
             }
-            var fallbacksVi = ["Hướng", "Chi tiết", "Sở thích", "Kết"];
-            var fallbacksEn = ["Direction", "Detail", "Preference", "Finish"];
-            var fb = geGuestLangVi() ? fallbacksVi : fallbacksEn;
-            return fb[index] || fb[0] || "";
+            var noteKeys = [
+                "ge.sommelier.tasting.note.direction",
+                "ge.sommelier.tasting.note.detail",
+                "ge.sommelier.tasting.note.preference",
+                "ge.sommelier.tasting.note.finish"
+            ];
+            return geFlowT(noteKeys[index] || noteKeys[0]);
         }
 
         function sommAnswerNoteRows() {

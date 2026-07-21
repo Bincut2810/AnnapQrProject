@@ -153,7 +153,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 guestCtx: GUEST_CTX,
                 migrateCatalog: {
                     catalogRow,
-                    selectionFallback: () => tOrder("cart.selectionFallback") || "Selection"
+                    selectionFallback: () => tOrder("cart.selectionFallback")
                 }
             });
             VENUE_TABLE_ID = GuestInteractionContract.getVenueTableId();
@@ -179,14 +179,10 @@ function __annapMenuRuntimeJsonSelfCheck() {
         function formatTableMetaLine() {
             const lab = String((GUEST_CTX && GUEST_CTX.label) || "").trim();
             if (!VENUE_TABLE_ID && !lab) return "";
-            const tableLabel = lab || trayCopyFallback("cart.linkedTable", "Bàn của bạn", "Your table");
+            const tableLabel = lab || trayCopy("cart.linkedTable");
             return (
                 tfmt("cart.tableMetaShort", { label: tableLabel }) ||
-                trayCopyFallback(
-                    "cart.tableMetaShort",
-                    "Bàn " + tableLabel + " · 106/1 Nguyễn Thị Minh Khai",
-                    "Table " + tableLabel + " · 106/1 Nguyễn Thị Minh Khai"
-                )
+                trayCopy("cart.tableMetaShort")
             );
         }
 
@@ -219,7 +215,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 if (lab) {
                     const seated = tOrder("cart.seatedAt");
                     primary.textContent = seated ? `${seated} ${lab}` : lab;
-                } else primary.textContent = tOrder("cart.linkedTable") || "Your table";
+                } else primary.textContent = tOrder("cart.linkedTable");
             }
             if (window.LuxuryI18n) window.LuxuryI18n.applyDom();
         }
@@ -330,7 +326,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             const rowPrice = row && row.price;
             return {
                 id: menuItemId,
-                name: rowName !== null && rowName !== undefined ? rowName : (tOrder("cart.selectionFallback") || "Selection"),
+                name: rowName !== null && rowName !== undefined ? rowName : (tOrder("cart.selectionFallback")),
                 unitPrice: Number(rowPrice !== null && rowPrice !== undefined ? rowPrice : 0),
                 qty: 1,
                 imageSrc
@@ -713,22 +709,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
             }
         }
 
-        function trayCopyFallback(key, vi, en) {
-            const t = tOrder(key);
-            if (t) return t;
-            const isVi =
-                (window.LuxuryI18n && window.LuxuryI18n.getLang && window.LuxuryI18n.getLang() === "vi") ||
-                (document.documentElement.lang || "").toLowerCase().startsWith("vi");
-            return isVi ? vi : en;
-        }
-
-        function trayCopyFallback(key, vi, en) {
-            const t = tOrder(key);
-            if (t) return t;
-            const isVi =
-                (window.LuxuryI18n && window.LuxuryI18n.getLang && window.LuxuryI18n.getLang() === "vi") ||
-                (document.documentElement.lang || "").toLowerCase().startsWith("vi");
-            return isVi ? vi : en;
+        function trayCopy(key) {
+            return tOrder(key) || "";
         }
 
         function readSubmittedSession() {
@@ -844,11 +826,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             const qrImage = q.qrImageUrl ? String(q.qrImageUrl) : "";
             const warningLine = options.showWarning
                 ? `<p class="order-tray-submitted-card__note">${escapeHtml(
-                      trayCopyFallback(
-                          "checkout.transferQrLoadFailed",
-                          "Không tải được mã QR. Bạn vẫn có thể chuyển khoản bằng thông tin bên dưới.",
-                          "Could not load the QR code. You can still transfer using the details below."
-                      )
+                      trayCopy("checkout.transferQrLoadFailed")
                   )}</p>`
                 : "";
             host.innerHTML = `<div class="guest-bank-transfer guest-bank-transfer--tray" role="status">
@@ -856,14 +834,10 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     qrImage
                         ? `<div class="guest-bank-transfer__qr-wrap">
                     <img class="guest-bank-transfer__qr" src="${escapeHtml(qrImage)}" alt="${escapeHtml(
-                              trayCopyFallback("checkout.transferQrAlt", "Mã QR chuyển khoản Annap", "Annap transfer QR")
+                              trayCopy("checkout.transferQrAlt")
                           )}" loading="eager" decoding="async" referrerpolicy="no-referrer" />
                     <p class="guest-bank-transfer__qr-fallback hidden" role="status">${escapeHtml(
-                        trayCopyFallback(
-                            "checkout.transferQrLoadFailed",
-                            "Không tải được mã QR. Bạn vẫn có thể chuyển khoản bằng thông tin bên dưới.",
-                            "Could not load the QR code. You can still transfer using the details below."
-                        )
+                        trayCopy("checkout.transferQrLoadFailed")
                     )}</p>
                 </div>`
                         : ""
@@ -871,41 +845,33 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 <p class="guest-bank-transfer__amount">${escapeHtml(String(amount))}</p>
                 <div class="guest-bank-transfer__keep-open" role="status">
                     <p class="guest-bank-transfer__keep-open-title">${escapeHtml(
-                        trayCopyFallback(
-                            "checkout.bankTransferKeepOpen",
-                            "Vui lòng giữ nguyên màn hình chuyển khoản để nhân viên ra kiểm tra và xác nhận thanh toán.",
-                            "Please keep the bank transfer screen open so staff can come verify and confirm payment."
-                        )
+                        trayCopy("checkout.bankTransferKeepOpen")
                     )}</p>
                     <p class="guest-bank-transfer__keep-open-sub">${escapeHtml(
-                        trayCopyFallback(
-                            "checkout.bankTransferStaffConfirmNote",
-                            "Đơn chỉ chuyển sang Đã thanh toán sau khi nhân viên xác nhận.",
-                            "Your order is marked paid only after staff confirm payment."
-                        )
+                        trayCopy("checkout.bankTransferStaffConfirmNote")
                     )}</p>
                 </div>
                 <dl class="guest-bank-transfer__meta">
-                    <div><dt>${escapeHtml(trayCopyFallback("checkout.transferMemo", "Nội dung", "Transfer memo"))}</dt><dd class="guest-bank-transfer__memo">${escapeHtml(
+                    <div><dt>${escapeHtml(trayCopy("checkout.transferMemo"))}</dt><dd class="guest-bank-transfer__memo">${escapeHtml(
                         String(memo)
                     )}</dd></div>
-                    <div><dt>${escapeHtml(trayCopyFallback("checkout.transferBank", "Ngân hàng", "Bank"))}</dt><dd>${escapeHtml(
+                    <div><dt>${escapeHtml(trayCopy("checkout.transferBank"))}</dt><dd>${escapeHtml(
                         String(bankName)
                     )}</dd></div>
-                    <div><dt>${escapeHtml(trayCopyFallback("checkout.transferAccountNumber", "Số tài khoản", "Account number"))}</dt><dd>${escapeHtml(
+                    <div><dt>${escapeHtml(trayCopy("checkout.transferAccountNumber"))}</dt><dd>${escapeHtml(
                         String(account)
                     )}</dd></div>
-                    <div><dt>${escapeHtml(trayCopyFallback("checkout.transferAccountHolder", "Chủ tài khoản", "Account holder"))}</dt><dd>${escapeHtml(
+                    <div><dt>${escapeHtml(trayCopy("checkout.transferAccountHolder"))}</dt><dd>${escapeHtml(
                         String(holder)
                     )}</dd></div>
                 </dl>
                 <div class="guest-bank-transfer__actions">
                     <button type="button" class="guest-bank-transfer__copy guest-hit" data-copy-memo="${escapeHtml(String(memo))}">${escapeHtml(
-                        trayCopyFallback("checkout.copyMemo", "Sao chép nội dung", "Copy memo")
+                        trayCopy("checkout.copyMemo")
                     )}</button>
                     <button type="button" class="guest-bank-transfer__copy guest-hit" data-copy-amount="${escapeHtml(
                         String(q.amount || "")
-                    )}">${escapeHtml(trayCopyFallback("checkout.copyAmount", "Sao chép số tiền", "Copy amount"))}</button>
+                    )}">${escapeHtml(trayCopy("checkout.copyAmount"))}</button>
                 </div>
                 ${warningLine}
             </div>`;
@@ -946,15 +912,11 @@ function __annapMenuRuntimeJsonSelfCheck() {
         function renderTransferFatalFallback(host, onRetry) {
             host.innerHTML = `<div class="guest-bank-transfer guest-bank-transfer--tray" role="alert">
                 <p class="guest-bank-transfer__message">${escapeHtml(
-                    trayCopyFallback(
-                        "checkout.transferUnavailableInTray",
-                        "Không tải được thông tin chuyển khoản. Vui lòng gọi nhân viên.",
-                        "Could not load transfer details. Please call staff."
-                    )
+                    trayCopy("checkout.transferUnavailableInTray")
                 )}</p>
                 <div class="guest-bank-transfer__actions">
                     <button type="button" class="guest-bank-transfer__copy guest-hit" data-bt-retry="1">${escapeHtml(
-                        trayCopyFallback("checkout.transferRetry", "Tải lại mã chuyển khoản", "Retry transfer QR")
+                        trayCopy("checkout.transferRetry")
                     )}</button>
                 </div>
             </div>`;
@@ -986,7 +948,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             host.innerHTML =
                 '<p class="order-tray-submitted-card__note">' +
                 escapeHtml(
-                    trayCopyFallback("checkout.transferQrLoading", "Đang tải mã chuyển khoản...", "Loading transfer QR...")
+                    trayCopy("checkout.transferQrLoading")
                 ) +
                 "</p>";
             if (__annapTrayDevOn()) {
@@ -1164,11 +1126,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     hint.className = "order-tray-payment-option__hint";
                     bankBtn.appendChild(hint);
                 }
-                hint.textContent = trayCopyFallback(
-                    "checkout.bankTransferUnavailable",
-                    "Chuyển khoản hiện chưa khả dụng. Vui lòng thanh toán tại quầy.",
-                    "Bank transfer is currently unavailable. Please pay at the counter."
-                );
+                hint.textContent = trayCopy("checkout.bankTransferUnavailable");
             } else if (hint) {
                 hint.remove();
             }
@@ -1200,18 +1158,18 @@ function __annapMenuRuntimeJsonSelfCheck() {
             if (method === PAYMENT_METHOD.BANK) {
                 return (
                     tOrder("checkout.submitForQr") ||
-                    trayCopyFallback("checkout.submitForQr", "Gửi đơn — lấy mã QR", "Send order — get QR code")
+                    trayCopy("checkout.submitForQr")
                 );
             }
             if (method === PAYMENT_METHOD.CARD) {
                 return (
                     tOrder("checkout.submitCard") ||
-                    trayCopyFallback("checkout.submitCard", "Gửi đơn — thanh toán bằng thẻ", "Send order — pay by card")
+                    trayCopy("checkout.submitCard")
                 );
             }
             return (
                 tOrder("checkout.submitCash") ||
-                trayCopyFallback("checkout.submitCash", "Gửi đơn — thanh toán tiền mặt", "Send order — pay cash")
+                trayCopy("checkout.submitCash")
             );
         }
 
@@ -1236,55 +1194,27 @@ function __annapMenuRuntimeJsonSelfCheck() {
             let body;
             let note;
             if (selectedPaymentMethod === PAYMENT_METHOD.BANK) {
-                title = trayCopyFallback("checkout.bankPreviewTitle", "Chuyển khoản", "Bank transfer");
-                body = trayCopyFallback(
-                    "checkout.bankPreviewBody",
-                    "Sau khi gửi đơn, mã QR chuyển khoản đúng số tiền sẽ hiện tại đây.",
-                    "After you send the order, a transfer QR for the exact amount will appear here."
-                );
-                note = trayCopyFallback(
-                    "checkout.bankPreviewNote",
-                    "Vui lòng chuyển đúng số tiền và nội dung để nhân viên xác nhận nhanh hơn.",
-                    "Please transfer the exact amount and memo so staff can confirm faster."
-                );
+                title = trayCopy("checkout.bankPreviewTitle");
+                body = trayCopy("checkout.bankPreviewBody");
+                note = trayCopy("checkout.bankPreviewNote");
                 if (keepOpenEl) {
-                    keepOpenEl.textContent = trayCopyFallback(
-                        "checkout.bankPreviewKeepOpen",
-                        "Sau khi chuyển khoản, vui lòng giữ nguyên màn hình chuyển khoản để nhân viên ra kiểm tra.",
-                        "After transferring, please keep the bank transfer screen open for staff to verify."
-                    );
+                    keepOpenEl.textContent = trayCopy("checkout.bankPreviewKeepOpen");
                     keepOpenEl.classList.remove("hidden");
                     keepOpenEl.hidden = false;
                 }
             } else if (selectedPaymentMethod === PAYMENT_METHOD.CARD) {
-                title = trayCopyFallback("checkout.cardPreviewTitle", "Thanh toán bằng thẻ", "Pay by card");
-                body = trayCopyFallback(
-                    "checkout.cardPreviewBody",
-                    "Sau khi gửi đơn, vui lòng đến quầy để thanh toán bằng thẻ. Nhân viên sẽ kiểm tra lại đơn của bạn.",
-                    "After you send the order, please go to the counter to pay by card. Staff will check your order."
-                );
-                note = trayCopyFallback(
-                    "checkout.counterPreviewNote",
-                    "Đơn chỉ chuyển sang Đã Thanh Toán sau khi nhân viên xác nhận.",
-                    "Your order is marked paid only after staff confirm payment."
-                );
+                title = trayCopy("checkout.cardPreviewTitle");
+                body = trayCopy("checkout.cardPreviewBody");
+                note = trayCopy("checkout.counterPreviewNote");
                 if (keepOpenEl) {
                     keepOpenEl.textContent = "";
                     keepOpenEl.classList.add("hidden");
                     keepOpenEl.hidden = true;
                 }
             } else {
-                title = trayCopyFallback("checkout.cashPreviewTitle", "Thanh toán tiền mặt", "Pay cash");
-                body = trayCopyFallback(
-                    "checkout.cashPreviewBody",
-                    "Sau khi gửi đơn, vui lòng đến quầy để thanh toán bằng tiền mặt. Nhân viên sẽ kiểm tra lại đơn của bạn.",
-                    "After you send the order, please go to the counter to pay cash. Staff will check your order."
-                );
-                note = trayCopyFallback(
-                    "checkout.counterPreviewNote",
-                    "Đơn chỉ chuyển sang Đã Thanh Toán sau khi nhân viên xác nhận.",
-                    "Your order is marked paid only after staff confirm payment."
-                );
+                title = trayCopy("checkout.cashPreviewTitle");
+                body = trayCopy("checkout.cashPreviewBody");
+                note = trayCopy("checkout.counterPreviewNote");
                 if (keepOpenEl) {
                     keepOpenEl.textContent = "";
                     keepOpenEl.classList.add("hidden");
@@ -1378,16 +1308,16 @@ function __annapMenuRuntimeJsonSelfCheck() {
 
             if (btn && !submitted && !menuOrderSubmitInFlight) {
                 if (checkoutStep === "review") {
-                    btn.textContent = tOrder("checkout.continueToPayment") || trayCopyFallback("checkout.continueToPayment", "Chọn phương thức thanh toán", "Choose payment method");
+                    btn.textContent = tOrder("checkout.continueToPayment");
                     btn.removeAttribute("disabled");
                 } else if (checkoutStep === "payment") {
                     btn.textContent = getPaymentSubmitLabel(selectedPaymentMethod);
                     btn.removeAttribute("disabled");
                 } else if (totalQty() > 0 && VENUE_TABLE_ID) {
-                    btn.textContent = tOrder("checkout.reviewOrder") || trayCopyFallback("checkout.reviewOrder", "Kiểm tra đơn", "Review order");
+                    btn.textContent = tOrder("checkout.reviewOrder");
                     btn.removeAttribute("disabled");
                 } else {
-                    btn.textContent = tOrder("checkout.reviewOrder") || trayCopyFallback("checkout.reviewOrder", "Kiểm tra đơn", "Review order");
+                    btn.textContent = tOrder("checkout.reviewOrder");
                 }
             } else if (btn && submitted) {
                 btn.setAttribute("disabled", "disabled");
@@ -1400,12 +1330,12 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 const orderResult = document.getElementById("orderResult");
                 if (orderResult)
                     orderResult.textContent =
-                        tOrder("order.needTableScan") || tOrder("order.needTable") || "Please scan the table QR to begin.";
+                        tOrder("order.needTableScan") || tOrder("order.needTable");
                 return;
             }
             if (cartItems.size === 0) {
                 const orderResult = document.getElementById("orderResult");
-                if (orderResult) orderResult.textContent = tOrder("order.minOne") || "Your tray is empty.";
+                if (orderResult) orderResult.textContent = tOrder("order.minOne");
                 return;
             }
             if (!checkoutStep) {
@@ -1529,14 +1459,10 @@ function __annapMenuRuntimeJsonSelfCheck() {
             host.setAttribute("role", "dialog");
             host.setAttribute("aria-modal", "true");
             host.setAttribute("aria-live", "polite");
-            const title = trayCopyFallback("menuTray.chipPaidTitle", "Thanh toán thành công", "Payment successful");
-            const body = trayCopyFallback(
-                "menuTray.paymentSuccessCelebrationBody",
-                "Đơn của bạn đã được nhân viên xác nhận. Chúng tôi đang chuẩn bị món.",
-                "Staff have confirmed your order. We are preparing your drinks."
-            );
-            const trackLabel = trayCopyFallback("menuTray.chipTrackCta", "Theo dõi đơn", "Track order");
-            const closeLabel = trayCopyFallback("menuTray.paymentSuccessClose", "Đóng", "Close");
+            const title = trayCopy("menuTray.chipPaidTitle");
+            const body = trayCopy("menuTray.paymentSuccessCelebrationBody");
+            const trackLabel = trayCopy("menuTray.chipTrackCta");
+            const closeLabel = trayCopy("menuTray.paymentSuccessClose");
             const trackHref = String(buildTrackHref(sess)).replace(/"/g, "&quot;");
             host.innerHTML =
                 '<div class="order-tray-payment-celebration__backdrop" data-celebration-act="close"></div>' +
@@ -1662,65 +1588,37 @@ function __annapMenuRuntimeJsonSelfCheck() {
             let statusLabel;
             let note;
             if (state === TRAY_STATE.COMPLETED) {
-                title = trayCopyFallback("menuTray.chipCompleteTitle", "Đơn đã hoàn thành", "Order complete");
-                body = trayCopyFallback("menuTray.chipCompleteBody", "Cảm ơn bạn đã ghé Annap.", "Thank you for visiting Annap.");
+                title = trayCopy("menuTray.chipCompleteTitle");
+                body = trayCopy("menuTray.chipCompleteBody");
                 statusLabel = "";
                 note = "";
             } else if (state === TRAY_STATE.PAID) {
-                title = trayCopyFallback("menuTray.chipPaidTitle", "Thanh toán thành công", "Payment successful");
-                body = trayCopyFallback(
-                    "menuTray.paymentSuccessCelebrationBody",
-                    "Đơn của bạn đã được nhân viên xác nhận. Chúng tôi đang chuẩn bị món.",
-                    "Staff have confirmed your order. We are preparing your drinks."
-                );
+                title = trayCopy("menuTray.chipPaidTitle");
+                body = trayCopy("menuTray.paymentSuccessCelebrationBody");
                 statusLabel = "";
                 note = "";
             } else if (state === TRAY_STATE.SUBMITTED_BANK) {
-                title = trayCopyFallback("checkout.waitingBankTransfer", "Chờ chuyển khoản", "Waiting for bank transfer");
-                body = trayCopyFallback(
-                    "checkout.bankTransferPendingBodyShort",
-                    "Quét mã QR hoặc chuyển khoản theo thông tin bên dưới.",
-                    "Scan the QR or transfer using the details below."
-                );
+                title = trayCopy("checkout.waitingBankTransfer");
+                body = trayCopy("checkout.bankTransferPendingBodyShort");
                 statusLabel = "";
                 note = "";
             } else if (state === TRAY_STATE.SUBMITTED_CARD) {
-                title = trayCopyFallback("menuTray.chipSubmittedTitle", "Đơn đã được gửi", "Order sent");
-                body = trayCopyFallback(
-                    "checkout.cardSubmittedBodyShort",
-                    "Vui lòng đến quầy để thanh toán bằng thẻ.",
-                    "Please go to the counter to pay by card."
-                );
-                statusLabel = trayCopyFallback(
-                    "checkout.waitingCardPayment",
-                    "Chờ thanh toán bằng thẻ tại quầy",
-                    "Waiting for card payment at counter"
-                );
+                title = trayCopy("menuTray.chipSubmittedTitle");
+                body = trayCopy("checkout.cardSubmittedBodyShort");
+                statusLabel = trayCopy("checkout.waitingCardPayment");
                 note = "";
             } else {
-                title = trayCopyFallback("menuTray.chipSubmittedTitle", "Đơn đã được gửi", "Order sent");
-                body = trayCopyFallback(
-                    "checkout.cashSubmittedBodyShort",
-                    "Vui lòng đến quầy để thanh toán bằng tiền mặt.",
-                    "Please go to the counter to pay cash."
-                );
-                statusLabel = trayCopyFallback(
-                    "checkout.waitingCashPayment",
-                    "Chờ thanh toán tiền mặt tại quầy",
-                    "Waiting for cash payment at counter"
-                );
+                title = trayCopy("menuTray.chipSubmittedTitle");
+                body = trayCopy("checkout.cashSubmittedBodyShort");
+                statusLabel = trayCopy("checkout.waitingCashPayment");
                 note = "";
             }
             const cardClass =
                 state === TRAY_STATE.SUBMITTED_BANK
                     ? "order-tray-submitted-card order-tray-submitted-card--bank"
                     : "order-tray-submitted-card order-tray-submitted-card--compact";
-            const keepOpen = trayCopyFallback(
-                "menuTray.chipSubmittedNote",
-                "Bạn có thể giữ màn hình này mở để nhận cập nhật.",
-                "You can keep this screen open for updates."
-            );
-            const cta = trayCopyFallback("menuTray.chipTrackCta", "Theo dõi đơn", "Track order");
+            const keepOpen = trayCopy("menuTray.chipSubmittedNote");
+            const cta = trayCopy("menuTray.chipTrackCta");
             const href = String(buildTrackHref(sess)).replace(/"/g, "&quot;");
             const statusHtml = statusLabel
                 ? `<p class="order-tray-submitted-card__status">${escapeHtml(statusLabel)}</p>`
@@ -1767,86 +1665,70 @@ function __annapMenuRuntimeJsonSelfCheck() {
             if (sheetTitle) {
                 if (submitted) {
                     if (state === TRAY_STATE.COMPLETED) {
-                        sheetTitle.textContent = trayCopyFallback("menuTray.chipCompleteTitle", "Đơn đã hoàn thành", "Order complete");
+                        sheetTitle.textContent = trayCopy("menuTray.chipCompleteTitle");
                     } else if (state === TRAY_STATE.PAID) {
-                        sheetTitle.textContent = trayCopyFallback("menuTray.chipPaidTitle", "Thanh toán thành công", "Payment successful");
+                        sheetTitle.textContent = trayCopy("menuTray.chipPaidTitle");
                     } else if (state === TRAY_STATE.SUBMITTED_BANK) {
-                        sheetTitle.textContent = trayCopyFallback("checkout.waitingBankTransfer", "Chờ chuyển khoản", "Waiting for bank transfer");
+                        sheetTitle.textContent = trayCopy("checkout.waitingBankTransfer");
                     } else {
-                        sheetTitle.textContent = trayCopyFallback("menuTray.chipSubmittedTitle", "Đơn đã được gửi", "Order sent");
+                        sheetTitle.textContent = trayCopy("menuTray.chipSubmittedTitle");
                     }
                 } else if (checkoutStep === "review" || checkoutStep === "payment") {
                     sheetTitle.textContent =
                         n === 1
-                            ? trayCopyFallback("menuTray.sheetTitleOne", "Khay · 1 món", "Tray · 1 item")
+                            ? trayCopy("menuTray.sheetTitleOne")
                             : n > 1
                               ? tfmt("menuTray.sheetTitleMany", { n }) ||
-                                trayCopyFallback("menuTray.sheetTitleMany", "Khay · " + n + " món", "Tray · " + n + " items")
-                              : trayCopyFallback("menuTray.sheetTitle", "Khay của bạn", "Your tray");
+                                trayCopy("menuTray.sheetTitleMany")
+                              : trayCopy("menuTray.sheetTitle");
                 } else {
-                    sheetTitle.textContent = trayCopyFallback("menuTray.sheetTitle", "Khay của bạn", "Your tray");
+                    sheetTitle.textContent = trayCopy("menuTray.sheetTitle");
                 }
             }
 
             if (line) {
                 if (submitted) {
                     if (state === TRAY_STATE.SUBMITTED_BANK) {
-                        line.textContent = trayCopyFallback(
-                            "checkout.waitingBankTransfer",
-                            "Chờ chuyển khoản",
-                            "Waiting for bank transfer"
-                        );
+                        line.textContent = trayCopy("checkout.waitingBankTransfer");
                     } else if (state === TRAY_STATE.SUBMITTED_CARD) {
-                        line.textContent = trayCopyFallback(
-                            "checkout.waitingCardPayment",
-                            "Chờ thanh toán bằng thẻ tại quầy",
-                            "Waiting for card payment at counter"
-                        );
+                        line.textContent = trayCopy("checkout.waitingCardPayment");
                     } else if (
                         state === TRAY_STATE.SUBMITTED_CASH ||
                         state === TRAY_STATE.SUBMITTED_COUNTER ||
                         state === TRAY_STATE.SUBMITTED_PENDING
                     ) {
-                        line.textContent = trayCopyFallback(
-                            "checkout.waitingCashPayment",
-                            "Chờ thanh toán tiền mặt tại quầy",
-                            "Waiting for cash payment at counter"
-                        );
+                        line.textContent = trayCopy("checkout.waitingCashPayment");
                     } else {
-                        line.textContent = trayCopyFallback(
-                            "menuTray.chipSubmittedNote",
-                            "Bạn có thể giữ màn hình này mở để nhận cập nhật.",
-                            "You can keep this screen open for updates."
-                        );
+                        line.textContent = trayCopy("menuTray.chipSubmittedNote");
                     }
-                } else if (n === 0) line.textContent = trayCopyFallback("menuTray.countNone", "Chưa có món trên khay.", "No items on your tray yet.");
-                else if (n === 1) line.textContent = trayCopyFallback("menuTray.countOne", "Một món trên khay.", "One item on your tray.");
-                else line.textContent = tfmt("menuTray.countMany", { n }) || trayCopyFallback("menuTray.countMany", n + " món trên khay.", n + " items on your tray.");
+                } else if (n === 0) line.textContent = trayCopy("menuTray.countNone");
+                else if (n === 1) line.textContent = trayCopy("menuTray.countOne");
+                else line.textContent = tfmt("menuTray.countMany", { n }) || trayCopy("menuTray.countMany");
             }
 
             if (chipTitle) {
                 chipTitle.classList.remove("order-tray-chip__count--settling");
                 if (submitted) {
                     if (state === TRAY_STATE.COMPLETED) {
-                        chipTitle.textContent = trayCopyFallback("menuTray.chipCompleteTitle", "Đơn đã hoàn thành", "Order complete");
+                        chipTitle.textContent = trayCopy("menuTray.chipCompleteTitle");
                     } else if (state === TRAY_STATE.PAID) {
-                        chipTitle.textContent = trayCopyFallback("menuTray.chipPaidTitle", "Thanh toán thành công", "Payment successful");
+                        chipTitle.textContent = trayCopy("menuTray.chipPaidTitle");
                     } else {
-                        chipTitle.textContent = trayCopyFallback("menuTray.chipSubmittedTitle", "Đơn đã được gửi", "Order sent");
+                        chipTitle.textContent = trayCopy("menuTray.chipSubmittedTitle");
                     }
                 } else if (n === 0) {
                     chipTitle.textContent = isSommelierFlowActive()
-                        ? trayCopyFallback("menuTray.chipEmptySomm", "Khay đang chờ", "Tray awaiting")
-                        : trayCopyFallback("menuTray.chipEmpty", "Khay đang chờ", "Tray awaiting");
+                        ? trayCopy("menuTray.chipEmptySomm")
+                        : trayCopy("menuTray.chipEmpty");
                 } else if (n === 1) {
-                    chipTitle.textContent = trayCopyFallback("menuTray.chipOne", "1 món đã đặt", "1 item placed");
+                    chipTitle.textContent = trayCopy("menuTray.chipOne");
                 } else {
                     chipTitle.textContent = isSommelierFlowActive()
                         ? tfmt("menuTray.chipManySomm", { n }) ||
                           tfmt("menuTray.chipMany", { n }) ||
-                          trayCopyFallback("menuTray.chipMany", n + " món đã đặt", n + " items placed")
+                          trayCopy("menuTray.chipMany")
                         : tfmt("menuTray.chipMany", { n }) ||
-                          trayCopyFallback("menuTray.chipMany", n + " món đã đặt", n + " items placed");
+                          trayCopy("menuTray.chipMany");
                 }
                 if (opts.animateChip && n > 0 && !reducedMotionTray()) {
                     void chipTitle.offsetWidth;
@@ -1856,49 +1738,29 @@ function __annapMenuRuntimeJsonSelfCheck() {
             if (chipSub) {
                 if (submitted) {
                     if (state === TRAY_STATE.COMPLETED) {
-                        chipSub.textContent = trayCopyFallback("menuTray.chipCompleteBody", "Cảm ơn bạn đã ghé Annap.", "Thank you for visiting Annap.");
+                        chipSub.textContent = trayCopy("menuTray.chipCompleteBody");
                     } else if (state === TRAY_STATE.PAID) {
-                        chipSub.textContent = trayCopyFallback(
-                            "menuTray.chipPreparingShort",
-                            "Đơn đang chuẩn bị",
-                            "Order in preparation"
-                        );
+                        chipSub.textContent = trayCopy("menuTray.chipPreparingShort");
                     } else if (state === TRAY_STATE.SUBMITTED_BANK) {
-                        chipSub.textContent = trayCopyFallback(
-                            "checkout.waitingBankTransfer",
-                            "Chờ chuyển khoản",
-                            "Waiting for bank transfer"
-                        );
+                        chipSub.textContent = trayCopy("checkout.waitingBankTransfer");
                     } else if (state === TRAY_STATE.SUBMITTED_CARD) {
-                        chipSub.textContent = trayCopyFallback(
-                            "checkout.waitingCardPayment",
-                            "Chờ thanh toán bằng thẻ tại quầy",
-                            "Waiting for card payment at counter"
-                        );
+                        chipSub.textContent = trayCopy("checkout.waitingCardPayment");
                     } else if (
                         state === TRAY_STATE.SUBMITTED_CASH ||
                         state === TRAY_STATE.SUBMITTED_COUNTER ||
                         state === TRAY_STATE.SUBMITTED_PENDING
                     ) {
-                        chipSub.textContent = trayCopyFallback(
-                            "checkout.waitingCashPayment",
-                            "Chờ thanh toán tiền mặt tại quầy",
-                            "Waiting for cash payment at counter"
-                        );
+                        chipSub.textContent = trayCopy("checkout.waitingCashPayment");
                     } else {
-                        chipSub.textContent = trayCopyFallback(
-                            "menuTray.chipSubmittedBody",
-                            "Nhân viên sẽ đến kiểm tra lại đơn và hỗ trợ thanh toán.",
-                            "Staff will come to confirm your order and help with payment."
-                        );
+                        chipSub.textContent = trayCopy("menuTray.chipSubmittedBody");
                     }
                 } else {
                     chipSub.textContent =
                         n === 0
                             ? isSommelierFlowActive()
-                                ? trayCopyFallback("menuTray.chipSubSomm", "Chọn một ly để bắt đầu.", "Choose a drink to begin.")
-                                : trayCopyFallback("menuTray.chipSubEmpty", "Chọn một ly để bắt đầu.", "Choose a drink to begin.")
-                            : trayCopyFallback("menuTray.chipSubFilledShort", "Chạm để mở", "Tap to open");
+                                ? trayCopy("menuTray.chipSubSomm")
+                                : trayCopy("menuTray.chipSubEmpty")
+                            : trayCopy("menuTray.chipSubFilledShort");
                 }
             }
             if (chipTotal) {
@@ -1960,7 +1822,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                         ? String(window.__annapActiveGroupGuestLabel).trim()
                         : "";
                 if (gb && activeLab) {
-                    const pour = tOrder("menuTray.chipGuestPouring") || "Pouring for";
+                    const pour = tOrder("menuTray.chipGuestPouring");
                     chipGuest.textContent = `${pour} · ${activeLab}`;
                     chipGuest.classList.remove("hidden");
                 } else {
@@ -1989,7 +1851,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 name: incoming.name,
                 unitPrice: incoming.unitPrice,
                 imageSrc: incoming.imageSrc,
-                selectionFallback: tOrder("cart.selectionFallback") || "Selection",
+                selectionFallback: tOrder("cart.selectionFallback"),
                 sourceElement: btn || null,
                 guestLabel: gl
             });
@@ -2192,7 +2054,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             const btn = document.getElementById("menuSubmitBtn");
             if (btn) {
                 btn.classList.remove("order-tray-submit--success", "order-tray-submit--pulse");
-                btn.textContent = tOrder("menuTray.requestPreparation") || "Request preparation";
+                btn.textContent = tOrder("menuTray.requestPreparation");
             }
             updateTraySummary();
             refreshTableIdentityUi();
@@ -2301,7 +2163,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     else letter.appendChild(pill);
                 }
                 pill.textContent =
-                    (tOrder("menuTray.itemNotePreview") || trayCopyFallback("menuTray.itemNotePreview", "Ghi chú:", "Note:")) +
+                    (tOrder("menuTray.itemNotePreview")) +
                     " " +
                     noteText;
             } else if (pill) {
@@ -2354,15 +2216,15 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     return;
                 }
                 el.className = "order-tray-lines order-tray-lines--correspondence pb-1 text-sm";
-                const emptyMsg = escapeHtml(tOrder("menuTray.emptyBody") || "");
-                el.innerHTML = `<p class="order-tray-empty">${emptyMsg || trayCopyFallback("menuTray.emptyBody", "Thêm một ly từ gợi ý hoặc thực đơn — khay sẽ hiện tại đây.", "Add a cup from a suggestion or the menu — it will appear here.")}</p>`;
+                const emptyMsg = escapeHtml(tOrder("menuTray.emptyBody"));
+                el.innerHTML = `<p class="order-tray-empty">${emptyMsg || trayCopy("menuTray.emptyBody")}</p>`;
                 return;
             }
 
             function descriptorForLine(line) {
                 const gl = line.guestLabel || "";
                 if (gl) return gl;
-                return trayCopyFallback("menuTray.lineDescriptor", "Pha tại 106/1", "Curated at 106/1");
+                return trayCopy("menuTray.lineDescriptor");
             }
 
             function appendMenuLineRow(line, rowIndex) {
@@ -2401,7 +2263,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 const noteText = line.customerNote && String(line.customerNote).trim() ? String(line.customerNote).trim() : "";
                 const noteExpanded = expandedItemNoteKeys.has(noteKey);
                 const notePreviewLabel =
-                    tOrder("menuTray.itemNotePreview") || trayCopyFallback("menuTray.itemNotePreview", "Ghi chú:", "Note:");
+                    tOrder("menuTray.itemNotePreview");
                 let noteBlock = "";
                 if (noteText && !noteExpanded) {
                     noteBlock = `<p class="tray-line-customer-note tray-line-customer-note--pill">${escapeHtml(
@@ -2417,7 +2279,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 noteToggle.className = "tray-line-note-toggle guest-hit";
                 noteToggle.textContent =
                     tOrder("menuTray.itemNoteAction") ||
-                    trayCopyFallback("menuTray.itemNoteAction", "Ghi chú", "Note");
+                    trayCopy("menuTray.itemNoteAction");
                 noteToggle.addEventListener("click", function (ev) {
                     stopNoteEditorEvent(ev);
                     if (noteExpanded) {
@@ -2441,7 +2303,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     ta.setAttribute("autocorrect", "on");
                     ta.placeholder =
                         tOrder("menuTray.itemNotePlaceholder") ||
-                        trayCopyFallback("menuTray.itemNotePlaceholder", "Ví dụ: ít đá, ít đường...", "e.g. less ice, less sugar...");
+                        trayCopy("menuTray.itemNotePlaceholder");
                     ta.value = line.customerNote != null ? String(line.customerNote) : noteText;
                     ta.addEventListener("input", function (ev) {
                         stopNoteEditorEvent(ev);
@@ -2495,7 +2357,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 const removeBtn = document.createElement("button");
                 removeBtn.type = "button";
                 removeBtn.className = "tray-correspondence-card__release order-tray-remove";
-                removeBtn.setAttribute("aria-label", (tOrder("menuTray.remove") || "Remove") + " " + line.name);
+                removeBtn.setAttribute("aria-label", (tOrder("menuTray.remove")) + " " + line.name);
                 removeBtn.textContent = "×";
                 removeBtn.addEventListener("click", () => removeLine(line.id, line.guestLabel));
 
@@ -2530,7 +2392,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                         emptyP.className =
                             "rounded-2xl bg-[rgba(253,249,244,0.55)] px-4 py-3 text-sm text-[rgb(var(--muted))] ring-1 ring-[rgba(212,184,150,0.4)] mb-2";
                         emptyP.textContent =
-                            tOrder("menuTray.emptyGuestSection") || "No cups for this guest yet.";
+                            tOrder("menuTray.emptyGuestSection");
                         el.appendChild(emptyP);
                         continue;
                     }
@@ -2551,7 +2413,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     return;
                 }
                 const msg =
-                    tOrder("menuTray.emptyGuest") || "This guest has no cups on the tray yet — tap a drink to add one.";
+                    tOrder("menuTray.emptyGuest");
                 el.innerHTML = `<p class="rounded-2xl bg-white/[0.03] px-4 py-8 text-center text-sm text-[rgb(var(--muted))] ring-1 ring-white/[0.06]">${escapeHtml(msg)}</p>`;
                 return;
             }
@@ -2576,11 +2438,11 @@ function __annapMenuRuntimeJsonSelfCheck() {
             if (!VENUE_TABLE_ID) {
                 if (orderResult)
                     orderResult.textContent =
-                        tOrder("order.needTableScan") || tOrder("order.needTable") || "Please scan the table QR to begin.";
+                        tOrder("order.needTableScan") || tOrder("order.needTable");
                 return;
             }
             if (cartItems.size === 0) {
-                if (orderResult) orderResult.textContent = tOrder("order.minOne") || "Your tray is empty.";
+                if (orderResult) orderResult.textContent = tOrder("order.minOne");
                 return;
             }
             if (checkoutStep !== "payment") {
@@ -2588,7 +2450,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 return;
             }
             if (!selectedPaymentMethod) {
-                if (orderResult) orderResult.textContent = tOrder("checkout.choosePayment") || "Choose payment method.";
+                if (orderResult) orderResult.textContent = tOrder("checkout.choosePayment");
                 return;
             }
             if (menuOrderSubmitInFlight) return;
@@ -2603,13 +2465,13 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 if (!menuOrderIdempotencyKey) {
                     if (orderResult)
                         orderResult.textContent =
-                            tOrder("order.submitFailed") || "We could not prepare your tray receipt. Refresh and try again.";
+                            tOrder("order.submitFailed");
                     return;
                 }
 
                 if (btn) btn.setAttribute("disabled", "disabled");
                 if (btn) {
-                    btn.textContent = tOrder("order.submitting") || "Sending to the 106/1 bar…";
+                    btn.textContent = tOrder("order.submitting");
                     btn.classList.remove("order-tray-submit--success", "order-tray-submit--pulse");
                     btn.classList.add("order-tray-submit--preparing");
                 }
@@ -2650,8 +2512,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                         window.GuestOrderQueue.enqueue(VENUE_TABLE_ID, items, menuOrderIdempotencyKey, submitPaymentMethod);
                     if (orderResult)
                         orderResult.textContent =
-                            tOrder("order.queuedSoft") ||
-                            "The line softened for a moment — we will place this tray when the room is steady again.";
+                            tOrder("order.queuedSoft");
                     restoreSubmitButtonState(btn, prepLabel);
                     refreshTableIdentityUi();
                     return;
@@ -2664,11 +2525,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     const er = String((payload && payload.error) || "").toLowerCase();
                     let msg =
                         tOrder("order.submitFailedRetry") ||
-                        trayCopyFallback(
-                            "order.submitFailedRetry",
-                            "Không gửi được đơn. Vui lòng thử lại hoặc gọi nhân viên.",
-                            "We could not send your order. Please try again or call staff."
-                        );
+                        trayCopy("order.submitFailedRetry");
                     if (res.status === 400) {
                         menuOrderIdempotencyKey = null;
                         if (er.includes("scan") || er.includes("table qr") || er.includes("seat"))
@@ -2681,18 +2538,15 @@ function __annapMenuRuntimeJsonSelfCheck() {
                             msg = tOrder("order.minOne") || msg;
                     } else if (er === "database_migration_required") {
                         msg =
-                            tOrder("order.serverMaintenance") ||
-                            "Hệ thống đang cập nhật — vui lòng gọi nhân viên để gửi đơn.";
+                            tOrder("order.serverMaintenance");
                     } else if (res.status === 429) {
                         if (window.GuestOrderQueue)
                             window.GuestOrderQueue.enqueue(VENUE_TABLE_ID, items, menuOrderIdempotencyKey, submitPaymentMethod);
                         msg =
-                            tOrder("order.queuedSoft") ||
-                            "The line softened for a moment — we will place this tray when the room is steady again.";
+                            tOrder("order.queuedSoft");
                     } else if (res.status >= 500) {
                         msg =
-                            tOrder("order.submitFailedStaff") ||
-                            "Không gửi được đơn, vui lòng gọi nhân viên.";
+                            tOrder("order.submitFailedStaff");
                     }
                     __annapTrayPaymentDevLog("submit failed", { status: res.status, error: er || null });
                     if (orderResult) orderResult.textContent = msg;
@@ -2710,11 +2564,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     if (orderResult)
                         orderResult.textContent =
                             tOrder("order.submitFailedRetry") ||
-                            trayCopyFallback(
-                                "order.submitFailedRetry",
-                                "Không gửi được đơn. Vui lòng thử lại hoặc gọi nhân viên.",
-                                "We could not send your order. Please try again or call staff."
-                            );
+                            trayCopy("order.submitFailedRetry");
                     restoreSubmitButtonState(btn, prepLabel);
                     refreshTableIdentityUi();
                     return;
@@ -2877,7 +2727,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 renderCart();
                 const btn = document.getElementById("menuSubmitBtn");
                 if (btn && !btn.classList.contains("order-tray-submit--success"))
-                    btn.textContent = tOrder("checkout.reviewOrder") || "Review order";
+                    btn.textContent = tOrder("checkout.reviewOrder");
             } catch (eI18n) {
                 __annapMenuBootErr("[ANNAP MENU BOOT] luxury:i18n-changed handler failed", eI18n);
             }

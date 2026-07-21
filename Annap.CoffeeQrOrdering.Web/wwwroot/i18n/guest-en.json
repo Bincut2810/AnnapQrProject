@@ -1,6 +1,6 @@
 {
   "lang": "en",
-  "nav": { "menu": "Menu", "staff": "Staff", "privacy": "Privacy" },
+  "nav": { "menu": "Menu", "staff": "Staff", "privacy": "Privacy", "siteAria": "Site" },
   "langSwitcher": { "en": "EN", "vi": "VI", "label": "Language" },
   "home": {
     "brand": "Annap Coffee Atelier",
@@ -115,6 +115,7 @@
       "reviewSummary": "Review table summary",
       "backToGuests": "Back to guests",
       "backAria": "Back to arrival",
+      "signatureDrinksAria": "Signature drinks",
       "guestLabel": "Guest {n}",
       "countPromptFallback": "How many guests?",
       "summaryKickerFallback": "Your table",
@@ -165,6 +166,10 @@
           "caffeine": "Temperature",
           "flavor": "Flavor",
           "experience": "Experience",
+          "direction": "Direction",
+          "detail": "Detail",
+          "preference": "Preference",
+          "finish": "Finish",
           "writing": "Annap is choosing a cup to match this note.",
           "prepare": "Preparing today's cup"
         },
@@ -547,7 +552,22 @@
     "more_adventurous": { "label": "Push further", "snippet": "guest invites the tray to wander further—bolder layers, curiosity, shadow" },
     "low_caffeine": { "label": "Lower caffeine", "snippet": "guest wishes a gentler arc of caffeine—soft evening, steady hand" }
   },
-  "errors": { "sommelierEmptyPrompt": "Please share a few words about how you would like to feel." },
+  "errors": {
+    "sommelierEmptyPrompt": "Please share a few words about how you would like to feel.",
+    "genericTitle": "Something went wrong",
+    "genericLede": "We could not complete your request. Please try again or return to the menu.",
+    "404Title": "Page not found",
+    "404Lede": "The link may have changed or this table is not configured. Return to the menu to continue.",
+    "403Title": "Access denied",
+    "403Lede": "You cannot open this page.",
+    "503Title": "Maintenance",
+    "503Lede": "The shop is briefly maintaining systems. Please try again shortly.",
+    "offlineTitle": "You are offline",
+    "offlineLede": "No network connection. Check Wi‑Fi and try again.",
+    "backToMenu": "Back to menu",
+    "retry": "Try again",
+    "referenceId": "Reference ID"
+  },
   "cart": {
     "title": "Order tray",
     "subtitle": "Quietly prepared. Confirm when ready.",

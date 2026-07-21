@@ -1,6 +1,6 @@
 {
   "lang": "vi",
-  "nav": { "menu": "Thực đơn", "staff": "Đội phục vụ", "privacy": "Riêng tư" },
+  "nav": { "menu": "Thực đơn", "staff": "Đội phục vụ", "privacy": "Riêng tư", "siteAria": "Điều hướng trang" },
   "langSwitcher": { "en": "EN", "vi": "VI", "label": "Ngôn ngữ" },
   "home": {
     "brand": "Annap Coffee Atelier",
@@ -115,6 +115,7 @@
       "reviewSummary": "Xem tổng lựa chọn bàn",
       "backToGuests": "Quay về danh sách khách",
       "backAria": "Quay lại trang chào",
+      "signatureDrinksAria": "Ly signature",
       "guestLabel": "Khách {n}",
       "countPromptFallback": "Bàn có mấy khách?",
       "summaryKickerFallback": "Bàn của bạn",
@@ -165,6 +166,10 @@
           "caffeine": "Nhiệt độ",
           "flavor": "Hương vị",
           "experience": "Cảm giác",
+          "direction": "Hướng",
+          "detail": "Chi tiết",
+          "preference": "Sở thích",
+          "finish": "Kết",
           "writing": "Annap đang chọn một món hợp với ghi chú này.",
           "prepare": "Chuẩn bị ly dành riêng cho hôm nay"
         },
@@ -603,7 +608,20 @@
     }
   },
   "errors": {
-    "sommelierEmptyPrompt": "Cho chúng tôi vài dòng về bạn muốn cảm thấy thế nào hôm nay."
+    "sommelierEmptyPrompt": "Cho chúng tôi vài dòng về bạn muốn cảm thấy thế nào hôm nay.",
+    "genericTitle": "Đã xảy ra lỗi",
+    "genericLede": "Chúng tôi không thể hoàn tất yêu cầu của bạn. Vui lòng thử lại hoặc quay lại thực đơn.",
+    "404Title": "Không tìm thấy trang",
+    "404Lede": "Liên kết có thể đã đổi hoặc bàn chưa được cấu hình. Quay lại menu để tiếp tục.",
+    "403Title": "Không có quyền truy cập",
+    "403Lede": "Bạn không thể mở trang này.",
+    "503Title": "Tạm bảo trì",
+    "503Lede": "Quán đang bảo trì hệ thống trong giây lát. Vui lòng thử lại sau.",
+    "offlineTitle": "Bạn đang offline",
+    "offlineLede": "Không có kết nối mạng. Kiểm tra Wi‑Fi rồi thử lại.",
+    "backToMenu": "Quay lại menu",
+    "retry": "Thử lại",
+    "referenceId": "Mã tham chiếu"
   },
   "cart": {
     "title": "Lựa chọn của bạn",

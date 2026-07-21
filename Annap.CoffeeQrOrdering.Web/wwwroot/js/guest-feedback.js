@@ -33,7 +33,7 @@
     function showAddedToast() {
         if (window.AddToOrderAnimationProvider && window.AddToOrderAnimationProvider.handlesAmbientConfirmation) return;
         function go() {
-            showToast(tToastLong() || "Added to your tray.");
+            showToast(tToastLong());
         }
         if (window.LuxuryI18n && LuxuryI18n.ready) LuxuryI18n.ready.then(go).catch(go);
         else go();

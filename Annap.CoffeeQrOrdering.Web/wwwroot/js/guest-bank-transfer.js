@@ -15,13 +15,12 @@
         } catch (_e) {}
     }
 
-    function t(key, fallbackVi, fallbackEn) {
+    function t(key) {
         if (window.LuxuryI18n && typeof window.LuxuryI18n.t === "function") {
             var v = window.LuxuryI18n.t(key);
             if (v && v !== key) return v;
         }
-        var lang = (window.LuxuryI18n && window.LuxuryI18n.lang && window.LuxuryI18n.lang()) || "vi";
-        return lang === "en" ? fallbackEn || fallbackVi : fallbackVi;
+        return key;
     }
 
     function escapeHtml(s) {
@@ -64,7 +63,7 @@
         if (!text) return Promise.resolve(false);
         var done = function () {
             if (feedbackEl) {
-                feedbackEl.textContent = t("checkout.copyDone", "Đã sao chép.", "Copied.");
+                feedbackEl.textContent = t("checkout.copyDone");
                 window.setTimeout(function () {
                     feedbackEl.textContent = "";
                 }, 1800);
@@ -117,7 +116,7 @@
             return (
                 '<div class="guest-bank-transfer guest-bank-transfer--disabled" role="status">' +
                 '<p class="guest-bank-transfer__message">' +
-                escapeHtml(qr.message || t("checkout.bankTransferUnavailable", "Chuyển khoản chưa được cấu hình. Vui lòng thanh toán tại quầy.", "Bank transfer is not configured. Please pay at the counter.")) +
+                escapeHtml(qr.message || t("checkout.bankTransferUnavailable")) +
                 "</p></div>"
             );
         }
@@ -125,35 +124,35 @@
             return (
                 '<div class="guest-bank-transfer guest-bank-transfer--paid" role="status">' +
                 '<p class="guest-bank-transfer__message">' +
-                escapeHtml(qr.message || t("checkout.bankTransferPaid", "Thanh toán đã được xác nhận.", "Payment has been confirmed.")) +
+                escapeHtml(qr.message || t("checkout.bankTransferPaid")) +
                 "</p></div>"
             );
         }
         var img = qr.qrImageUrl
-            ? '<img class="guest-bank-transfer__qr" src="' + attrEscape(qr.qrImageUrl) + '" alt="' + escapeHtml(t("checkout.transferQrAlt", "Mã QR chuyển khoản Annap", "Annap transfer QR")) + '" loading="eager" decoding="async" />'
+            ? '<img class="guest-bank-transfer__qr" src="' + attrEscape(qr.qrImageUrl) + '" alt="' + escapeHtml(t("checkout.transferQrAlt")) + '" loading="eager" decoding="async" />'
             : "";
         var bankLine = [qr.bankName, qr.accountNumber, qr.accountName].filter(Boolean).join(" · ");
         var amountText = qr.amountFormatted || "";
         var bankMeta =
             qr.bankName || qr.accountNumber || qr.accountName
                 ? '<div><dt>' +
-                  escapeHtml(t("checkout.transferBank", "Ngân hàng", "Bank")) +
+                  escapeHtml(t("checkout.transferBank")) +
                   '</dt><dd>' +
                   escapeHtml(qr.bankName || "—") +
                   "</dd></div>" +
                   '<div><dt>' +
-                  escapeHtml(t("checkout.transferAccountNumber", "Số tài khoản", "Account number")) +
+                  escapeHtml(t("checkout.transferAccountNumber")) +
                   '</dt><dd class="guest-bank-transfer__account">' +
                   escapeHtml(qr.accountNumber || "—") +
                   "</dd></div>" +
                   '<div><dt>' +
-                  escapeHtml(t("checkout.transferAccountHolder", "Chủ tài khoản", "Account holder")) +
+                  escapeHtml(t("checkout.transferAccountHolder")) +
                   '</dt><dd>' +
                   escapeHtml(qr.accountName || "—") +
                   "</dd></div>"
                 : bankLine
                   ? '<div><dt>' +
-                    escapeHtml(t("checkout.transferAccount", "Tài khoản", "Account")) +
+                    escapeHtml(t("checkout.transferAccount")) +
                     "</dt><dd>" +
                     escapeHtml(bankLine) +
                     "</dd></div>"
@@ -161,7 +160,7 @@
         if (compact) {
             return (
                 '<div class="guest-bank-transfer guest-bank-transfer--tray" role="region" aria-label="' +
-                escapeHtml(t("checkout.bankTransfer", "Chuyển khoản", "Bank transfer")) +
+                escapeHtml(t("checkout.bankTransfer")) +
                 '">' +
                 (img
                     ? '<div class="guest-bank-transfer__qr-wrap">' +
@@ -201,7 +200,7 @@
                 "</p>" +
                 '<dl class="guest-bank-transfer__meta">' +
                 '<div><dt>' +
-                escapeHtml(t("checkout.transferMemo", "Nội dung", "Transfer memo")) +
+                escapeHtml(t("checkout.transferMemo")) +
                 '</dt><dd class="guest-bank-transfer__memo">' +
                 escapeHtml(qr.memo || "") +
                 "</dd></div>" +
@@ -211,15 +210,15 @@
                 '<button type="button" class="guest-bank-transfer__copy guest-hit" data-copy-memo="' +
                 escapeHtml(qr.memo || "") +
                 '">' +
-                escapeHtml(t("checkout.copyMemo", "Sao chép nội dung", "Copy memo")) +
+                escapeHtml(t("checkout.copyMemo")) +
                 "</button>" +
                 '<button type="button" class="guest-bank-transfer__copy guest-hit" data-copy-amount="' +
                 escapeHtml(String(qr.amount || "")) +
                 '">' +
-                escapeHtml(t("checkout.copyAmount", "Sao chép số tiền", "Copy amount")) +
+                escapeHtml(t("checkout.copyAmount")) +
                 "</button>" +
                 '<button type="button" class="guest-bank-transfer__copy guest-hit" data-bt-retry="1">' +
-                escapeHtml(t("checkout.transferRetry", "Tải lại mã QR", "Retry transfer QR")) +
+                escapeHtml(t("checkout.transferRetry")) +
                 "</button>" +
                 "</div>" +
                 "</div>" +
@@ -228,13 +227,13 @@
             );
         }
         return (
-            '<div class="guest-bank-transfer' + (compact ? " guest-bank-transfer--tray" : "") + '" role="region" aria-label="' + escapeHtml(t("checkout.bankTransfer", "Chuyển khoản", "Bank transfer")) + '">' +
-            (compact ? "" : '<p class="guest-bank-transfer__title">' + escapeHtml(t("checkout.bankTransfer", "Chuyển khoản", "Bank transfer")) + "</p>") +
+            '<div class="guest-bank-transfer' + (compact ? " guest-bank-transfer--tray" : "") + '" role="region" aria-label="' + escapeHtml(t("checkout.bankTransfer")) + '">' +
+            (compact ? "" : '<p class="guest-bank-transfer__title">' + escapeHtml(t("checkout.bankTransfer")) + "</p>") +
             (img
                 ? '<div class="guest-bank-transfer__qr-wrap">' +
                   img +
                   '<p class="guest-bank-transfer__qr-fallback hidden" role="status">' +
-                  escapeHtml(t("checkout.transferQrLoadFailed", "Không tải được mã QR. Bạn vẫn có thể chuyển khoản bằng thông tin bên dưới.", "Could not load the QR code. You can still transfer using the details below.")) +
+                  escapeHtml(t("checkout.transferQrLoadFailed")) +
                   "</p></div>"
                 : "") +
             '<p class="guest-bank-transfer__amount">' + escapeHtml(amountText) + "</p>" +
@@ -260,20 +259,20 @@
                   "</p></div>"
                 : "") +
             '<dl class="guest-bank-transfer__meta">' +
-            '<div><dt>' + escapeHtml(t("checkout.transferMemo", "Nội dung", "Transfer memo")) + '</dt><dd class="guest-bank-transfer__memo">' + escapeHtml(qr.memo || "") + "</dd></div>" +
+            '<div><dt>' + escapeHtml(t("checkout.transferMemo")) + '</dt><dd class="guest-bank-transfer__memo">' + escapeHtml(qr.memo || "") + "</dd></div>" +
             bankMeta +
             "</dl>" +
             (compact
                 ? ""
                 : '<p class="guest-bank-transfer__note">' +
-                  escapeHtml(qr.message || t("checkout.transferExactNote", "Vui lòng chuyển đúng số tiền và nội dung để nhân viên xác nhận nhanh hơn.", "Please transfer the exact amount and memo so staff can confirm faster.")) +
+                  escapeHtml(qr.message || t("checkout.transferExactNote")) +
                   "</p>") +
             '<div class="guest-bank-transfer__actions">' +
             '<button type="button" class="guest-bank-transfer__copy guest-hit" data-copy-memo="' + escapeHtml(qr.memo || "") + '">' +
-            escapeHtml(t("checkout.copyMemo", "Sao chép nội dung", "Copy memo")) +
+            escapeHtml(t("checkout.copyMemo")) +
             "</button>" +
             '<button type="button" class="guest-bank-transfer__copy guest-hit" data-copy-amount="' + escapeHtml(String(qr.amount || "")) + '">' +
-            escapeHtml(t("checkout.copyAmount", "Sao chép số tiền", "Copy amount")) +
+            escapeHtml(t("checkout.copyAmount")) +
             "</button>" +
             "</div>" +
             '<p class="guest-bank-transfer__feedback" aria-live="polite"></p>' +

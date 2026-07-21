@@ -32,10 +32,10 @@
   <script>
     function paintOffline() {
       if (!window.LuxuryI18n) return;
-      document.getElementById("offline-brand").textContent = LuxuryI18n.t("ops.common.brand") || "Annap Coffee Atelier";
-      document.getElementById("offline-title").textContent = LuxuryI18n.t("ops.error.offlineTitle");
-      document.getElementById("offline-lede").textContent = LuxuryI18n.t("ops.error.offlineLede");
-      document.getElementById("offline-retry").textContent = LuxuryI18n.t("ops.common.retry");
+      document.getElementById("offline-brand").textContent = LuxuryI18n.t("home.brand");
+      document.getElementById("offline-title").textContent = LuxuryI18n.t("errors.offlineTitle");
+      document.getElementById("offline-lede").textContent = LuxuryI18n.t("errors.offlineLede");
+      document.getElementById("offline-retry").textContent = LuxuryI18n.t("errors.retry");
       document.documentElement.lang = LuxuryI18n.getLang() === "vi" ? "vi" : "en";
     }
     (window.LuxuryI18n && LuxuryI18n.ready ? LuxuryI18n.ready : Promise.resolve()).then(paintOffline);

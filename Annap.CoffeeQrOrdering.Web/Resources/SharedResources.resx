@@ -107,6 +107,19 @@
   <data name="drink.sourcedFrom" xml:space="preserve"><value>Sourced from</value></data>
   <data name="drink.sweetness" xml:space="preserve"><value>Sweetness</value></data>
   <data name="drink.tastingNotes" xml:space="preserve"><value>Tasting notes</value></data>
+  <data name="errors.403Lede" xml:space="preserve"><value>You cannot open this page.</value></data>
+  <data name="errors.403Title" xml:space="preserve"><value>Access denied</value></data>
+  <data name="errors.404Lede" xml:space="preserve"><value>The link may have changed or this table is not configured. Return to the menu to continue.</value></data>
+  <data name="errors.404Title" xml:space="preserve"><value>Page not found</value></data>
+  <data name="errors.503Lede" xml:space="preserve"><value>The shop is briefly maintaining systems. Please try again shortly.</value></data>
+  <data name="errors.503Title" xml:space="preserve"><value>Maintenance</value></data>
+  <data name="errors.backToMenu" xml:space="preserve"><value>Back to menu</value></data>
+  <data name="errors.genericLede" xml:space="preserve"><value>We could not complete your request. Please try again or return to the menu.</value></data>
+  <data name="errors.genericTitle" xml:space="preserve"><value>Something went wrong</value></data>
+  <data name="errors.offlineLede" xml:space="preserve"><value>No network connection. Check Wi‑Fi and try again.</value></data>
+  <data name="errors.offlineTitle" xml:space="preserve"><value>You are offline</value></data>
+  <data name="errors.referenceId" xml:space="preserve"><value>Reference ID</value></data>
+  <data name="errors.retry" xml:space="preserve"><value>Try again</value></data>
   <data name="errors.sommelierEmptyPrompt" xml:space="preserve"><value>Please share a few words about how you would like to feel.</value></data>
   <data name="ge.arrival.beginTasting" xml:space="preserve"><value>Please come in</value></data>
   <data name="ge.arrival.curatedEmptyTitle" xml:space="preserve"><value>Experience temporarily being curated.</value></data>
@@ -161,6 +174,7 @@
   <data name="ge.group.seatGuests" xml:space="preserve"><value>Seat the guests</value></data>
   <data name="ge.group.sigAddToTray" xml:space="preserve"><value>Send to my table</value></data>
   <data name="ge.group.sigDetail" xml:space="preserve"><value>Detail</value></data>
+  <data name="ge.group.signatureDrinksAria" xml:space="preserve"><value>Signature drinks</value></data>
   <data name="ge.group.signatureHeading" xml:space="preserve"><value>Signature cups for the table</value></data>
   <data name="ge.group.summaryKickerFallback" xml:space="preserve"><value>Your table</value></data>
   <data name="ge.group.summaryTitleFallback" xml:space="preserve"><value>Table summary</value></data>
@@ -290,9 +304,13 @@
   <data name="ge.sommelier.tasting.micro3" xml:space="preserve"><value>Naming tonight&apos;s origin</value></data>
   <data name="ge.sommelier.tasting.note.base" xml:space="preserve"><value>Cup style</value></data>
   <data name="ge.sommelier.tasting.note.caffeine" xml:space="preserve"><value>Temperature</value></data>
+  <data name="ge.sommelier.tasting.note.detail" xml:space="preserve"><value>Detail</value></data>
+  <data name="ge.sommelier.tasting.note.direction" xml:space="preserve"><value>Direction</value></data>
   <data name="ge.sommelier.tasting.note.experience" xml:space="preserve"><value>Experience</value></data>
+  <data name="ge.sommelier.tasting.note.finish" xml:space="preserve"><value>Finish</value></data>
   <data name="ge.sommelier.tasting.note.flavor" xml:space="preserve"><value>Flavor</value></data>
   <data name="ge.sommelier.tasting.note.mood" xml:space="preserve"><value>Feeling</value></data>
+  <data name="ge.sommelier.tasting.note.preference" xml:space="preserve"><value>Preference</value></data>
   <data name="ge.sommelier.tasting.note.prepare" xml:space="preserve"><value>Preparing today&apos;s cup</value></data>
   <data name="ge.sommelier.tasting.note.sweet" xml:space="preserve"><value>Milk tone</value></data>
   <data name="ge.sommelier.tasting.note.title" xml:space="preserve"><value>Writing your tasting letter</value></data>
@@ -508,113 +526,8 @@
   <data name="moods.slow.title" xml:space="preserve"><value>Slow &amp; comforting</value></data>
   <data name="nav.menu" xml:space="preserve"><value>Menu</value></data>
   <data name="nav.privacy" xml:space="preserve"><value>Privacy</value></data>
+  <data name="nav.siteAria" xml:space="preserve"><value>Site</value></data>
   <data name="nav.staff" xml:space="preserve"><value>Staff</value></data>
-  <data name="ops.admin.dashboard.eyebrow" xml:space="preserve"><value>Administration</value></data>
-  <data name="ops.admin.dashboard.returnGuest" xml:space="preserve"><value>← Back to guest site</value></data>
-  <data name="ops.admin.dashboard.title" xml:space="preserve"><value>Operations dashboard</value></data>
-  <data name="ops.admin.nav.close" xml:space="preserve"><value>Close</value></data>
-  <data name="ops.admin.nav.mobileLabel" xml:space="preserve"><value>Mobile navigation</value></data>
-  <data name="ops.admin.nav.navigation" xml:space="preserve"><value>Navigation</value></data>
-  <data name="ops.admin.nav.openNav" xml:space="preserve"><value>Open navigation</value></data>
-  <data name="ops.admin.nav.primary" xml:space="preserve"><value>Primary</value></data>
-  <data name="ops.admin.topbar.floor" xml:space="preserve"><value>Service floor</value></data>
-  <data name="ops.admin.topbar.logout" xml:space="preserve"><value>Sign out</value></data>
-  <data name="ops.admin.topbar.manage" xml:space="preserve"><value>Manage</value></data>
-  <data name="ops.admin.topbar.searchLabel" xml:space="preserve"><value>Search</value></data>
-  <data name="ops.admin.topbar.searchPlaceholder" xml:space="preserve"><value>Find drinks, tables, or notes…</value></data>
-  <data name="ops.common.adminSuffix" xml:space="preserve"><value>Administration</value></data>
-  <data name="ops.common.backToMenu" xml:space="preserve"><value>Back to menu</value></data>
-  <data name="ops.common.brand" xml:space="preserve"><value>Annap Coffee Atelier</value></data>
-  <data name="ops.common.cancel" xml:space="preserve"><value>Cancel</value></data>
-  <data name="ops.common.close" xml:space="preserve"><value>Close</value></data>
-  <data name="ops.common.langEn" xml:space="preserve"><value>EN</value></data>
-  <data name="ops.common.language" xml:space="preserve"><value>Language</value></data>
-  <data name="ops.common.langVi" xml:space="preserve"><value>VI</value></data>
-  <data name="ops.common.loading" xml:space="preserve"><value>Loading…</value></data>
-  <data name="ops.common.referenceId" xml:space="preserve"><value>Reference ID</value></data>
-  <data name="ops.common.retry" xml:space="preserve"><value>Try again</value></data>
-  <data name="ops.common.save" xml:space="preserve"><value>Save</value></data>
-  <data name="ops.common.staffSuffix" xml:space="preserve"><value>Staff</value></data>
-  <data name="ops.error.403Lede" xml:space="preserve"><value>You cannot open this page. If you are staff, please sign in again.</value></data>
-  <data name="ops.error.403Title" xml:space="preserve"><value>Access denied</value></data>
-  <data name="ops.error.404Lede" xml:space="preserve"><value>The link may have changed or this table is not configured. Return to the menu to continue.</value></data>
-  <data name="ops.error.404Title" xml:space="preserve"><value>Page not found</value></data>
-  <data name="ops.error.503Lede" xml:space="preserve"><value>The shop is briefly maintaining systems. Please try again shortly.</value></data>
-  <data name="ops.error.503Title" xml:space="preserve"><value>Maintenance</value></data>
-  <data name="ops.error.genericLede" xml:space="preserve"><value>We could not complete your request. Please try again or return to the menu.</value></data>
-  <data name="ops.error.genericTitle" xml:space="preserve"><value>Something went wrong</value></data>
-  <data name="ops.error.offlineLede" xml:space="preserve"><value>No network connection. Check Wi‑Fi and try again.</value></data>
-  <data name="ops.error.offlineTitle" xml:space="preserve"><value>You are offline</value></data>
-  <data name="ops.staff.layout.adminLink" xml:space="preserve"><value>Admin</value></data>
-  <data name="ops.staff.layout.adminLinkTitle" xml:space="preserve"><value>Shop administration</value></data>
-  <data name="ops.staff.layout.login" xml:space="preserve"><value>Staff sign-in</value></data>
-  <data name="ops.staff.layout.logout" xml:space="preserve"><value>Sign out</value></data>
-  <data name="ops.staff.layout.menu" xml:space="preserve"><value>Menu</value></data>
-  <data name="ops.staff.layout.staffActions" xml:space="preserve"><value>Staff actions</value></data>
-  <data name="ops.staff.layout.switchStaff" xml:space="preserve"><value>Switch staff</value></data>
-  <data name="ops.staff.login.password" xml:space="preserve"><value>Password</value></data>
-  <data name="ops.staff.login.passwordHint" xml:space="preserve"><value>If using a shared counter password, you may leave username blank.</value></data>
-  <data name="ops.staff.login.passwordPlaceholder" xml:space="preserve"><value>Staff or shared counter password</value></data>
-  <data name="ops.staff.login.submit" xml:space="preserve"><value>Sign in</value></data>
-  <data name="ops.staff.login.subtitle" xml:space="preserve"><value>For cashiers, managers, and baristas.</value></data>
-  <data name="ops.staff.login.title" xml:space="preserve"><value>Staff sign-in</value></data>
-  <data name="ops.staff.login.username" xml:space="preserve"><value>Username</value></data>
-  <data name="ops.staff.login.usernameHint" xml:space="preserve"><value>Staff use usernames and passwords issued by management.</value></data>
-  <data name="ops.staff.login.usernamePlaceholder" xml:space="preserve"><value>Example: cashier-1</value></data>
-  <data name="ops.staff.orders.autoPayment" xml:space="preserve"><value>Auto-confirmed</value></data>
-  <data name="ops.staff.orders.billLabel" xml:space="preserve"><value>Bill #</value></data>
-  <data name="ops.staff.orders.colAwaitingPayBadge" xml:space="preserve"><value>AWAIT PAY</value></data>
-  <data name="ops.staff.orders.colAwaitingPayEmpty" xml:space="preserve"><value>No orders awaiting payment</value></data>
-  <data name="ops.staff.orders.colCompletedBadge" xml:space="preserve"><value>DONE</value></data>
-  <data name="ops.staff.orders.colCompletedEmpty" xml:space="preserve"><value>No recently completed orders</value></data>
-  <data name="ops.staff.orders.colPaidBadge" xml:space="preserve"><value>PAID</value></data>
-  <data name="ops.staff.orders.colPaidEmpty" xml:space="preserve"><value>No orders in preparation</value></data>
-  <data name="ops.staff.orders.completedAt" xml:space="preserve"><value>Completed</value></data>
-  <data name="ops.staff.orders.completedBy" xml:space="preserve"><value>Completed by:</value></data>
-  <data name="ops.staff.orders.completeOrder" xml:space="preserve"><value>Complete order</value></data>
-  <data name="ops.staff.orders.confirmedBy" xml:space="preserve"><value>Confirmed by:</value></data>
-  <data name="ops.staff.orders.confirmPayment" xml:space="preserve"><value>Confirm payment</value></data>
-  <data name="ops.staff.orders.emptyBill" xml:space="preserve"><value>No items</value></data>
-  <data name="ops.staff.orders.expandItems" xml:space="preserve"><value>Show {count} more items</value></data>
-  <data name="ops.staff.orders.grandTotal" xml:space="preserve"><value>Total</value></data>
-  <data name="ops.staff.orders.loadBillFailed" xml:space="preserve"><value>Could not load bill.</value></data>
-  <data name="ops.staff.orders.noItems" xml:space="preserve"><value>No items</value></data>
-  <data name="ops.staff.orders.noteLabel" xml:space="preserve"><value>Note:</value></data>
-  <data name="ops.staff.orders.paidAt" xml:space="preserve"><value>Paid</value></data>
-  <data name="ops.staff.orders.paidBadge" xml:space="preserve"><value>Paid</value></data>
-  <data name="ops.staff.orders.paidShort" xml:space="preserve"><value>Paid</value></data>
-  <data name="ops.staff.orders.paymentCard" xml:space="preserve"><value>Card</value></data>
-  <data name="ops.staff.orders.paymentCash" xml:space="preserve"><value>Cash</value></data>
-  <data name="ops.staff.orders.paymentConfirmed" xml:space="preserve"><value>Payment:</value></data>
-  <data name="ops.staff.orders.paymentCounter" xml:space="preserve"><value>Pay at counter</value></data>
-  <data name="ops.staff.orders.paymentTransfer" xml:space="preserve"><value>Bank transfer</value></data>
-  <data name="ops.staff.orders.pendingCard" xml:space="preserve"><value>Card · awaiting payment</value></data>
-  <data name="ops.staff.orders.pendingCash" xml:space="preserve"><value>Cash · awaiting payment</value></data>
-  <data name="ops.staff.orders.pendingCounter" xml:space="preserve"><value>At counter · cash/card</value></data>
-  <data name="ops.staff.orders.pendingPayment" xml:space="preserve"><value>Awaiting payment</value></data>
-  <data name="ops.staff.orders.pendingTransfer" xml:space="preserve"><value>Transfer · awaiting confirmation</value></data>
-  <data name="ops.staff.orders.preparedBy" xml:space="preserve"><value>Prepared by:</value></data>
-  <data name="ops.staff.orders.prepCompleteHint" xml:space="preserve"><value>Mark all items done to complete</value></data>
-  <data name="ops.staff.orders.prepDone" xml:space="preserve"><value>Done</value></data>
-  <data name="ops.staff.orders.prepNotDone" xml:space="preserve"><value>Not done</value></data>
-  <data name="ops.staff.orders.prepProgressCount" xml:space="preserve"><value>Done {done}/{total} items</value></data>
-  <data name="ops.staff.orders.prepProgressLabel" xml:space="preserve"><value>Prep progress</value></data>
-  <data name="ops.staff.orders.sentAt" xml:space="preserve"><value>Sent at</value></data>
-  <data name="ops.staff.orders.statusPaid" xml:space="preserve"><value>Paid</value></data>
-  <data name="ops.staff.orders.statusPending" xml:space="preserve"><value>Awaiting payment</value></data>
-  <data name="ops.staff.orders.table" xml:space="preserve"><value>Table</value></data>
-  <data name="ops.staff.orders.thanks" xml:space="preserve"><value>Thank you for visiting Annap.</value></data>
-  <data name="ops.staff.orders.total" xml:space="preserve"><value>Total</value></data>
-  <data name="ops.staff.orders.transferMemo" xml:space="preserve"><value>Transfer:</value></data>
-  <data name="ops.staff.orders.viewBill" xml:space="preserve"><value>View bill</value></data>
-  <data name="ops.staff.orders.waitDays" xml:space="preserve"><value>Old · {days} days</value></data>
-  <data name="ops.staff.orders.waitHours" xml:space="preserve"><value>Waiting {hours} hr</value></data>
-  <data name="ops.staff.orders.waitMinutes" xml:space="preserve"><value>Waiting {mins} min</value></data>
-  <data name="ops.staff.orders.waitUnderOneMin" xml:space="preserve"><value>Waiting &lt;1 min</value></data>
-  <data name="ops.staff.orders.waitUnknown" xml:space="preserve"><value>Waiting —</value></data>
-  <data name="ops.staff.shiftClose.confirmClose" xml:space="preserve"><value>Are you sure you want to close the shift? All bills in this shift will be locked into the shift report.</value></data>
-  <data name="ops.staff.shiftClose.copied" xml:space="preserve"><value>Copied</value></data>
-  <data name="ops.staff.shiftClose.copyFailed" xml:space="preserve"><value>Could not copy. Please select and copy manually.</value></data>
   <data name="order.confirmBody" xml:space="preserve"><value>The bar has received your order.</value></data>
   <data name="order.confirmKicker" xml:space="preserve"><value>Sent</value></data>
   <data name="order.followLink" xml:space="preserve"><value>Track your order</value></data>

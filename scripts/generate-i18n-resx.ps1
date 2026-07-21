@@ -41,14 +41,8 @@ function Write-Resx {
 
 $enJson = Get-Content (Join-Path $WebRoot 'wwwroot\i18n\guest-en.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $viJson = Get-Content (Join-Path $WebRoot 'wwwroot\i18n\guest-vi.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-$opsEnJson = Get-Content (Join-Path $WebRoot 'wwwroot\i18n\ops-en.json') -Raw -Encoding UTF8 | ConvertFrom-Json
-$opsViJson = Get-Content (Join-Path $WebRoot 'wwwroot\i18n\ops-vi.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 $en = Flatten-JsonObject $enJson
 $vi = Flatten-JsonObject $viJson
-$opsEn = Flatten-JsonObject $opsEnJson
-$opsVi = Flatten-JsonObject $opsViJson
-foreach ($k in $opsEn.Keys) { $en[$k] = $opsEn[$k] }
-foreach ($k in $opsVi.Keys) { $vi[$k] = $opsVi[$k] }
 $allKeys = @($en.Keys + $vi.Keys | Sort-Object -Unique)
 $enFull = @{}
 $viFull = @{}

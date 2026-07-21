@@ -1,14 +1,12 @@
 using System.Diagnostics;
-using Annap.CoffeeQrOrdering.Web.Resources;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Localization;
 
 namespace Annap.CoffeeQrOrdering.Web.Pages;
 
 [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 [IgnoreAntiforgeryToken]
-public class ErrorModel(IStringLocalizer<SharedResources> localizer) : PageModel
+public class ErrorModel : PageModel
 {
     public string? RequestId { get; set; }
 
@@ -16,9 +14,12 @@ public class ErrorModel(IStringLocalizer<SharedResources> localizer) : PageModel
 
     public int StatusCodeValue { get; set; } = 500;
 
-    public string Title { get; set; } = string.Empty;
+    /// <summary>Guest-facing errors use bilingual i18n; staff/admin errors stay Vietnamese-only.</summary>
+    public bool GuestFacing { get; private set; } = true;
 
-    public string Lede { get; set; } = string.Empty;
+    public string TitleKey { get; set; } = "errors.genericTitle";
+
+    public string LedeKey { get; set; } = "errors.genericLede";
 
     public void OnGet(int? statusCode = null)
     {
@@ -29,12 +30,16 @@ public class ErrorModel(IStringLocalizer<SharedResources> localizer) : PageModel
 
         Response.StatusCode = StatusCodeValue;
 
-        (Title, Lede) = StatusCodeValue switch
+        var path = HttpContext.Request.Path.Value ?? "";
+        GuestFacing = !path.StartsWith("/staff", StringComparison.OrdinalIgnoreCase)
+            && !path.StartsWith("/admin", StringComparison.OrdinalIgnoreCase);
+
+        (TitleKey, LedeKey) = StatusCodeValue switch
         {
-            404 => (localizer["ops.error.404Title"], localizer["ops.error.404Lede"]),
-            403 => (localizer["ops.error.403Title"], localizer["ops.error.403Lede"]),
-            503 => (localizer["ops.error.503Title"], localizer["ops.error.503Lede"]),
-            _ => (localizer["ops.error.genericTitle"], localizer["ops.error.genericLede"])
+            404 => ("errors.404Title", "errors.404Lede"),
+            403 => ("errors.403Title", "errors.403Lede"),
+            503 => ("errors.503Title", "errors.503Lede"),
+            _ => ("errors.genericTitle", "errors.genericLede")
         };
     }
 }

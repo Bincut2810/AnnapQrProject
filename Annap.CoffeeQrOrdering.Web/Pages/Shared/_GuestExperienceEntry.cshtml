@@ -31,7 +31,7 @@
 
     <div id="ge-panel-group" class="ge-panel hidden" hidden>
         <div class="ge-panel-head">
-            <button type="button" class="ge-back guest-hit" data-ge-back="1" data-i18n-aria="ge.group.backAria" aria-label="Back to arrival">←</button>
+            <button type="button" class="ge-back guest-hit" data-ge-back="1" data-i18n-aria="ge.group.backAria">←</button>
             <p class="ge-panel-kicker" data-i18n="ge.group.kicker">Group experience</p>
         </div>
 
@@ -53,12 +53,12 @@
 
         <div id="ge-group-main" class="ge-group-main hidden" hidden>
             <p id="ge-guest-tabs-intro" class="ge-muted ge-group-intro"></p>
-            <div id="ge-guest-rail" class="ge-guest-rail" role="tablist" data-i18n-aria="ge.group.guestTabsAria" aria-label="Guests at this table"></div>
+            <div id="ge-guest-rail" class="ge-guest-rail" role="tablist" data-i18n-aria="ge.group.guestTabsAria"></div>
             <p id="ge-passing-hint" class="ge-passing-hint" aria-live="polite"></p>
             <p id="ge-guest-done-hint" class="ge-muted ge-group-hint"></p>
             <p class="ge-panel-title ge-group-strip-title" data-i18n="ge.group.signatureHeading">Signature cups for the table</p>
         <div class="ge-sig-strip-wrap">
-            <div class="ge-sig-strip@(sigN > 0 ? " ge-sig-strip--count-" + Math.Min(sigN, 6) : "")" role="region" aria-label="Signature drinks" tabindex="0">
+            <div class="ge-sig-strip@(sigN > 0 ? " ge-sig-strip--count-" + Math.Min(sigN, 6) : "")" role="region" data-i18n-aria="ge.group.signatureDrinksAria" tabindex="0">
                 @foreach (var drink in Model.SignatureDrinks)
                 {
                     var detailHref = vt is Guid vtid
@@ -123,7 +123,7 @@
 
     <div id="ge-panel-sommelier" class="ge-panel ge-panel--sommelier hidden" hidden>
         <div class="ge-panel-head ge-panel-head--quiet">
-            <button type="button" class="ge-back guest-hit" data-ge-back="1" data-i18n-aria="ge.group.backAria" aria-label="Back to arrival">←</button>
+            <button type="button" class="ge-back guest-hit" data-ge-back="1" data-i18n-aria="ge.group.backAria">←</button>
             <p class="ge-panel-kicker" data-i18n="ge.sommelier.kicker">Hôm nay bạn muốn ly của mình mang cảm giác nào?</p>
         </div>
         <div id="ge-sommelier-step" class="ge-sommelier-step"></div>
@@ -132,7 +132,7 @@
 
     <div id="ge-panel-discovery" class="ge-panel ge-panel--discovery hidden" hidden>
         <div class="ge-panel-head">
-            <button type="button" class="ge-back guest-hit" data-ge-back="1" aria-label="Back to arrival">←</button>
+            <button type="button" class="ge-back guest-hit" data-ge-back="1" data-i18n-aria="ge.group.backAria">←</button>
             <p class="ge-panel-kicker" data-i18n="ge.duckPost.panelKicker">Tonight&apos;s tasting</p>
         </div>
 
@@ -254,8 +254,7 @@
                 <button type="button"
                         class="ge-duck-blocked__scrim guest-hit"
                         data-ge-duck-blocked-dismiss="1"
-                        data-i18n-aria="ge.duckPost.blockedDismissAria"
-                        aria-label="Close"></button>
+                        data-i18n-aria="ge.duckPost.blockedDismissAria"></button>
                 <div class="ge-duck-blocked__sheet" id="ge-duck-blocked-sheet">
                     <div class="ge-duck-blocked__duck" aria-hidden="true">
                         <svg viewBox="0 0 48 44" xmlns="http://www.w3.org/2000/svg">

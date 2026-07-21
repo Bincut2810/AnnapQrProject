@@ -33,8 +33,7 @@
                         <button type="button"
                                 id="annap-tray-close"
                                 class="guest-hit inline-flex h-8 w-8 items-center justify-center rounded-full text-[rgb(var(--muted))] transition hover:bg-[rgba(26,20,16,0.06)] hover:text-[rgb(var(--fg))] active:scale-[0.97]"
-                                data-i18n-aria="cart.close"
-                                aria-label="Đóng">
+                                data-i18n-aria="cart.close">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="h-3.5 w-3.5">
                                 <path d="M6 9l6 6 6-6" />
                             </svg>
@@ -61,7 +60,7 @@
 
                     <div id="order-tray-checkout-payment" class="order-tray-checkout hidden mt-2" hidden>
                         <p class="order-tray-checkout__kicker text-[9px] font-medium tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]" data-i18n="checkout.choosePaymentMethod">Chọn cách thanh toán</p>
-                        <div class="order-tray-payment-options order-tray-payment-options--triple mt-1.5 grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Payment method">
+                        <div class="order-tray-payment-options order-tray-payment-options--triple mt-1.5 grid grid-cols-3 gap-1.5" role="radiogroup" data-i18n-aria="checkout.paymentMethodLabel">
                             <button type="button"
                                     class="order-tray-payment-option guest-hit"
                                     data-payment-method="Cash"
@@ -191,13 +190,11 @@
     <div id="drink-detail-backdrop" role="presentation"></div>
     <div id="drink-detail-panel">
         <header class="drink-detail-action-bar"
-                data-i18n-aria="menu.detailActionsAria"
-                aria-label="Thao tác thẻ hương vị">
+                data-i18n-aria="menu.detailActionsAria">
             <button type="button"
                     id="drink-detail-close"
                     class="drink-detail-close drink-detail-action-bar__back drink-modal-close drink-poster-back"
-                    data-i18n-aria="cart.close"
-                    aria-label="Đóng">
+                    data-i18n-aria="cart.close">
                 <span class="drink-detail-action-bar__glyph" aria-hidden="true">←</span>
                 <span data-i18n="menu.back">Quay lại</span>
             </button>

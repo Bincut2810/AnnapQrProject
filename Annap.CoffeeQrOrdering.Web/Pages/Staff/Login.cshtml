@@ -2,7 +2,7 @@
 @model LoginModel
 @{
     Layout = "_StaffLayout";
-    ViewData["Title"] = L["ops.staff.login.title"];
+    ViewData["Title"] = "Đăng nhập quầy";
 }
 
 @section Styles {
@@ -12,9 +12,9 @@
 <div class="staff-login">
     <div class="staff-login__sheet">
         <header class="staff-login__header">
-            <p class="staff-login__eyebrow">@L["ops.common.brand"]</p>
-            <h1 class="staff-login__title">@L["ops.staff.login.title"]</h1>
-            <p class="staff-login__subtitle">@L["ops.staff.login.subtitle"]</p>
+            <p class="staff-login__eyebrow">Annap Coffee Atelier</p>
+            <h1 class="staff-login__title">Đăng nhập quầy</h1>
+            <p class="staff-login__subtitle">Dành cho nhân viên thu ngân, quản lý và pha chế.</p>
         </header>
 
         @if (!string.IsNullOrEmpty(Model.ErrorMessage))
@@ -25,25 +25,27 @@
         <form method="post" class="staff-login__form">
             @Html.AntiForgeryToken()
             <label class="staff-login__field" for="UserName">
-                <span class="staff-login__label">@L["ops.staff.login.username"]</span>
+                <span class="staff-login__label">Tên đăng nhập</span>
                 <input id="UserName"
                        name="UserName"
                        asp-for="UserName"
                        autocomplete="username"
-                       placeholder="@L["ops.staff.login.usernamePlaceholder"]" />
-                <span class="staff-login__hint">@L["ops.staff.login.usernameHint"]</span>
+                       placeholder="Ví dụ: thu-ngan-1" />
+                <span class="staff-login__hint">Nhân viên dùng tên đăng nhập và mật khẩu được quản lý cấp.</span>
             </label>
             <label class="staff-login__field" for="Password">
-                <span class="staff-login__label">@L["ops.staff.login.password"]</span>
+                <span class="staff-login__label">Mật khẩu</span>
                 <input id="Password"
                        name="Password"
                        asp-for="Password"
                        type="password"
                        autocomplete="current-password"
-                       placeholder="@L["ops.staff.login.passwordPlaceholder"]" />
-                <span class="staff-login__hint staff-login__hint--shared">@L["ops.staff.login.passwordHint"]</span>
+                       placeholder="Mật khẩu nhân viên hoặc mật khẩu quầy" />
+                <span class="staff-login__hint staff-login__hint--shared">
+                    Nếu dùng mật khẩu chung của quầy, có thể để trống tên đăng nhập.
+                </span>
             </label>
-            <button type="submit" class="staff-login__submit btn-ink">@L["ops.staff.login.submit"]</button>
+            <button type="submit" class="staff-login__submit btn-ink">Đăng nhập</button>
         </form>
     </div>
 </div>

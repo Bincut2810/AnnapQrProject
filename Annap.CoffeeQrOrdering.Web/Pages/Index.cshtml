@@ -617,7 +617,7 @@ else
             serverVt: ANNAP_SERVER_VENUE_TABLE_ID,
             migrateCatalog: {
                 catalogRow,
-                selectionFallback: () => LuxuryI18n.t("cart.selectionFallback") || "Selection"
+                selectionFallback: () => LuxuryI18n.t("cart.selectionFallback")
             }
         });
 
@@ -676,9 +676,9 @@ else
             const row = catalogRow(menuItemId);
             GuestInteractionContract.addItem({
                 menuItemId,
-                name: annapCoalesce(row && row.name, LuxuryI18n.t("cart.selectionFallback") || "Selection"),
+                name: annapCoalesce(row && row.name, LuxuryI18n.t("cart.selectionFallback")),
                 unitPrice: Number(annapCoalesce(row && row.price, 0)),
-                selectionFallback: LuxuryI18n.t("cart.selectionFallback") || "Selection",
+                selectionFallback: LuxuryI18n.t("cart.selectionFallback"),
                 sourceElement: sourceEl || null,
                 guestLabel: gl
             });
@@ -760,7 +760,7 @@ else
                 guestCount >= 1;
 
             if (linesAll.length === 0) {
-                const emptyMsg = LuxuryI18n.t("cart.empty") || "No items yet.";
+                const emptyMsg = LuxuryI18n.t("cart.empty");
                 el.innerHTML = `<div class="surface-glass rounded-[1.35rem] px-5 py-4 text-sm text-[rgb(var(--muted))]">${escapeHtml(emptyMsg)}</div>`;
                 return;
             }
@@ -779,7 +779,7 @@ else
                 const guestHtml = gl
                     ? `<div class="mt-0.5 text-[11px] font-medium tracking-[0.12em] text-[rgb(var(--accent))]/90">${escapeHtml(gl)}</div>`
                     : "";
-                left.innerHTML = `<div class="truncate text-sm text-[rgb(var(--fg))]">${escapeHtml(String(displayName))}</div>${guestHtml}<div class="mt-0.5 text-xs text-[rgb(var(--muted))] tabular-nums">${GuestInteractionContract.formatMoney(unit)} ${escapeHtml(LuxuryI18n.t("cart.unitEach") || "each")}</div>`;
+                left.innerHTML = `<div class="truncate text-sm text-[rgb(var(--fg))]">${escapeHtml(String(displayName))}</div>${guestHtml}<div class="mt-0.5 text-xs text-[rgb(var(--muted))] tabular-nums">${GuestInteractionContract.formatMoney(unit)} ${escapeHtml(LuxuryI18n.t("cart.unitEach"))}</div>`;
 
                 const right = document.createElement("div");
                 right.className = "flex items-center gap-2";
@@ -828,7 +828,7 @@ else
                         emptyRow.className =
                             "surface-glass rounded-[1.35rem] px-4 py-3 text-xs text-[rgb(var(--muted))] mb-2";
                         emptyRow.textContent =
-                            LuxuryI18n.t("cart.emptyGuestSection") || "No cups for this guest yet.";
+                            LuxuryI18n.t("cart.emptyGuestSection");
                         el.appendChild(emptyRow);
                         continue;
                     }
@@ -847,8 +847,8 @@ else
                     linesAll.length > 0 &&
                     typeof window.__annapGroupBrowseActive !== "undefined" &&
                     window.__annapGroupBrowseActive
-                        ? LuxuryI18n.t("cart.emptyGuest") || "This guest has no cups on the tray yet."
-                        : LuxuryI18n.t("cart.empty") || "No items yet.";
+                        ? LuxuryI18n.t("cart.emptyGuest")
+                        : LuxuryI18n.t("cart.empty");
                 el.innerHTML = `<div class="surface-glass rounded-[1.35rem] px-5 py-4 text-sm text-[rgb(var(--muted))]">${escapeHtml(emptyMsg)}</div>`;
                 return;
             }
@@ -863,11 +863,11 @@ else
             result.textContent = "";
 
             if (!GuestInteractionContract.getVenueTableId()) {
-                result.textContent = LuxuryI18n.t("order.needTableScan") || LuxuryI18n.t("order.needTable") || "Please scan the table QR to begin.";
+                result.textContent = LuxuryI18n.t("order.needTableScan") || LuxuryI18n.t("order.needTable");
                 return;
             }
             if (lines.length === 0) {
-                result.textContent = LuxuryI18n.t("order.minOne") || "Add at least one item.";
+                result.textContent = LuxuryI18n.t("order.minOne");
                 return;
             }
             if (homeOrderSubmitInFlight) return;
@@ -878,13 +878,13 @@ else
                 else if (!homeOrderIdempotencyKey) homeOrderIdempotencyKey = String(Date.now());
                 if (!homeOrderIdempotencyKey) {
                     result.textContent =
-                        LuxuryI18n.t("order.submitFailed") || "We could not prepare your tray receipt. Refresh and try again.";
+                        LuxuryI18n.t("order.submitFailed");
                     return;
                 }
 
                 if (btn) btn.setAttribute("disabled", "disabled");
                 const prev = btn && btn.textContent;
-                if (btn) btn.textContent = LuxuryI18n.t("order.submitting") || "Sending to the bar…";
+                if (btn) btn.textContent = LuxuryI18n.t("order.submitting");
 
                 const items = lines.map((l) => {
                     const g = (l.guestLabel && String(l.guestLabel).trim()) || "";
@@ -914,8 +914,7 @@ else
                 } catch (_annap) {
                     if (window.GuestOrderQueue) window.GuestOrderQueue.enqueue(vt, items, homeOrderIdempotencyKey, "CashOrCardAtCounter");
                     result.textContent =
-                        LuxuryI18n.t("order.queuedSoft") ||
-                        "The line softened for a moment — we will place this tray when the room is steady again.";
+                        LuxuryI18n.t("order.queuedSoft");
                     if (btn) {
                         btn.textContent = prev;
                         btn.removeAttribute("disabled");
@@ -928,7 +927,7 @@ else
                 });
                 if (!res.ok) {
                     const er = String((payload && payload.error) || "").toLowerCase();
-                    let msg = LuxuryI18n.t("order.submitFailed") || "We could not send the tray just now.";
+                    let msg = LuxuryI18n.t("order.submitFailed");
                     if (res.status === 400) {
                         homeOrderIdempotencyKey = null;
                         if (er.includes("scan") || er.includes("table qr") || er.includes("seat"))
@@ -942,8 +941,7 @@ else
                     } else if (res.status >= 500 || res.status === 429) {
                         if (window.GuestOrderQueue) window.GuestOrderQueue.enqueue(vt, items, homeOrderIdempotencyKey, "CashOrCardAtCounter");
                         msg =
-                            LuxuryI18n.t("order.queuedSoft") ||
-                            "The line softened for a moment — we will place this tray when the room is steady again.";
+                            LuxuryI18n.t("order.queuedSoft");
                     }
                     result.textContent = msg;
                     if (btn) {
@@ -963,8 +961,8 @@ else
                 });
 
                 const oid = escapeHtml(String(payload.id));
-                const submitted = escapeHtml(LuxuryI18n.t("order.submitted") || "The bar has received your tray.");
-                const follow = escapeHtml(LuxuryI18n.t("order.followLink") || "Track your order");
+                const submitted = escapeHtml(LuxuryI18n.t("order.submitted"));
+                const follow = escapeHtml(LuxuryI18n.t("order.followLink"));
                 const trackHref = payload.trackUrl || `/track/${payload.id}?token=${encodeURIComponent(payload.guestSessionToken || "")}`;
                 result.innerHTML = `${submitted} <span class="font-medium text-[rgb(var(--fg))] tabular-nums">${oid}</span>
                 <a href="${String(trackHref).replace(/"/g, "&quot;")}" class="mt-3 block text-center text-[11px] font-medium tracking-[0.18em] uppercase text-[rgb(var(--muted))] underline-offset-4 transition hover:text-[rgb(var(--accent))] hover:underline">${follow}</a>`;
@@ -1019,7 +1017,7 @@ else
                     return;
                 }
                 link.href = `/track/${encodeURIComponent(sess.orderId)}?token=${encodeURIComponent(sess.token)}`;
-                link.textContent = LuxuryI18n.t("order.followPreparation") || "Follow preparation";
+                link.textContent = LuxuryI18n.t("order.followPreparation");
                 wrap.classList.remove("hidden");
             } catch (_annap) {
                 wrap.classList.add("hidden");
@@ -1212,10 +1210,10 @@ else
         }
 
         function moodPairingStrengthLabel(pct) {
-            if (pct >= 90) return LuxuryI18n.t("ritual.pairingClose") || "Exceptionally close in this light";
-            if (pct >= 80) return LuxuryI18n.t("ritual.pairingEcho") || "A natural echo of your mood";
-            if (pct >= 68) return LuxuryI18n.t("ritual.pairingLine") || "Still on your line — worth reading";
-            return LuxuryI18n.t("ritual.pairingNeighbor") || "A softer neighbor on the tray";
+            if (pct >= 90) return LuxuryI18n.t("ritual.pairingClose");
+            if (pct >= 80) return LuxuryI18n.t("ritual.pairingEcho");
+            if (pct >= 68) return LuxuryI18n.t("ritual.pairingLine");
+            return LuxuryI18n.t("ritual.pairingNeighbor");
         }
 
         function moodPersonalityGlimpse(moodId) {
@@ -1227,9 +1225,9 @@ else
             const el = document.getElementById("moodReadingRite");
             if (!el) return;
             const lines = [
-                LuxuryI18n.t("ritual.readingRite1") || "Interpreting your palate in this light…",
-                LuxuryI18n.t("ritual.readingRite2") || "Comparing texture against tonight’s parchment…",
-                LuxuryI18n.t("ritual.readingRite3") || "Setting cups beside the mood you chose…"
+                LuxuryI18n.t("ritual.readingRite1"),
+                LuxuryI18n.t("ritual.readingRite2"),
+                LuxuryI18n.t("ritual.readingRite3")
             ];
             el.classList.remove("hidden");
             for (let i = 0; i < lines.length; i++) {
@@ -1272,7 +1270,7 @@ else
                     <p class="text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]">${escapeHtml(it.categoryName || "")}</p>
                     <h3 class="mt-2 font-display text-lg tracking-tight text-[rgb(var(--fg))]">${escapeHtml(it.name || "")}</h3>
                     <p class="mt-2 font-display text-base tabular-nums text-[rgb(var(--accent))]">${escapeHtml(GuestInteractionContract.formatMoney(it.price))}</p>
-                    <button type="button" class="btn-ink guest-hit mood-card-add mt-4 w-full justify-center py-3.5 text-sm font-normal tracking-wide" data-item-name="${escapeHtml(it.name || "")}">${escapeHtml(LuxuryI18n.t("menu.addToTray") || "Send to my table")}</button>
+                    <button type="button" class="btn-ink guest-hit mood-card-add mt-4 w-full justify-center py-3.5 text-sm font-normal tracking-wide" data-item-name="${escapeHtml(it.name || "")}">${escapeHtml(LuxuryI18n.t("menu.addToTray"))}</button>
                     <div class="mood-card-meter mt-5" aria-hidden="true"><span style="width:${pct}%"></span></div>
                     <p class="mt-2 text-xs text-[rgb(var(--accent))] tabular-nums">${pct}% <span class="font-normal text-[rgb(var(--muted))]">· ${escapeHtml(tier)}</span></p>
                     <p class="mt-3 text-sm leading-relaxed text-[rgb(var(--muted))]">${escapeHtml(snip)}</p>
@@ -1361,13 +1359,13 @@ else
                     add.type = "button";
                     add.className =
                         "btn-ink guest-hit min-h-11 shrink-0 rounded-full px-6 text-[10px] font-medium tracking-[0.2em] uppercase";
-                    add.textContent = LuxuryI18n.t("menu.addToTray") || "Send to my table";
+                    add.textContent = LuxuryI18n.t("menu.addToTray");
                     add.onclick = () => {
                         GuestInteractionContract.addItem({
                             menuItemId: mid,
-                            name: (a && a.name) || (catRow && catRow.name) || LuxuryI18n.t("cart.selectionFallback") || "Selection",
+                            name: (a && a.name) || (catRow && catRow.name) || LuxuryI18n.t("cart.selectionFallback"),
                             unitPrice: Number.isFinite(Number(a && a.price)) ? Number(a.price) : Number(annapCoalesce(catRow && catRow.price, 0)),
-                            selectionFallback: LuxuryI18n.t("cart.selectionFallback") || "Selection",
+                            selectionFallback: LuxuryI18n.t("cart.selectionFallback"),
                             sourceElement: add
                         });
                         postSommelierQuietFeedback({
@@ -1437,9 +1435,9 @@ else
                         const row = catalogRow(data.menuItemId);
                         GuestInteractionContract.addItem({
                             menuItemId: data.menuItemId,
-                            name: annapCoalesce(row && row.name, LuxuryI18n.t("cart.selectionFallback") || "Selection"),
+                            name: annapCoalesce(row && row.name, LuxuryI18n.t("cart.selectionFallback")),
                             unitPrice: Number(annapCoalesce(row && row.price, 0)),
-                            selectionFallback: LuxuryI18n.t("cart.selectionFallback") || "Selection",
+                            selectionFallback: LuxuryI18n.t("cart.selectionFallback"),
                             sourceElement: add
                         });
                         postSommelierQuietFeedback({
@@ -1657,8 +1655,7 @@ else
                 if (dbg && dbg.setMenu) dbg.setMenu("FAIL · " + ms + "ms");
                 if (err) {
                     err.textContent = !navigator.onLine
-                        ? LuxuryI18n.t("ritual.catalogOffline") ||
-                          "The room is quiet — we are holding yesterday's list until the line steadies."
+                        ? LuxuryI18n.t("ritual.catalogOffline")
                         : LuxuryI18n.t("ritual.catalogErr");
                     err.classList.remove("hidden");
                 }
