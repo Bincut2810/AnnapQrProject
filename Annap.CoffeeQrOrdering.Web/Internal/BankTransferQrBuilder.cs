@@ -37,7 +37,7 @@ internal sealed record BankTransferQrDto(
             messageVi,
             opts.Provider,
             (long)order.TotalAmount,
-            FormatVnd(order.TotalAmount),
+            VndMoneyFormatter.Format(order.TotalAmount),
             reference,
             memo,
             string.IsNullOrWhiteSpace(opts.BankName) ? null : opts.BankName.Trim(),
@@ -57,7 +57,7 @@ internal sealed record BankTransferQrDto(
             "Vui lòng chuyển đúng số tiền và nội dung để nhân viên xác nhận nhanh hơn.",
             opts.Provider,
             (long)order.TotalAmount,
-            FormatVnd(order.TotalAmount),
+            VndMoneyFormatter.Format(order.TotalAmount),
             reference,
             memo,
             string.IsNullOrWhiteSpace(opts.BankName) ? null : opts.BankName.Trim(),
@@ -66,11 +66,6 @@ internal sealed record BankTransferQrDto(
             opts.AccountName.Trim(),
             qrImageUrl);
 
-    private static string FormatVnd(decimal amount)
-    {
-        var digits = ((long)amount).ToString("#,##0", CultureInfo.InvariantCulture).Replace(",", ".");
-        return digits + "đ";
-    }
 }
 
 internal sealed class BankTransferQrBuilder(IOptions<BankTransferOptions> options)

@@ -1,4 +1,5 @@
 using Annap.CoffeeQrOrdering.Domain.Entities;
+using Annap.CoffeeQrOrdering.Web.Internal;
 using Annap.CoffeeQrOrdering.Web.Services;
 using Annap.CoffeeQrOrdering.Web.ViewModels;
 
@@ -168,7 +169,7 @@ public static class MenuItemProjections
             Name                = vm.Name,
             Image               = image,
             Price               = vm.Price,
-            PriceDisplay        = vm.Price.ToString("N0") + " đ",
+            PriceDisplay        = VndMoneyFormatter.Format(vm.Price),
             IngredientBreakdown = isBakery ? null : ingredients,
             Origin              = isBakery ? null : vm.Origin,
             TastingNotes        = isBakery ? null : vm.TastingNotes,

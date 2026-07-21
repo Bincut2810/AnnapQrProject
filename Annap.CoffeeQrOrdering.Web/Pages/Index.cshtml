@@ -173,7 +173,7 @@ else
                                     }
                                 </div>
                                 <div class="text-sm font-semibold text-[rgb(var(--fg))] whitespace-nowrap pt-1">
-                                    @drink.Price.ToString("C")
+                                    @VndMoneyFormatter.Format(drink.Price)
                                 </div>
                             </div>
 
@@ -500,7 +500,7 @@ else
                     var items = c.items || [];
                     for (var j = 0; j < items.length; j++) {
                         var it = items[j];
-                        html.push("<li>" + esc(it.name) + " — " + esc(String(it.price)) + "</li>");
+                        html.push("<li>" + esc(it.name) + " — " + esc(window.AnnapMoney ? window.AnnapMoney.format(it.price) : String(it.price)) + "</li>");
                     }
                     html.push("</ul>");
                 }

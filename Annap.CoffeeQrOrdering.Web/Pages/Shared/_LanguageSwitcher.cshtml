@@ -1,0 +1,9 @@
+@using Microsoft.Extensions.Localization
+@using Annap.CoffeeQrOrdering.Web.Resources
+@inject IStringLocalizer<SharedResources> L
+
+<div class="annap-lang-switch flex items-center gap-1 text-[10px] font-medium tracking-[0.2em] uppercase" role="group" aria-label="@L["ops.common.language"]">
+    <button type="button" class="guest-hit min-h-9 rounded-full px-2.5 transition" data-lang-set="en" aria-pressed="false">@L["ops.common.langEn"]</button>
+    <span class="text-[rgb(var(--muted-2))]" aria-hidden="true">·</span>
+    <button type="button" class="guest-hit min-h-9 rounded-full px-2.5 transition" data-lang-set="vi" aria-pressed="false">@L["ops.common.langVi"]</button>
+</div>

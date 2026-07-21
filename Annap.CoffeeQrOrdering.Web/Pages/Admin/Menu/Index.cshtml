@@ -101,7 +101,7 @@
                             {
                                 <p class="mt-2 text-sm leading-relaxed text-[rgb(var(--muted))]">@cup.Subtitle</p>
                             }
-                            <p class="mt-6 font-display text-lg tabular-nums text-[rgb(var(--accent))]">@cup.Price.ToString("C")</p>
+                            <p class="mt-6 font-display text-lg tabular-nums text-[rgb(var(--accent))]">@VndMoneyFormatter.Format(cup.Price)</p>
                             <p class="mt-6 text-[10px] font-medium tracking-[0.26em] uppercase text-[rgb(var(--muted-2))]">Chỉnh sửa →</p>
                         </div>
                     </a>

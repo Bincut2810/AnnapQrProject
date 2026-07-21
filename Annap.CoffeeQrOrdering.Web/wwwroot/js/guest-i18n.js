@@ -3,8 +3,8 @@
  */
 (function () {
     const STORAGE_KEY = "annap_guest_lang";
-    /** Bump when guest-en.json / guest-vi.json copy changes so phones refetch bundles. */
-    const I18N_BUNDLE_REV = "2026070712";
+    /** Bump when SharedResources.resx copy changes so clients refetch bundles. */
+    const I18N_BUNDLE_REV = "2026070713";
     const bundles = { en: null, vi: null };
     let current = "en";
 
@@ -44,7 +44,7 @@
             } catch (_rev) {
                 /* ignore */
             }
-            var url = "/i18n/guest-" + lang + ".json?v=" + encodeURIComponent(rev);
+            var url = "/i18n/" + lang + ".json?v=" + encodeURIComponent(rev);
             return await fetch(url, { cache: "no-store", signal: ac.signal });
         } finally {
             clearTimeout(t);
@@ -63,6 +63,7 @@
             current = "vi";
         }
         document.documentElement.lang = current === "vi" ? "vi" : "en";
+        syncCultureCookie(current);
         const t1 = typeof performance !== "undefined" && performance.now ? performance.now() : Date.now();
         i18nInfo("[annap] i18n bundles loaded", { ms: Math.round(t1 - t0) });
     })();
@@ -75,6 +76,16 @@
         return current;
     }
 
+    function syncCultureCookie(lang) {
+        try {
+            var culture = lang === "vi" ? "vi-VN" : "en-US";
+            var val = "c=" + culture + "|uic=" + culture;
+            document.cookie = ".AspNetCore.Culture=" + encodeURIComponent(val) + ";path=/;max-age=31536000;SameSite=Lax";
+        } catch (_cookie) {
+            /* ignore */
+        }
+    }
+
     function setLang(lang) {
         const next = normalize(lang);
         if (next === current) return;
@@ -85,6 +96,7 @@
             /* ignore */
         }
         document.documentElement.lang = current === "vi" ? "vi" : "en";
+        syncCultureCookie(current);
         applyDom();
         try {
             sessionStorage.removeItem("annap_sommelier_session_v1");
@@ -163,6 +175,7 @@
         applyDom,
         wireSwitcher
     };
+    window.AnnapI18n = window.LuxuryI18n;
 
     loadPromise
         .then(() => {

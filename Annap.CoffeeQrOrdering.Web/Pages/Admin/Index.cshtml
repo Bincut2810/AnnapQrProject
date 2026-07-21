@@ -12,7 +12,6 @@
     ViewData["AdminEyebrow"] = "Quản trị";
     ViewData["AdminReturnHref"] = Url.Content("~/");
     ViewData["AdminReturnLabel"] = "← Về trang khách";
-    var money = CultureInfo.InvariantCulture;
 }
 
 <partial name="Admin/_AdminEditorialReturn" />
@@ -135,7 +134,7 @@
                     Phiếu gọi, giai đoạn pha chế và bàn giao — SignalR giữ hàng đợi đồng bộ với sàn.
                 </p>
                 <p class="ah-panel__meta">
-                    @Model.OpenOrdersCount phiếu mở · @Model.CupsInFlight ly đang pha · @Model.OpenTicketsValue.ToString("N2", money) tổng cộng
+                    @Model.OpenOrdersCount phiếu mở · @Model.CupsInFlight ly đang pha · @VndMoneyFormatter.Format(Model.OpenTicketsValue) tổng cộng
                 </p>
                 <div class="ah-panel__action">
                     <a href="/staff/orders">Mở bảng nhân viên</a>

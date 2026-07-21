@@ -10,7 +10,7 @@
     ViewData["AdminReturnLabel"] = "← Quay lại";
     var r = Model.Report;
     var vi = CultureInfo.GetCultureInfo("vi-VN");
-    string Money(decimal v) => v.ToString("N0", vi) + "đ";
+    string Money(decimal v) => VndMoneyFormatter.Format(v);
     string RangeLabel() => r.FromLocalDate == r.ToLocalDate
         ? Annap.CoffeeQrOrdering.Web.Internal.AnnapBusinessTime.FormatLocalDateLong(r.FromLocalDate)
         : $"{Annap.CoffeeQrOrdering.Web.Internal.AnnapBusinessTime.FormatLocalDateLong(r.FromLocalDate)} – {Annap.CoffeeQrOrdering.Web.Internal.AnnapBusinessTime.FormatLocalDateLong(r.ToLocalDate)}";

@@ -11,8 +11,7 @@
     ViewData["AdminReturnHref"] = Url.Content("~/admin");
     ViewData["AdminReturnLabel"] = "← Quay lại";
     var p = Model.PageData;
-    var vi = CultureInfo.GetCultureInfo("vi-VN");
-    string Money(decimal v) => v.ToString("N0", vi) + "đ";
+    string Money(decimal v) => VndMoneyFormatter.Format(v);
     string RangeLabel() => p.FromLocalDate == p.ToLocalDate
         ? AnnapBusinessTime.FormatLocalDateLong(p.FromLocalDate)
         : $"{AnnapBusinessTime.FormatLocalDateLong(p.FromLocalDate)} – {AnnapBusinessTime.FormatLocalDateLong(p.ToLocalDate)}";

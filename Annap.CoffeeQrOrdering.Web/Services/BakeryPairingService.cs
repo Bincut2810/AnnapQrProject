@@ -1,4 +1,5 @@
 using Annap.CoffeeQrOrdering.Application.Abstractions;
+using Annap.CoffeeQrOrdering.Web.Internal;
 using Annap.CoffeeQrOrdering.Web.Projections;
 using Annap.CoffeeQrOrdering.Web.ViewModels;
 using Microsoft.EntityFrameworkCore;
@@ -84,7 +85,7 @@ public static class BakeryPairingService
                 Name = i.Name,
                 Image = card,
                 Price = i.Price,
-                PriceDisplay = i.Price.ToString("N0") + " đ"
+                PriceDisplay = VndMoneyFormatter.Format(i.Price)
             };
         }).ToList();
     }

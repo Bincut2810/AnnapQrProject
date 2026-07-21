@@ -22,11 +22,10 @@
     }
 
     function formatMoney(n) {
-        try {
-            return new Intl.NumberFormat(undefined, { style: "currency", currency: "USD" }).format(Number(n) || 0);
-        } catch {
-            return String(n);
+        if (window.AnnapMoney && typeof window.AnnapMoney.format === "function") {
+            return window.AnnapMoney.format(n);
         }
+        return String(n);
     }
 
     function isBakeryCategoryName(name) {

@@ -93,7 +93,7 @@
                             {
                                 <p class="ge-sig-taste">@drink.TastingLine</p>
                             }
-                            <p class="ge-sig-price">@drink.Price.ToString("C")</p>
+                            <p class="ge-sig-price">@VndMoneyFormatter.Format(drink.Price)</p>
                             <div class="ge-sig-actions">
                                 <button type="button" class="ge-btn-ghost guest-hit" data-ge-open-detail="@drink.Id.ToString("D")" data-i18n="ge.group.sigDetail">Detail</button>
                                 <button type="button" class="ge-btn-solid guest-hit" data-ge-add="@drink.Id" data-item-name="@drink.Name" data-i18n="ge.group.sigAddToTray">Send to my table</button>

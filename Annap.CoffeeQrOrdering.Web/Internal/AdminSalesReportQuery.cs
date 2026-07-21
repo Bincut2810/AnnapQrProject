@@ -1,4 +1,3 @@
-using System.Globalization;
 using Annap.CoffeeQrOrdering.Application.Abstractions;
 using Annap.CoffeeQrOrdering.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
@@ -62,8 +61,6 @@ internal static class AdminSalesReportQuery
         OrderStatus.Ready,
         OrderStatus.Completed
     ];
-
-    private static readonly CultureInfo ViCulture = CultureInfo.GetCultureInfo("vi-VN");
 
     public static async Task<AdminSalesReportVm> LoadAsync(
         IApplicationDbContext db,
@@ -249,7 +246,7 @@ internal static class AdminSalesReportQuery
         if (paidOrderCount == 0)
             return "Chưa có thanh toán nào trong khoảng thời gian này.";
 
-        var revenueText = FormatVnd(totalRevenue);
+        var revenueText = VndMoneyFormatter.Format(totalRevenue);
         var rangeLabel = from == to
             ? $"Báo cáo ngày {AnnapBusinessTime.FormatLocalDateLong(from)}:"
             : $"Báo cáo từ {AnnapBusinessTime.FormatLocalDateLong(from)} đến {AnnapBusinessTime.FormatLocalDateLong(to)}:";
@@ -298,9 +295,6 @@ internal static class AdminSalesReportQuery
         OrderStatus.Paid or OrderStatus.InProgress or OrderStatus.FinishingTouches or OrderStatus.Ready => "Đã thanh toán",
         _ => "—"
     };
-
-    private static string FormatVnd(decimal amount) =>
-        $"{amount.ToString("N0", ViCulture)}đ";
 
     private sealed record ItemProjection(
         Guid OrderId,

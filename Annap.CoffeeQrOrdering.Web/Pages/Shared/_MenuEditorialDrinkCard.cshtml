@@ -1,4 +1,3 @@
-@using System.Globalization
 @using Annap.CoffeeQrOrdering.Domain.Entities
 @using Annap.CoffeeQrOrdering.Web.Services
 @model (MenuItem Item, string CategoryName, bool IsHero, int CardIndex, int RevealDelayMs)
@@ -7,9 +6,8 @@
     var badgeLabel = item.IsSignature ? "Đặc trưng quán" : (item.IsFeatured ? "Khách yêu thích" : null);
     var badgeI18n = item.IsSignature ? "menu.ribbonSignature" : (item.IsFeatured ? "menu.ribbonFeatured" : null);
     var cardImg = MenuMediaResolver.TryResolveCardImageUrl(null, null, item.ImageUrl, null, item.Name, categoryName);
-    var priceRounded = (long)Math.Round(item.Price, MidpointRounding.AwayFromZero);
-    var priceDisplay = priceRounded > 0
-        ? priceRounded.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + "đ"
+    var priceDisplay = item.Price > 0
+        ? VndMoneyFormatter.Format(item.Price)
         : "—";
     var tasteLine = item.Subtitle ?? item.MoodProfile;
     if (!string.IsNullOrWhiteSpace(tasteLine) && tasteLine.Length > 72)

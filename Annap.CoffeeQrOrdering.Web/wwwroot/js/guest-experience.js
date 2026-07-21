@@ -42,18 +42,10 @@
         if (typeof window.GuestInteractionContract !== "undefined" && window.GuestInteractionContract.formatMoney) {
             return window.GuestInteractionContract.formatMoney(n);
         }
-        try {
-            var isVi =
-                (window.LuxuryI18n && window.LuxuryI18n.getLang && window.LuxuryI18n.getLang() === "vi") ||
-                (document.documentElement.lang || "").toLowerCase().indexOf("vi") === 0;
-            var amount = Math.round(Number(n) || 0);
-            if (isVi) {
-                return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(amount) + "đ";
-            }
-            return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(amount);
-        } catch (e2) {
-            return String(n);
+        if (window.AnnapMoney && typeof window.AnnapMoney.format === "function") {
+            return window.AnnapMoney.format(n);
         }
+        return String(n);
     }
 
     function geVtQuery(root) {

@@ -288,45 +288,17 @@
         return readLinesRaw(cartKey);
     }
 
-    var moneyFmtEn = null;
-
-    function resolveDisplayLang() {
-        try {
-            if (global.LuxuryI18n && typeof global.LuxuryI18n.getLang === "function") {
-                return global.LuxuryI18n.getLang() === "vi" ? "vi" : "en";
-            }
-        } catch (_lang) {
-            /* ignore */
-        }
-        try {
-            var docLang = global.document && global.document.documentElement
-                ? String(global.document.documentElement.lang || "").toLowerCase()
-                : "";
-            if (docLang.indexOf("vi") === 0) return "vi";
-        } catch (_doc) {
-            /* ignore */
-        }
-        return "en";
-    }
 
     function formatVnd(amount) {
+        if (global.AnnapMoney && typeof global.AnnapMoney.format === "function") {
+            return global.AnnapMoney.format(amount);
+        }
         var n = Math.round(Number(amount) || 0);
-        return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n) + "đ";
+        return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(n) + " ₫";
     }
 
     function formatMoney(n) {
-        var amount = Number(n) || 0;
-        if (resolveDisplayLang() === "vi") {
-            return formatVnd(amount);
-        }
-        if (!moneyFmtEn) {
-            moneyFmtEn = new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-                maximumFractionDigits: 0
-            });
-        }
-        return moneyFmtEn.format(Math.round(amount));
+        return formatVnd(n);
     }
 
     var _venueId = "";

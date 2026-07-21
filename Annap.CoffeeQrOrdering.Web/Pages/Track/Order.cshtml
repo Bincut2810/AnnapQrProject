@@ -341,9 +341,10 @@
 
 
         function moneyFmt(v) {
-
-            return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(v);
-
+            if (window.AnnapMoney && typeof window.AnnapMoney.format === "function") {
+                return window.AnnapMoney.format(v);
+            }
+            return String(v);
         }
 
 

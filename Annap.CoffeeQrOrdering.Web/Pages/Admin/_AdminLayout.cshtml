@@ -5,13 +5,13 @@
     var useDevUi = HostEnvironment.IsDevelopment() || DiagOptions.Value.DeveloperOverlays;
 }
 <!DOCTYPE html>
-<html lang="vi" class="text-[rgb(var(--fg))]">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" class="text-[rgb(var(--fg))]">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#faf7f2" />
     <meta name="color-scheme" content="light" />
-    <title>@ViewData["Title"] · Annap — Quản trị</title>
+    <title>@ViewData["Title"] · @L["ops.common.brand"] — @L["ops.common.adminSuffix"]</title>
     <partial name="Shared/_AnnapRuntimeHead" model="useDevUi" />
     <partial name="Shared/_AnnapFonts" model="@("guest")" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
@@ -28,14 +28,14 @@
     <div id="admin-drawer-backdrop" class="admin-drawer-backdrop lg:hidden" aria-hidden="true"></div>
     <aside id="admin-drawer"
            class="admin-drawer lg:hidden"
-           aria-label="Điều hướng di động"
+           aria-label="@L["ops.admin.nav.mobileLabel"]"
            aria-hidden="true">
         <div class="flex items-center justify-between gap-3">
-            <p class="text-[10px] font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted-2))]">Điều hướng</p>
+            <p class="text-[10px] font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted-2))]">@L["ops.admin.nav.navigation"]</p>
             <button type="button"
                     id="admin-drawer-close"
                     class="admin-btn admin-btn--quiet min-h-11 rounded-full ring-1 ring-white/[0.08]">
-                Đóng
+                @L["ops.admin.nav.close"]
             </button>
         </div>
         <div class="mt-8 overflow-y-auto overscroll-y-contain pr-1" style="max-height: calc(100dvh - 6rem);">
@@ -44,7 +44,7 @@
     </aside>
 
     <div class="admin-frame flex min-h-dvh">
-        <aside class="admin-sidebar hidden lg:flex" aria-label="Primary">
+        <aside class="admin-sidebar hidden lg:flex" aria-label="@L["ops.admin.nav.primary"]">
             <div class="admin-sidebar__inner w-full">
                 <partial name="_AdminNavigation" />
             </div>
@@ -60,6 +60,8 @@
         </div>
     </div>
 
+    <script src="~/js/annap-money.js" asp-append-version="true"></script>
+    <script src="~/js/guest-i18n.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/admin-shell.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

@@ -1,17 +1,18 @@
 ﻿@page
 @model ErrorModel
+@inject Microsoft.Extensions.Localization.IStringLocalizer<Annap.CoffeeQrOrdering.Web.Resources.SharedResources> L
 @{
     Layout = null;
     ViewData["Title"] = Model.Title;
 }
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="@System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#faf7f2" />
     <meta name="color-scheme" content="light" />
-    <title>@ViewData["Title"] · Annap Coffee</title>
+    <title>@ViewData["Title"] · @L["ops.common.brand"]</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;600&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet" />
@@ -92,21 +93,30 @@
             color: #a89a8a;
             word-break: break-all;
         }
+        .err-lang {
+            margin-top: 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
     </style>
 </head>
 <body class="err-page">
     <main class="err-card" role="main">
-        <p class="err-kicker">Annap Coffee · @Model.StatusCodeValue</p>
+        <p class="err-kicker">@L["ops.common.brand"] · @Model.StatusCodeValue</p>
         <h1 class="err-title">@Model.Title</h1>
         <p class="err-lede">@Model.Lede</p>
         <div class="err-actions">
-            <a class="err-btn err-btn--primary" href="/Menu/Index">Quay lại menu</a>
-            <button type="button" class="err-btn err-btn--quiet" onclick="location.reload()">Thử lại</button>
+            <a class="err-btn err-btn--primary" href="/Menu/Index">@L["ops.common.backToMenu"]</a>
+            <button type="button" class="err-btn err-btn--quiet" onclick="location.reload()">@L["ops.common.retry"]</button>
         </div>
         @if (Model.ShowRequestId)
         {
-            <p class="err-ref" aria-label="Mã tham chiếu">@Model.RequestId</p>
+            <p class="err-ref" aria-label="@L["ops.common.referenceId"]">@Model.RequestId</p>
         }
+        <div class="err-lang">
+            <partial name="Shared/_LanguageSwitcher" />
+        </div>
     </main>
+    <script src="~/js/guest-i18n.js" asp-append-version="true"></script>
 </body>
 </html>

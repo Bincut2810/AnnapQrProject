@@ -79,7 +79,7 @@
                             <textarea class="exp-textarea text-sm" asp-for="SlotForms[i].EditorialBody" form="@saveFormId" rows="2"></textarea>
                             @if (pick is not null)
                             {
-                                <p class="text-[11px] text-[rgb(var(--muted-2))] tabular-nums">@pick.Price.ToString("N2") · @pick.CategoryName</p>
+                                <p class="text-[11px] text-[rgb(var(--muted-2))] tabular-nums">@VndMoneyFormatter.Format(pick.Price) · @pick.CategoryName</p>
                             }
                         </div>
                     </div>

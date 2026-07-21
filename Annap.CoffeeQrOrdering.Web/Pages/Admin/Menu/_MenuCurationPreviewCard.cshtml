@@ -24,7 +24,7 @@
         <p class="menu-curation-preview-card__subtitle" id="menu-preview-subtitle">@(Model.Subtitle ?? "—")</p>
         <p class="menu-curation-preview-card__tasting" id="menu-preview-tasting">@(Model.TastingNotes ?? "Tasting notes will appear here.")</p>
         <div class="menu-curation-preview-card__foot">
-            <p class="menu-curation-preview-card__price tabular-nums" id="menu-preview-price">@Model.Price.ToString("C")</p>
+            <p class="menu-curation-preview-card__price tabular-nums" id="menu-preview-price">@VndMoneyFormatter.Format(Model.Price)</p>
             <span class="admin-badge @(Model.IsAvailable ? "admin-badge--sage" : "admin-badge--mist")" id="menu-preview-avail">
                 @(Model.IsAvailable ? "Available" : "Paused")
             </span>

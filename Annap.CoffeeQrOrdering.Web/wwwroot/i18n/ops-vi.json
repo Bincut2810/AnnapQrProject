@@ -1,0 +1,133 @@
+{
+  "lang": "vi",
+  "ops": {
+    "common": {
+      "brand": "Annap Coffee Atelier",
+      "adminSuffix": "Quản trị",
+      "staffSuffix": "Quầy",
+      "close": "Đóng",
+      "save": "Lưu",
+      "cancel": "Hủy",
+      "retry": "Thử lại",
+      "backToMenu": "Quay lại menu",
+      "language": "Ngôn ngữ",
+      "langEn": "EN",
+      "langVi": "VI",
+      "loading": "Đang tải…",
+      "referenceId": "Mã tham chiếu"
+    },
+    "error": {
+      "genericTitle": "Đã xảy ra lỗi",
+      "genericLede": "Chúng tôi không thể hoàn tất yêu cầu của bạn. Vui lòng thử lại hoặc quay lại thực đơn.",
+      "404Title": "Không tìm thấy trang",
+      "404Lede": "Liên kết có thể đã đổi hoặc bàn chưa được cấu hình. Quay lại menu để tiếp tục.",
+      "403Title": "Không có quyền truy cập",
+      "403Lede": "Bạn không thể mở trang này. Nếu bạn là nhân viên, hãy đăng nhập lại.",
+      "503Title": "Tạm bảo trì",
+      "503Lede": "Quán đang bảo trì hệ thống trong giây lát. Vui lòng thử lại sau.",
+      "offlineTitle": "Bạn đang offline",
+      "offlineLede": "Không có kết nối mạng. Kiểm tra Wi‑Fi rồi thử lại."
+    },
+    "staff": {
+      "layout": {
+        "staffActions": "Thao tác nhân viên",
+        "adminLink": "Quản lý",
+        "adminLinkTitle": "Quản trị quán",
+        "switchStaff": "Đổi nhân viên",
+        "logout": "Đăng xuất",
+        "login": "Đăng nhập nhân viên",
+        "menu": "Thực đơn"
+      },
+      "login": {
+        "title": "Đăng nhập quầy",
+        "subtitle": "Dành cho nhân viên thu ngân, quản lý và pha chế.",
+        "username": "Tên đăng nhập",
+        "usernamePlaceholder": "Ví dụ: thu-ngan-1",
+        "usernameHint": "Nhân viên dùng tên đăng nhập và mật khẩu được quản lý cấp.",
+        "password": "Mật khẩu",
+        "passwordPlaceholder": "Mật khẩu nhân viên hoặc mật khẩu quầy",
+        "passwordHint": "Nếu dùng mật khẩu chung của quầy, có thể để trống tên đăng nhập.",
+        "submit": "Đăng nhập"
+      },
+      "orders": {
+        "colAwaitingPayBadge": "CHỜ TT",
+        "colAwaitingPayEmpty": "Chưa có đơn chờ thanh toán",
+        "colPaidBadge": "ĐÃ TT",
+        "colPaidEmpty": "Chưa có đơn đang pha chế",
+        "colCompletedBadge": "XONG",
+        "colCompletedEmpty": "Chưa có đơn hoàn thành gần đây",
+        "waitUnknown": "Chờ —",
+        "waitUnderOneMin": "Chờ <1 phút",
+        "waitMinutes": "Chờ {mins} phút",
+        "waitHours": "Chờ {hours} giờ",
+        "waitDays": "Cũ · {days} ngày",
+        "prepNotDone": "Chưa xong",
+        "prepDone": "Xong",
+        "prepProgressLabel": "Tiến độ pha chế",
+        "prepProgressCount": "Đã xong {done}/{total} món",
+        "noteLabel": "Ghi chú:",
+        "preparedBy": "Xong bởi:",
+        "viewBill": "Xem bill",
+        "confirmPayment": "Xác nhận thanh toán",
+        "completeOrder": "Hoàn thành đơn",
+        "expandItems": "Xem thêm {count} món",
+        "noItems": "Không có món",
+        "total": "Tổng",
+        "pendingPayment": "Chờ thanh toán",
+        "transferMemo": "CK:",
+        "paidAt": "Thanh toán",
+        "paymentConfirmed": "Thanh toán:",
+        "autoPayment": "Thanh toán tự động",
+        "confirmedBy": "Xác nhận:",
+        "completedAt": "Hoàn thành",
+        "completedBy": "Hoàn thành bởi:",
+        "billLabel": "Mã bill",
+        "table": "Bàn",
+        "sentAt": "Gửi lúc",
+        "grandTotal": "Tổng cộng",
+        "thanks": "Cảm ơn bạn đã ghé Annap.",
+        "loadBillFailed": "Không tải được bill.",
+        "emptyBill": "Không có món",
+        "paymentCash": "Tiền mặt",
+        "paymentCard": "Thẻ",
+        "paymentTransfer": "Chuyển khoản",
+        "paymentCounter": "Thanh toán tại quầy",
+        "statusPaid": "Đã thanh toán",
+        "statusPending": "Chờ thanh toán",
+        "prepCompleteHint": "Tick đủ món để hoàn thành",
+        "paidBadge": "Đã thanh toán",
+        "pendingTransfer": "Chuyển khoản · chờ xác nhận",
+        "pendingCard": "Thẻ · chờ thanh toán",
+        "pendingCash": "Tiền mặt · chờ thanh toán",
+        "pendingCounter": "Tại quầy · tiền mặt/thẻ",
+        "paidShort": "TT"
+      },
+      "shiftClose": {
+        "confirmClose": "Bạn chắc chắn muốn kết ca? Các bill trong ca hiện tại sẽ được chốt vào báo cáo ca.",
+        "copied": "Đã sao chép",
+        "copyFailed": "Không sao chép được. Hãy chọn và copy thủ công."
+      }
+    },
+    "admin": {
+      "nav": {
+        "mobileLabel": "Điều hướng di động",
+        "navigation": "Điều hướng",
+        "primary": "Primary",
+        "openNav": "Mở điều hướng",
+        "close": "Đóng"
+      },
+      "topbar": {
+        "searchLabel": "Tìm kiếm",
+        "searchPlaceholder": "Tìm món, bàn hoặc ghi chú…",
+        "manage": "Quản lý",
+        "floor": "Sàn phục vụ",
+        "logout": "Đăng xuất"
+      },
+      "dashboard": {
+        "title": "Bảng điều hành",
+        "returnGuest": "← Về trang khách",
+        "eyebrow": "Quản trị"
+      }
+    }
+  }
+}

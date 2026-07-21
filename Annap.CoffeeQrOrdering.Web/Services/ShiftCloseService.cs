@@ -468,5 +468,5 @@ public sealed class ShiftCloseService(AppDbContext db) : IShiftCloseService
         _ => "Đang pha chế"
     };
 
-    private static string Money(decimal amount) => amount.ToString("N0", ViCulture) + "đ";
+    private static string Money(decimal amount) => VndMoneyFormatter.Format(amount);
 }

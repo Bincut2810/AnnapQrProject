@@ -1,19 +1,30 @@
 (function () {
     const BOARD_COLUMNS = ["submitted", "paid", "completed"];
-    const COLUMN_META = {
-        submitted: {
-            badge: "CHỜ TT",
-            empty: "Chưa có đơn chờ thanh toán"
-        },
-        paid: {
-            badge: "ĐÃ TT",
-            empty: "Chưa có đơn đang pha chế"
-        },
-        completed: {
-            badge: "XONG",
-            empty: "Chưa có đơn hoàn thành gần đây"
+
+    function t(key, vars) {
+        if (window.LuxuryI18n && typeof window.LuxuryI18n.tf === "function") {
+            const v = vars ? window.LuxuryI18n.tf(key, vars) : window.LuxuryI18n.t(key);
+            if (v) return v;
         }
-    };
+        return key;
+    }
+
+    function columnMeta() {
+        return {
+            submitted: {
+                badge: t("ops.staff.orders.colAwaitingPayBadge"),
+                empty: t("ops.staff.orders.colAwaitingPayEmpty")
+            },
+            paid: {
+                badge: t("ops.staff.orders.colPaidBadge"),
+                empty: t("ops.staff.orders.colPaidEmpty")
+            },
+            completed: {
+                badge: t("ops.staff.orders.colCompletedBadge"),
+                empty: t("ops.staff.orders.colCompletedEmpty")
+            }
+        };
+    }
 
     let hubConnection = null;
     let hubRefreshTimer = null;
@@ -139,16 +150,16 @@
     }
 
     function fmtWaitVi(iso) {
-        if (!iso) return "Chờ —";
-        const t = new Date(iso).getTime();
-        if (Number.isNaN(t)) return "Chờ —";
-        const mins = Math.max(0, Math.floor((Date.now() - t) / 60000));
-        if (mins < 1) return "Chờ <1 phút";
-        if (mins < 60) return `Chờ ${mins} phút`;
+        if (!iso) return t("ops.staff.orders.waitUnknown");
+        const ts = new Date(iso).getTime();
+        if (Number.isNaN(ts)) return t("ops.staff.orders.waitUnknown");
+        const mins = Math.max(0, Math.floor((Date.now() - ts) / 60000));
+        if (mins < 1) return t("ops.staff.orders.waitUnderOneMin");
+        if (mins < 60) return t("ops.staff.orders.waitMinutes", { mins });
         const hours = Math.floor(mins / 60);
-        if (hours < 24) return `Chờ ${hours} giờ`;
+        if (hours < 24) return t("ops.staff.orders.waitHours", { hours });
         const days = Math.floor(hours / 24);
-        return `Cũ · ${days} ngày`;
+        return t("ops.staff.orders.waitDays", { days });
     }
 
     function escapeHtml(s) {
@@ -164,7 +175,10 @@
     }
 
     function moneyFmt(v) {
-        return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(v);
+        if (window.AnnapMoney && typeof window.AnnapMoney.format === "function") {
+            return window.AnnapMoney.format(v);
+        }
+        return String(v);
     }
 
     function pacingClass(key) {
@@ -176,7 +190,7 @@
     }
 
     function columnMeta(column) {
-        return COLUMN_META[column] || COLUMN_META.submitted;
+        return columnMeta()[column] || columnMeta().submitted;
     }
 
     function orderHasBill(o, column) {
@@ -604,9 +618,10 @@
             };
         }
 
-        syncColumn(board, "submitted", data.submitted || [], COLUMN_META.submitted.empty, false);
-        syncColumn(board, "paid", data.paid || [], COLUMN_META.paid.empty, false);
-        syncColumn(board, "completed", data.completed || [], COLUMN_META.completed.empty, true);
+        const meta = columnMeta();
+        syncColumn(board, "submitted", data.submitted || [], meta.submitted.empty, false);
+        syncColumn(board, "paid", data.paid || [], meta.paid.empty, false);
+        syncColumn(board, "completed", data.completed || [], meta.completed.empty, true);
 
         const all = collectAllIds(data);
         removeOrphanCards(board, all);
@@ -623,7 +638,7 @@
         window.setTimeout(() => {
             for (const st of BOARD_COLUMNS) {
                 const b = colBody(st);
-                if (b && !b.querySelector("article.staff-order-card")) ensureEmpty(b, COLUMN_META[st].empty);
+                if (b && !b.querySelector("article.staff-order-card")) ensureEmpty(b, columnMeta()[st].empty);
             }
         }, 420);
     }
@@ -1003,4 +1018,8 @@
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
     else boot();
+
+    window.addEventListener("luxury:i18n-changed", function () {
+        if (lastBoardData) void loadBoard({ silent: true });
+    });
 })();

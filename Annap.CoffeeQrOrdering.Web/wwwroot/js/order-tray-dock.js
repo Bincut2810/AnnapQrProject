@@ -232,18 +232,10 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     return GuestInteractionContract.formatMoney(v);
                 } catch (_fmt) {}
             }
-            try {
-                const isVi =
-                    (window.LuxuryI18n && window.LuxuryI18n.getLang && window.LuxuryI18n.getLang() === "vi") ||
-                    (document.documentElement.lang || "").toLowerCase().startsWith("vi");
-                const rounded = Math.round(v);
-                if (isVi) {
-                    return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(rounded) + "đ";
-                }
-                return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(rounded);
-            } catch (_intl) {
-                return String(v);
+            if (window.AnnapMoney && typeof window.AnnapMoney.format === "function") {
+                return window.AnnapMoney.format(v);
             }
+            return String(v);
         }
 
         const money = { format: formatMoneySafe };

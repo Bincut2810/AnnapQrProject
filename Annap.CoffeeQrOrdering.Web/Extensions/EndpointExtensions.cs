@@ -23,6 +23,12 @@ public static class EndpointExtensions
     public static WebApplication MapAnnapEndpoints(this WebApplication app)
     {
         app.MapHealthChecks("/health");
+
+        app.MapGet("/i18n/{lang}.json", (string lang, I18nBundleService i18n) =>
+        {
+            var normalized = lang.Equals("vi", StringComparison.OrdinalIgnoreCase) ? "vi" : "en";
+            return Results.Content(i18n.GetBundleJson(normalized), "application/json; charset=utf-8");
+        }).AllowAnonymous();
         
         app.MapGet("/api/diag/ping", (HttpContext ctx, IWebHostEnvironment env) =>
         {

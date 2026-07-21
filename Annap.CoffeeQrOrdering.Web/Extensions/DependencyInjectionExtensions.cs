@@ -68,11 +68,14 @@ public static class DependencyInjectionExtensions
             options.SupportedUICultures = supported;
             options.RequestCultureProviders =
             [
-                new QueryStringRequestCultureProvider(),
                 new CookieRequestCultureProvider(),
+                new QueryStringRequestCultureProvider(),
                 new AcceptLanguageHeaderRequestCultureProvider()
             ];
         });
+
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+        builder.Services.AddSingleton<I18nBundleService>();
 
         builder.Services.AddSingleton<HubConnectionRegistry>();
         builder.Services.AddSingleton<IOrderStatusNotifier, OrderStatusNotifier>();

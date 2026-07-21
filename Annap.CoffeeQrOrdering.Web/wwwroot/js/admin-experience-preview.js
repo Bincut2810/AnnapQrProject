@@ -114,7 +114,7 @@
             var sub = kicker || (m && m.subtitle) || "";
             var taste = body || (m && m.tastingNotes) || "";
             var img = m && m.imageUrl ? m.imageUrl : "";
-            var price = m && typeof m.price !== "undefined" ? Number(m.price).toFixed(2) : "—";
+            var price = m && typeof m.price !== "undefined" ? window.AnnapMoney.format(m.price) : "—";
             var fade = active ? "" : " exp-lp-card--dim";
             return (
                 '<div class="exp-lp-card exp-lp-card--rail' +

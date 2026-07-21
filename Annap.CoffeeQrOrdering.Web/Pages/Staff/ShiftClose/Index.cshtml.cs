@@ -21,7 +21,7 @@ public sealed class IndexModel(IShiftCloseService shiftClose) : PageModel
 
     public CultureInfo Vi { get; } = CultureInfo.GetCultureInfo("vi-VN");
 
-    public string Money(decimal v) => v.ToString("N0", Vi) + "đ";
+    public string Money(decimal v) => VndMoneyFormatter.Format(v);
 
     public string FormatLocal(DateTimeOffset utc) => AnnapBusinessTime.FormatLocalDateTime(utc);
 

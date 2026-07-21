@@ -29,4 +29,13 @@
     <InternalsVisibleTo Include="Annap.CoffeeQrOrdering.Tests" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Update="Resources\SharedResources.resx">
+      <Generator></Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\SharedResources.vi.resx">
+      <DependentUpon>SharedResources.resx</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

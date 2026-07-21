@@ -221,21 +221,12 @@
 
 
     function formatPrice(price) {
-
-        var n = Number(price);
-
-        if (!isFinite(n)) return "";
-
-        try {
-
-            return new Intl.NumberFormat(undefined, { style: "currency", currency: "VND", maximumFractionDigits: 0 }).format(n);
-
-        } catch (_fmt) {
-
-            return String(price);
-
+        if (window.AnnapMoney && typeof window.AnnapMoney.format === "function") {
+            return window.AnnapMoney.format(price);
         }
-
+        var n = Number(price);
+        if (!isFinite(n)) return "";
+        return String(price);
     }
 
 
