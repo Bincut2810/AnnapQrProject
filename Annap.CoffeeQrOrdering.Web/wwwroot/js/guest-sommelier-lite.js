@@ -421,6 +421,10 @@
 
         container.hidden = false;
 
+        if (global.InteractionFeedback) {
+            global.InteractionFeedback.trigger("whoosh", { silentVisual: true });
+        }
+
         container.querySelectorAll("[data-somm-add]").forEach(function (btn) {
 
             btn.addEventListener("click", function () {
@@ -439,11 +443,13 @@
 
                         name: itemName,
 
-                        unitPrice: unitPrice
+                        unitPrice: unitPrice,
+
+                        sourceElement: btn
 
                     });
 
-                    btn.textContent = t("guest.sommelierLite.added", "Added");
+                    btn.textContent = t("guest.sommelierLite.added");
 
                     btn.disabled = true;
 
@@ -453,7 +459,7 @@
 
                         statusEl,
 
-                        t("guest.sommelierLite.trayUnavailable", "Open the menu to add this drink."),
+                        t("guest.sommelierLite.trayUnavailable"),
 
                         false
 

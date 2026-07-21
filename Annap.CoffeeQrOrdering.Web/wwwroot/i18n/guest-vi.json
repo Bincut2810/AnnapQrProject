@@ -654,6 +654,11 @@
     "ceremonySaved": "Giữ cho vòng nếm này",
     "ceremonyWaiting": "Chờ bên quầy Annap"
   },
+  "feedback": {
+    "prefsLabel": "Âm thanh và rung",
+    "soundToggle": "Phản hồi âm thanh",
+    "hapticToggle": "Phản hồi rung"
+  },
   "checkout": {
     "reviewOrder": "Kiểm tra đơn",
     "checkBillTitle": "Phiếu kiểm đơn",

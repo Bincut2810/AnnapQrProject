@@ -428,7 +428,7 @@
   }
 
   .btn-ink:active {
-    transform: scale(0.985);
+    transform: scale(0.98);
     filter: brightness(0.97);
   }
 

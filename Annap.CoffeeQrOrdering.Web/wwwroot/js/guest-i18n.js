@@ -97,14 +97,25 @@
         }
         document.documentElement.lang = current === "vi" ? "vi" : "en";
         syncCultureCookie(current);
+        try {
+            document.documentElement.classList.add("annap-if-lang-fading");
+        } catch (_fade) {}
         applyDom();
         try {
             sessionStorage.removeItem("annap_sommelier_session_v1");
         } catch (_annapSs) {
             /* ignore */
         }
+        if (window.InteractionFeedback && typeof window.InteractionFeedback.trigger === "function") {
+            window.InteractionFeedback.trigger("lang", { silentVisual: true });
+        }
         window.dispatchEvent(new CustomEvent("luxury:i18n-changed", { detail: { lang: current } }));
         syncSwitcherUi();
+        setTimeout(function () {
+            try {
+                document.documentElement.classList.remove("annap-if-lang-fading");
+            } catch (_fade2) {}
+        }, 120);
     }
 
     function get(path) {

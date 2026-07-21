@@ -121,6 +121,9 @@
   <data name="errors.referenceId" xml:space="preserve"><value>Mã tham chiếu</value></data>
   <data name="errors.retry" xml:space="preserve"><value>Thử lại</value></data>
   <data name="errors.sommelierEmptyPrompt" xml:space="preserve"><value>Cho chúng tôi vài dòng về bạn muốn cảm thấy thế nào hôm nay.</value></data>
+  <data name="feedback.hapticToggle" xml:space="preserve"><value>Phản hồi rung</value></data>
+  <data name="feedback.prefsLabel" xml:space="preserve"><value>Âm thanh và rung</value></data>
+  <data name="feedback.soundToggle" xml:space="preserve"><value>Phản hồi âm thanh</value></data>
   <data name="ge.arrival.beginTasting" xml:space="preserve"><value>Mời bạn</value></data>
   <data name="ge.arrival.curatedEmptyTitle" xml:space="preserve"><value>Trải nghiệm đang được sắp đặt.</value></data>
   <data name="ge.arrival.inviteIn" xml:space="preserve"><value>Mời bạn</value></data>

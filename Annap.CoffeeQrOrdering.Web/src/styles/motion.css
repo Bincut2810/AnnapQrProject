@@ -11,6 +11,12 @@
   --motion-deliberate: 650ms;
   --motion-ceremonial: 900ms;
 
+  /* Unified interaction scale (InteractionFeedback) */
+  --motion-fast: 100ms;
+  --motion-normal: 220ms;
+  --motion-slow: 420ms;
+  --motion-press: 100ms;
+
   /* Aliases to correspond naming */
   --motion-ink: var(--duration-ink);
   --motion-rustle: var(--duration-rustle);
@@ -18,9 +24,11 @@
   --motion-open: var(--duration-open);
   --motion-seal: var(--duration-seal);
 
-  /* Easing — same curves as tokens; repeated for discoverability */
+  /* Easing — press is ease-out (no bounce); arrive keeps ceremonial curve */
+  --ease-out-press: cubic-bezier(0.25, 0.1, 0.25, 1);
   --motion-ease-arrive: var(--ease-unfold);
   --motion-ease-release: var(--ease-fold);
-  --motion-ease-settle: var(--ease-press);
+  --motion-ease-settle: var(--ease-out-press);
   --motion-ease-drift: linear;
+  --motion-ease-press: var(--ease-out-press);
 }

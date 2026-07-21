@@ -1070,6 +1070,9 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 token: payload.guestSessionToken ? "present" : "missing",
                 trackUrl: payload.trackUrl ? "present" : "missing"
             });
+            if (window.InteractionFeedback) {
+                window.InteractionFeedback.trigger("submit", { element: btn || null });
+            }
 
             document.body.classList.add("annap-order-confirming");
             window.setTimeout(function () {
@@ -1501,6 +1504,9 @@ function __annapMenuRuntimeJsonSelfCheck() {
             updateTraySummary();
             renderCart();
             showPaymentSuccessCelebration(sess);
+            if (window.InteractionFeedback) {
+                window.InteractionFeedback.trigger("success", { silentVisual: true });
+            }
             __annapTrayPaymentDevLog("payment confirmed celebration", { orderId: sess && sess.orderId });
         }
 
@@ -1545,6 +1551,10 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 if (data.isComplete) {
                     traySubmittedStatus = TRAY_STATE.COMPLETED;
                     GuestInteractionContract.updateGuestOrderSessionStatus(TRAY_STATE.COMPLETED);
+                    if (!window.__annapIfCompletePlayed && window.InteractionFeedback) {
+                        window.__annapIfCompletePlayed = true;
+                        window.InteractionFeedback.trigger("complete", { silentVisual: true });
+                    }
                     trayKnownPendingPayment = false;
                     stopTrayStatusPolling();
                 } else if (isPaid) {
@@ -2549,6 +2559,9 @@ function __annapMenuRuntimeJsonSelfCheck() {
                             tOrder("order.submitFailedStaff");
                     }
                     __annapTrayPaymentDevLog("submit failed", { status: res.status, error: er || null });
+                    if (window.InteractionFeedback) {
+                        window.InteractionFeedback.trigger("error", { silentVisual: true });
+                    }
                     if (orderResult) orderResult.textContent = msg;
                     restoreSubmitButtonState(btn, prepLabel);
                     refreshTableIdentityUi();

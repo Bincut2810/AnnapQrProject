@@ -70,6 +70,10 @@
 
     function notify(msg) {
         try {
+            if (window.AnnapGuestFeedback && typeof window.AnnapGuestFeedback.showToast === "function") {
+                window.AnnapGuestFeedback.showToast(msg);
+                return;
+            }
             const el = document.getElementById("guestToastText");
             const wrap = document.getElementById("guestToast");
             if (el && wrap) {

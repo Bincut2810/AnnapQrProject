@@ -2758,6 +2758,9 @@
                         sommResults.innerHTML = parts.join("");
                         sommResults.classList.add("ge-sommelier-results--cup-moment");
                         geArmCupMomentDelays(sommResults);
+                        if (window.InteractionFeedback) {
+                            window.InteractionFeedback.trigger("whoosh", { silentVisual: true });
+                        }
                         var rb = document.createElement("button");
                         rb.type = "button";
                         rb.className = "ge-restart ge-restart--sommelier guest-hit";

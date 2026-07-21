@@ -599,6 +599,11 @@
     "ceremonySaved": "Saved for this tasting round",
     "ceremonyWaiting": "Waiting beside the Annap bar"
   },
+  "feedback": {
+    "prefsLabel": "Sound and haptics",
+    "soundToggle": "Sound feedback",
+    "hapticToggle": "Haptic feedback"
+  },
   "checkout": {
     "reviewOrder": "Review order",
     "checkBillTitle": "Order check bill",

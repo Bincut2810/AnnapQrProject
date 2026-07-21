@@ -80,9 +80,12 @@
                     ← Chọn lại
                 </a>
             </nav>
-            <div class="guest-lang-register menu-seated-lang flex min-h-11 items-center gap-0 border border-[rgba(190,165,130,0.42)] bg-[rgba(253,249,244,0.4)] p-px" role="group" aria-label="Language">
-                <button type="button" data-lang-set="en" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]" data-i18n="langSwitcher.en">EN</button>
-                <button type="button" data-lang-set="vi" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97]" data-i18n="langSwitcher.vi">VI</button>
+            <div class="flex min-h-11 items-center gap-1">
+                <div class="guest-lang-register menu-seated-lang flex min-h-11 items-center gap-0 border border-[rgba(190,165,130,0.42)] bg-[rgba(253,249,244,0.4)] p-px" role="group" data-i18n-aria="langSwitcher.label">
+                    <button type="button" data-lang-set="en" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))]" data-i18n="langSwitcher.en">EN</button>
+                    <button type="button" data-lang-set="vi" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))]" data-i18n="langSwitcher.vi">VI</button>
+                </div>
+                <partial name="Shared/_InteractionPrefs" />
             </div>
         </div>
         @if (Model.HasSeatedTable && !string.IsNullOrWhiteSpace(Model.TableGuestLabel))

@@ -58,7 +58,7 @@
         .err-btn--primary { background: #2a2218; color: #faf7f2; }
         .err-btn--quiet { background: transparent; color: #6b5f52; border: 1px solid rgba(107, 95, 82, 0.35); }
         .err-ref { margin-top: 2rem; font-size: 0.6875rem; letter-spacing: 0.06em; color: #a89a8a; word-break: break-all; }
-        .err-lang { margin-top: 1.5rem; display: flex; justify-content: center; }
+        .err-lang { margin-top: 1.5rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     </style>
 </head>
 <body class="err-page">
@@ -78,7 +78,10 @@
             }
             <div class="err-lang">
                 <partial name="Shared/_LanguageSwitcher" />
+                <partial name="Shared/_InteractionPrefs" />
             </div>
+            <link rel="stylesheet" href="~/css/interaction-feedback.css" asp-append-version="true" />
+            <script src="~/js/interaction-feedback.js" asp-append-version="true"></script>
             <script src="~/js/guest-i18n.js" asp-append-version="true"></script>
         }
         else

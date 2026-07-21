@@ -59,6 +59,7 @@
     }
     <link rel="stylesheet" href="~/Annap.CoffeeQrOrdering.Web.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/typography-brand.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/interaction-feedback.css" asp-append-version="true" />
     <script src="~/js/annap-viewport.js" asp-append-version="true"></script>
     @if (!isSeatedContext)
     {
@@ -122,9 +123,10 @@
                     <nav class="guest-masthead__nav flex flex-wrap items-center gap-x-2 gap-y-2 border-t border-[rgba(190,165,130,0.28)] pt-3 text-xs lg:gap-x-3 lg:border-t-0 lg:pt-0 lg:text-sm" data-i18n-aria="nav.siteAria">
                         <span class="hidden min-h-11 items-center text-[10px] tracking-[0.18em] text-[rgb(var(--muted-2))] lg:inline-flex" data-i18n="langSwitcher.label">Language</span>
                         <div class="guest-lang-register flex min-h-11 items-center gap-0 border border-[rgba(190,165,130,0.42)] bg-[rgba(253,249,244,0.4)] p-px" role="group" data-i18n-aria="langSwitcher.label">
-                            <button type="button" data-lang-set="en" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97] lg:tracking-[0.18em]" data-i18n="langSwitcher.en">EN</button>
-                            <button type="button" data-lang-set="vi" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] active:scale-[0.97] lg:tracking-[0.18em]" data-i18n="langSwitcher.vi">VI</button>
+                            <button type="button" data-lang-set="en" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] lg:tracking-[0.18em]" data-i18n="langSwitcher.en">EN</button>
+                            <button type="button" data-lang-set="vi" class="guest-hit inline-flex min-h-11 min-w-11 items-center justify-center rounded-full px-3 text-xs tracking-[0.16em] transition hover:text-[rgb(var(--fg))] lg:tracking-[0.18em]" data-i18n="langSwitcher.vi">VI</button>
                         </div>
+                        <partial name="Shared/_InteractionPrefs" />
                         <a class="guest-hit inline-flex min-h-11 items-center px-2 text-[rgb(var(--muted))] transition hover:text-[rgb(var(--fg))] active:opacity-80"
                            asp-page="/Menu/Index"
                            data-guest-vt-link="1"
@@ -202,10 +204,8 @@
         <script src="~/js/guest-order-queue.js" asp-append-version="true"></script>
     }
     <script src="~/js/site.js" asp-append-version="true" defer></script>
-    @if (!seatedSlimChrome)
-    {
-        <script src="~/js/add-to-order-animation-provider.js" asp-append-version="true" defer></script>
-    }
+    <script src="~/js/interaction-feedback.js" asp-append-version="true"></script>
+    <script src="~/js/add-to-order-animation-provider.js" asp-append-version="true" defer></script>
     <script src="~/js/correspondence.js" asp-append-version="true" defer></script>
     @if (skipI18n)
     {
@@ -225,15 +225,8 @@
     {
         <script src="~/js/guest-i18n.js" asp-append-version="true"></script>
     }
-    @if (!slimGuestBoot && !seatedSlimChrome)
-    {
-        <script src="~/js/guest-interaction-contract.js" asp-append-version="true"></script>
-        <script src="~/js/guest-feedback.js" asp-append-version="true"></script>
-    }
-    else if (seatedSlimChrome)
-    {
-        <script src="~/js/guest-interaction-contract.js" asp-append-version="true"></script>
-    }
+    <script src="~/js/guest-interaction-contract.js" asp-append-version="true"></script>
+    <script src="~/js/guest-feedback.js" asp-append-version="true"></script>
 
     @if (useDevUi && DiagOptions.Value.ShowLanDebugOverlay)
     {
