@@ -17,6 +17,7 @@ public static class GuestDiscoveryCurator
         string? Description,
         string CategoryName,
         string? ImageUrl,
+        string? DetailPosterImagePath,
         string? FlavorTags,
         string? MoodTags,
         bool IsSignature,

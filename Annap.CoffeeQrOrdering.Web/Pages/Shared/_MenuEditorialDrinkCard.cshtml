@@ -5,7 +5,7 @@
     var (item, categoryName, isHero, cardIndex, revealDelayMs) = Model;
     var badgeLabel = item.IsSignature ? "Đặc trưng quán" : (item.IsFeatured ? "Khách yêu thích" : null);
     var badgeI18n = item.IsSignature ? "menu.ribbonSignature" : (item.IsFeatured ? "menu.ribbonFeatured" : null);
-    var cardImg = MenuMediaResolver.TryResolveCardImageUrl(null, null, item.ImageUrl, null, item.Name, categoryName);
+    var cardImg = MenuMediaResolver.TryResolveCardImageUrl(item, categoryName);
     var priceDisplay = item.Price > 0
         ? VndMoneyFormatter.Format(item.Price)
         : "—";

@@ -116,7 +116,8 @@ public static class EndpointExtensions
                                 sensory = i.SensoryProfile,
                                 i.Price,
                                 i.DisplaySortOrder,
-                                imageUrl = MenuMediaResolver.ResolveCardImageUrl(null, null, i.ImageUrl, null, i.Name, c.Name)
+                                imageUrl = MenuMediaResolver.ResolveCardImageUrl(
+                                    null, null, i.ImageUrl, null, i.Name, c.Name, i.DetailPosterImagePath)
                             })
                             .ToList()
                     })
@@ -228,6 +229,7 @@ public static class EndpointExtensions
                     m.TastingNotes,
                     m.ShortStory,
                     m.ImageUrl,
+                    m.DetailPosterImagePath,
                     m.MoodProfile,
                     m.Description,
                     m.ItemType,
@@ -297,7 +299,8 @@ public static class EndpointExtensions
                     m.Price,
                     m.TastingNotes,
                     m.ShortStory,
-                    MenuMediaResolver.ResolveCardImageUrl(null, null, m.ImageUrl, null, m.Name, m.CatName),
+                    MenuMediaResolver.ResolveCardImageUrl(
+                        null, null, m.ImageUrl, null, m.Name, m.CatName, m.DetailPosterImagePath),
                     m.MoodProfile,
                     m.SensoryProfile.MergeWithLegacyLevels(m.CaffeineLevel, m.SweetnessLevel, m.AcidityLevel),
                     m.CatName))
@@ -455,6 +458,7 @@ public static class EndpointExtensions
                     m.Description,
                     CatName = m.Category.Name,
                     m.ImageUrl,
+                    m.DetailPosterImagePath,
                     m.FlavorTags,
                     m.MoodTags,
                     m.IsSignature,
@@ -488,6 +492,7 @@ public static class EndpointExtensions
                         m.Description,
                         CatName = m.Category.Name,
                         m.ImageUrl,
+                        m.DetailPosterImagePath,
                         m.FlavorTags,
                         m.MoodTags,
                         m.IsSignature,
@@ -517,6 +522,7 @@ public static class EndpointExtensions
                     m.Description,
                     m.CatName,
                     m.ImageUrl,
+                    m.DetailPosterImagePath,
                     m.FlavorTags,
                     m.MoodTags,
                     m.IsSignature || cmsSignatureSet.Contains(m.Id),
@@ -535,7 +541,8 @@ public static class EndpointExtensions
                     pool,
                     body,
                     hourUtc,
-                    row => MenuMediaResolver.ResolveCardImageUrl(null, null, row.ImageUrl, null, row.Name, row.CategoryName),
+                    row => MenuMediaResolver.ResolveCardImageUrl(
+                        null, null, row.ImageUrl, null, row.Name, row.CategoryName, row.DetailPosterImagePath),
                     settings,
                     envelopeIx);
                 return Results.Ok(payload);

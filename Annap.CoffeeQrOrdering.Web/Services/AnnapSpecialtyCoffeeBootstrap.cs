@@ -7,10 +7,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Annap.CoffeeQrOrdering.Web.Services;
 
-/// <summary>Idempotent bootstrap for the four flagship specialty coffees (editorial content from house catalog).</summary>
+/// <summary>
+/// Idempotent bootstrap for the four flagship specialty coffees (editorial content from house catalog).
+/// Never overwrites durable Cloudinary / managed media URLs — admin uploads must survive redeploy.
+/// </summary>
 public static class AnnapSpecialtyCoffeeBootstrap
 {
-    public const string FallbackImageUrl = "/images/menu-fallback.svg";
+    /// <summary>UI-only placeholder. Must not be persisted when a durable Cloudinary URL already exists.</summary>
+    public const string FallbackImageUrl = MenuMediaResolver.FallbackPlaceholderUrl;
 
     private const decimal CupPriceVnd = 80000m;
 
@@ -110,10 +114,40 @@ public static class AnnapSpecialtyCoffeeBootstrap
         entity.IsDiscoveryEligible = false;
         entity.DiscoveryWeight = 0m;
 
-        var resolvedImage = assetResolver.ResolveWebUrl(AnnapSpecialtyCoffeeCatalog.CategoryName, seed.Name);
-        entity.ImageUrl = resolvedImage ?? FallbackImageUrl;
-        if (string.IsNullOrWhiteSpace(entity.DetailPosterImagePath))
-            entity.DetailPosterImagePath = entity.ImageUrl;
+        ApplyCanonicalImages(
+            entity,
+            assetResolver.ResolveWebUrl(AnnapSpecialtyCoffeeCatalog.CategoryName, seed.Name));
+    }
+
+    /// <summary>
+    /// Production rule: Cloudinary (and managed /media) URLs are durable and must never be clobbered
+    /// by seed assets or <see cref="FallbackImageUrl"/>. Also heals card <see cref="MenuItem.ImageUrl"/>
+    /// when a prior bootstrap wiped it while leaving a Cloudinary detail poster intact.
+    /// </summary>
+    internal static void ApplyCanonicalImages(MenuItem entity, string? bootstrapAssetUrl)
+    {
+        if (!MenuMediaResolver.IsDurableMediaUrl(entity.ImageUrl)
+            && MenuMediaResolver.IsDurableMediaUrl(entity.DetailPosterImagePath))
+        {
+            entity.ImageUrl = entity.DetailPosterImagePath;
+        }
+
+        if (!MenuMediaResolver.IsDurableMediaUrl(entity.ImageUrl))
+        {
+            if (!string.IsNullOrWhiteSpace(bootstrapAssetUrl))
+                entity.ImageUrl = bootstrapAssetUrl;
+            else if (string.IsNullOrWhiteSpace(entity.ImageUrl)
+                     || MenuMediaResolver.IsEphemeralPlaceholderUrl(entity.ImageUrl))
+                entity.ImageUrl = null;
+        }
+
+        if (string.IsNullOrWhiteSpace(entity.DetailPosterImagePath)
+            || MenuMediaResolver.IsEphemeralPlaceholderUrl(entity.DetailPosterImagePath))
+        {
+            if (MenuMediaResolver.IsDurableMediaUrl(entity.ImageUrl)
+                || !string.IsNullOrWhiteSpace(entity.ImageUrl))
+                entity.DetailPosterImagePath = entity.ImageUrl;
+        }
     }
 
     private sealed record SpecialtyCoffeeSeed(

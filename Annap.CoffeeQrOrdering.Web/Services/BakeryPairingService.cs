@@ -66,7 +66,7 @@ public static class BakeryPairingService
                 && !blocked.Contains(i.Id))
             .OrderBy(i => i.DisplaySortOrder)
             .ThenBy(i => i.Name)
-            .Select(i => new { i.Id, i.Name, i.ImageUrl, i.Price, CategoryName = i.Category!.Name })
+            .Select(i => new { i.Id, i.Name, i.ImageUrl, i.DetailPosterImagePath, i.Price, CategoryName = i.Category!.Name })
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -78,7 +78,8 @@ public static class BakeryPairingService
 
         return rotated.Select(i =>
         {
-            var card = MenuMediaResolver.TryResolveCardImageUrl(null, null, i.ImageUrl, null, i.Name, i.CategoryName) ?? "";
+            var card = MenuMediaResolver.TryResolveCardImageUrl(
+                null, null, i.ImageUrl, null, i.Name, i.CategoryName, i.DetailPosterImagePath) ?? "";
             return new PairingSuggestionDto
             {
                 Id = i.Id,

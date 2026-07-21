@@ -1,0 +1,158 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Testcontainers.PostgreSql</name>
+    </assembly>
+    <members>
+        <member name="T:Testcontainers.PostgreSql.PostgreSqlBuilder">
+            <inheritdoc cref="T:DotNet.Testcontainers.Builders.ContainerBuilder`3" />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlBuilder" /> class.
+            </summary>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.#ctor(Testcontainers.PostgreSql.PostgreSqlConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlBuilder" /> class.
+            </summary>
+            <param name="resourceConfiguration">The Docker resource configuration.</param>
+        </member>
+        <member name="P:Testcontainers.PostgreSql.PostgreSqlBuilder.DockerResourceConfiguration">
+            <inheritdoc />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.WithDatabase(System.String)">
+            <summary>
+            Sets the PostgreSql database.
+            </summary>
+            <param name="database">The PostgreSql database.</param>
+            <returns>A configured instance of <see cref="T:Testcontainers.PostgreSql.PostgreSqlBuilder" />.</returns>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.WithUsername(System.String)">
+            <summary>
+            Sets the PostgreSql username.
+            </summary>
+            <param name="username">The PostgreSql username.</param>
+            <returns>A configured instance of <see cref="T:Testcontainers.PostgreSql.PostgreSqlBuilder" />.</returns>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.WithPassword(System.String)">
+            <summary>
+            Sets the PostgreSql password.
+            </summary>
+            <param name="password">The PostgreSql password.</param>
+            <returns>A configured instance of <see cref="T:Testcontainers.PostgreSql.PostgreSqlBuilder" />.</returns>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.Build">
+            <inheritdoc />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.Init">
+            <inheritdoc />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.Validate">
+            <inheritdoc />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.Clone(DotNet.Testcontainers.Configurations.IResourceConfiguration{Docker.DotNet.Models.CreateContainerParameters})">
+            <inheritdoc />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.Clone(DotNet.Testcontainers.Configurations.IContainerConfiguration)">
+            <inheritdoc />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.Merge(Testcontainers.PostgreSql.PostgreSqlConfiguration,Testcontainers.PostgreSql.PostgreSqlConfiguration)">
+            <inheritdoc />
+        </member>
+        <member name="T:Testcontainers.PostgreSql.PostgreSqlBuilder.WaitUntil">
+            <inheritdoc cref="T:DotNet.Testcontainers.Configurations.IWaitUntil" />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.WaitUntil.#ctor(Testcontainers.PostgreSql.PostgreSqlConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlBuilder.WaitUntil" /> class.
+            </summary>
+            <param name="configuration">The container configuration.</param>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlBuilder.WaitUntil.UntilAsync(DotNet.Testcontainers.Containers.IContainer)">
+            <summary>
+            Checks whether the database is ready and accepts connections or not.
+            </summary>
+            <remarks>
+            The wait strategy uses <a href="https://www.postgresql.org/docs/current/app-pg-isready.html">pg_isready</a> to check the connection status of PostgreSql.
+            </remarks>
+            <param name="container">The starting container instance.</param>
+            <returns>Task that completes and returns true when the database is ready and accepts connections, otherwise false.</returns>
+            <exception cref="T:System.NotSupportedException">Thrown when the PostgreSql image does not contain <c>pg_isready</c>.</exception>
+        </member>
+        <member name="T:Testcontainers.PostgreSql.PostgreSqlConfiguration">
+            <inheritdoc cref="T:DotNet.Testcontainers.Configurations.ContainerConfiguration" />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlConfiguration.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlConfiguration" /> class.
+            </summary>
+            <param name="database">The PostgreSql database.</param>
+            <param name="username">The PostgreSql username.</param>
+            <param name="password">The PostgreSql password.</param>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlConfiguration.#ctor(DotNet.Testcontainers.Configurations.IResourceConfiguration{Docker.DotNet.Models.CreateContainerParameters})">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlConfiguration" /> class.
+            </summary>
+            <param name="resourceConfiguration">The Docker resource configuration.</param>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlConfiguration.#ctor(DotNet.Testcontainers.Configurations.IContainerConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlConfiguration" /> class.
+            </summary>
+            <param name="resourceConfiguration">The Docker resource configuration.</param>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlConfiguration.#ctor(Testcontainers.PostgreSql.PostgreSqlConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlConfiguration" /> class.
+            </summary>
+            <param name="resourceConfiguration">The Docker resource configuration.</param>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlConfiguration.#ctor(Testcontainers.PostgreSql.PostgreSqlConfiguration,Testcontainers.PostgreSql.PostgreSqlConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlConfiguration" /> class.
+            </summary>
+            <param name="oldValue">The old Docker resource configuration.</param>
+            <param name="newValue">The new Docker resource configuration.</param>
+        </member>
+        <member name="P:Testcontainers.PostgreSql.PostgreSqlConfiguration.Database">
+            <summary>
+            Gets the PostgreSql database.
+            </summary>
+        </member>
+        <member name="P:Testcontainers.PostgreSql.PostgreSqlConfiguration.Username">
+            <summary>
+            Gets the PostgreSql username.
+            </summary>
+        </member>
+        <member name="P:Testcontainers.PostgreSql.PostgreSqlConfiguration.Password">
+            <summary>
+            Gets the PostgreSql password.
+            </summary>
+        </member>
+        <member name="T:Testcontainers.PostgreSql.PostgreSqlContainer">
+            <inheritdoc cref="T:DotNet.Testcontainers.Containers.DockerContainer" />
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlContainer.#ctor(Testcontainers.PostgreSql.PostgreSqlConfiguration)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Testcontainers.PostgreSql.PostgreSqlContainer" /> class.
+            </summary>
+            <param name="configuration">The container configuration.</param>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlContainer.GetConnectionString">
+            <summary>
+            Gets the PostgreSql connection string.
+            </summary>
+            <returns>The PostgreSql connection string.</returns>
+        </member>
+        <member name="M:Testcontainers.PostgreSql.PostgreSqlContainer.ExecScriptAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Executes the SQL script in the PostgreSql container.
+            </summary>
+            <param name="scriptContent">The content of the SQL script to execute.</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>Task that completes when the SQL script has been executed.</returns>
+        </member>
+    </members>
+</doc>

@@ -37,7 +37,8 @@
                 var pick = Model.MenuPicks.FirstOrDefault(m => m.Id == Model.SlotForms[i].MenuItemId);
                 var img = pick is null
                     ? ""
-                    : MenuMediaResolver.ResolveCardImageUrl(null, null, pick.ImageUrl, null, pick.Name, pick.CategoryName);
+                    : MenuMediaResolver.ResolveCardImageUrl(
+                        null, null, pick.ImageUrl, null, pick.Name, pick.CategoryName, pick.DetailPosterImagePath);
                 <li class="sig-slot-li cursor-grab rounded-2xl border border-white/[0.08] bg-black/25 p-3 active:cursor-grabbing" data-sig-card>
                     <div class="flex flex-wrap items-start gap-3">
                         <span class="sig-drag mt-1 select-none text-[rgb(var(--muted-2))]" title="Kéo để sắp xếp lại" aria-hidden="true">⠿</span>

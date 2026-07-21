@@ -84,7 +84,7 @@ public static class AnnapMenuBootstrap
     }
 
     internal static bool IsManagedOrCloudinaryUrl(string? url) =>
-        MenuImagePaths.IsManagedUrl(url) || MenuMediaResolver.IsCloudinaryUrl(url);
+        MenuMediaResolver.IsDurableMediaUrl(url);
 
     internal static bool IsUnsupportedRemoteUrl(string? url)
     {

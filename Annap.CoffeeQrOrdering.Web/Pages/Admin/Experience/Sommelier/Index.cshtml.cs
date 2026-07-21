@@ -344,14 +344,15 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
             .Where(m => m.IsAvailable && !m.IsArchived && !blocked.Contains(m.Id))
             .Select(m => new
             {
-                m.Id, m.Name, m.Price, m.TastingNotes, m.ShortStory, m.ImageUrl, m.MoodProfile,
+                m.Id, m.Name, m.Price, m.TastingNotes, m.ShortStory, m.ImageUrl, m.DetailPosterImagePath, m.MoodProfile,
                 CatName = m.Category.Name, m.SensoryProfile, m.CaffeineLevel, m.SweetnessLevel, m.AcidityLevel
             })
             .ToListAsync(cancellationToken);
 
         var rows = raw.Select(m => new MenuItemScoringRow(
                 m.Id, m.Name, m.Price, m.TastingNotes, m.ShortStory,
-                MenuMediaResolver.ResolveCardImageUrl(null, null, m.ImageUrl, null, m.Name, m.CatName),
+                MenuMediaResolver.ResolveCardImageUrl(
+                    null, null, m.ImageUrl, null, m.Name, m.CatName, m.DetailPosterImagePath),
                 m.MoodProfile,
                 m.SensoryProfile.MergeWithLegacyLevels(m.CaffeineLevel, m.SweetnessLevel, m.AcidityLevel),
                 m.CatName))

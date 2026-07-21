@@ -210,7 +210,8 @@ public sealed class IndexModel(
                     m.MoodProfile,
                     m.Price,
                     CategoryName = m.Category.Name,
-                    m.ImageUrl
+                    m.ImageUrl,
+                    m.DetailPosterImagePath
                 })
                 .ToDictionaryAsync(x => x.Id, cancellationToken);
 
@@ -227,7 +228,8 @@ public sealed class IndexModel(
                     m.MoodProfile,
                     m.Price,
                     m.CategoryName,
-                    MenuMediaResolver.ResolveCardImageUrl(null, null, m.ImageUrl, null, m.Name, m.CategoryName)));
+                    MenuMediaResolver.ResolveCardImageUrl(
+                        null, null, m.ImageUrl, null, m.Name, m.CategoryName, m.DetailPosterImagePath)));
             }
         }
         else if (!hasSignatureRailCuration)
@@ -253,7 +255,8 @@ public sealed class IndexModel(
                     x.MoodProfile,
                     x.Price,
                     CategoryName = x.Category.Name,
-                    x.ImageUrl
+                    x.ImageUrl,
+                    x.DetailPosterImagePath
                 })
             .ToListAsync(cancellationToken);
             SignatureDrinks = sigRows
@@ -265,7 +268,8 @@ public sealed class IndexModel(
                     x.MoodProfile,
                     x.Price,
                     x.CategoryName,
-                    MenuMediaResolver.ResolveCardImageUrl(null, null, x.ImageUrl, null, x.Name, x.CategoryName)))
+                    MenuMediaResolver.ResolveCardImageUrl(
+                        null, null, x.ImageUrl, null, x.Name, x.CategoryName, x.DetailPosterImagePath)))
                 .ToList();
         }
         else

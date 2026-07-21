@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Testcontainers</id>
+    <version>4.1.0</version>
+    <authors>Andre Hofmeister and contributors</authors>
+    <license type="file">LICENSE</license>
+    <licenseUrl>https://aka.ms/deprecateLicenseUrl</licenseUrl>
+    <icon>docs/logo.png</icon>
+    <readme>README.md</readme>
+    <projectUrl>https://dotnet.testcontainers.org/</projectUrl>
+    <iconUrl>https://github.com/testcontainers/testcontainers-dotnet/raw/develop/docs/logo.png</iconUrl>
+    <description>Testcontainers for .NET is a library to support tests with throwaway instances of Docker containers for all compatible .NET Standard versions.</description>
+    <copyright>Copyright (c) 2019 - 2024 Andre Hofmeister and other authors</copyright>
+    <tags>automation docker dotnet testcontainers testcontainers-dotnet testing</tags>
+    <repository type="git" url="https://github.com/testcontainers/testcontainers-dotnet" commit="0d86bda59ca536bd9108235d22ad06dae03ced53" />
+    <dependencies>
+      <group targetFramework="net8.0">
+        <dependency id="Docker.DotNet.Enhanced" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Docker.DotNet.Enhanced.X509" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="8.0.2" exclude="Build,Analyzers" />
+        <dependency id="SSH.NET" version="2024.1.0" exclude="Build,Analyzers" />
+        <dependency id="SharpZipLib" version="1.4.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework="net9.0">
+        <dependency id="Docker.DotNet.Enhanced" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Docker.DotNet.Enhanced.X509" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="8.0.2" exclude="Build,Analyzers" />
+        <dependency id="SSH.NET" version="2024.1.0" exclude="Build,Analyzers" />
+        <dependency id="SharpZipLib" version="1.4.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.0">
+        <dependency id="BouncyCastle.Cryptography" version="2.4.0" exclude="Build,Analyzers" />
+        <dependency id="Docker.DotNet.Enhanced" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Docker.DotNet.Enhanced.X509" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Bcl.AsyncInterfaces" version="8.0.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Bcl.HashCode" version="1.1.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="8.0.2" exclude="Build,Analyzers" />
+        <dependency id="SSH.NET" version="2024.1.0" exclude="Build,Analyzers" />
+        <dependency id="SharpZipLib" version="1.4.2" exclude="Build,Analyzers" />
+      </group>
+      <group targetFramework=".NETStandard2.1">
+        <dependency id="BouncyCastle.Cryptography" version="2.4.0" exclude="Build,Analyzers" />
+        <dependency id="Docker.DotNet.Enhanced" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Docker.DotNet.Enhanced.X509" version="3.126.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Bcl.AsyncInterfaces" version="8.0.0" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Bcl.HashCode" version="1.1.1" exclude="Build,Analyzers" />
+        <dependency id="Microsoft.Extensions.Logging.Abstractions" version="8.0.2" exclude="Build,Analyzers" />
+        <dependency id="SSH.NET" version="2024.1.0" exclude="Build,Analyzers" />
+        <dependency id="SharpZipLib" version="1.4.2" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

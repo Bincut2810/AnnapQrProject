@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Pgvector.EntityFrameworkCore</id>
+    <version>0.2.0</version>
+    <authors>ankane</authors>
+    <license type="expression">MIT</license>
+    <licenseUrl>https://licenses.nuget.org/MIT</licenseUrl>
+    <readme>README.md</readme>
+    <projectUrl>https://github.com/pgvector/pgvector-dotnet</projectUrl>
+    <description>pgvector support for Entity Framework Core</description>
+    <repository type="git" commit="6890f642c0599ed6a413c2b7fdbb5cc56a28a07a" />
+    <dependencies>
+      <group targetFramework="net8.0">
+        <dependency id="Pgvector" version="0.2.0" exclude="Build,Analyzers" />
+        <dependency id="Npgsql.EntityFrameworkCore.PostgreSQL" version="8.0.0" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

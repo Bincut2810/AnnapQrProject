@@ -322,6 +322,7 @@ public sealed class IndexModel(IApplicationDbContext db, IWebHostEnvironment env
                     m.TastingNotes,
                     m.Price,
                     m.ImageUrl,
+                    m.DetailPosterImagePath,
                     Cat = m.Category.Name
                 })
             .ToListAsync(cancellationToken);
@@ -333,7 +334,8 @@ public sealed class IndexModel(IApplicationDbContext db, IWebHostEnvironment env
             subtitle = s.EditorialKicker ?? s.Subtitle,
             tasting = s.EditorialBody ?? s.TastingNotes,
             s.Price,
-            imageUrl = MenuMediaResolver.ResolveCardImageUrl(null, null, s.ImageUrl, null, s.Name, s.Cat),
+            imageUrl = MenuMediaResolver.ResolveCardImageUrl(
+                null, null, s.ImageUrl, null, s.Name, s.Cat, s.DetailPosterImagePath),
             s.IsActive
         }).ToList();
 

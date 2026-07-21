@@ -31,6 +31,7 @@ public sealed class IndexModel(IApplicationDbContext db) : PageModel
                 m.TastingNotes,
                 m.Price,
                 m.ImageUrl,
+                m.DetailPosterImagePath,
                 m.Category.Name))
             .ToListAsync(cancellationToken);
 
@@ -89,7 +90,8 @@ public sealed class IndexModel(IApplicationDbContext db) : PageModel
                 m.Subtitle,
                 m.TastingNotes,
                 m.Price,
-                imageUrl = MenuMediaResolver.ResolveCardImageUrl(null, null, m.ImageUrl, null, m.Name, m.CategoryName)
+                imageUrl = MenuMediaResolver.ResolveCardImageUrl(
+                    null, null, m.ImageUrl, null, m.Name, m.CategoryName, m.DetailPosterImagePath)
             }).ToList()
         }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     }
@@ -155,6 +157,7 @@ public sealed class IndexModel(IApplicationDbContext db) : PageModel
         string? TastingNotes,
         decimal Price,
         string? ImageUrl,
+        string? DetailPosterImagePath,
         string CategoryName);
 
     public sealed class SlotFormRow
