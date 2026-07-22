@@ -12,8 +12,14 @@ public sealed class ExperienceGuidedQuestion : AuditableEntity
 
     public string Prompt { get; set; } = "";
 
-    /// <summary>Longer host-facing line shown in CMS and optional guest copy.</summary>
+    /// <summary>Native English prompt — independent copy, not a translation of <see cref="Prompt"/>.</summary>
+    public string? PromptEn { get; set; }
+
+    /// <summary>Longer host-facing line shown in CMS and optional guest copy (Vietnamese).</summary>
     public string? Description { get; set; }
+
+    /// <summary>Native English description — independent of <see cref="Description"/>.</summary>
+    public string? DescriptionEn { get; set; }
 
     public int SortOrder { get; set; }
     public bool IsOptional { get; set; }

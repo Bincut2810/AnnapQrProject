@@ -14,7 +14,9 @@ public sealed class ExperienceGuidedQuestionConfiguration : IEntityTypeConfigura
         builder.Property(x => x.ExternalKey).HasMaxLength(64).IsRequired();
         builder.Property(x => x.SetKey).HasMaxLength(100).IsRequired().HasDefaultValue("");
         builder.Property(x => x.Prompt).HasMaxLength(600).IsRequired();
+        builder.Property(x => x.PromptEn).HasMaxLength(600);
         builder.Property(x => x.Description).HasMaxLength(2000);
+        builder.Property(x => x.DescriptionEn).HasMaxLength(2000);
 
         builder.HasIndex(x => new { x.SetKey, x.ExternalKey }).IsUnique();
         builder.HasIndex(x => x.SortOrder);

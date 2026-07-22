@@ -6,20 +6,28 @@ using Annap.CoffeeQrOrdering.Domain.ValueObjects;
 namespace Annap.CoffeeQrOrdering.Web.GuestExperience;
 
 /// <summary>
-/// Category-branch guided sommelier (atelier_v5).
-/// Entry chooses a drink family; each family has its own 1–4 question conversation.
+/// Menu-driven guided sommelier (atelier_v6).
+/// Entry chooses a real menu category; each path is 1–2 barista questions.
+/// Specialty Coffee keeps its dedicated multi-step flow untouched.
 /// </summary>
 public static class GuidedSommelierCatalog
 {
-    public const string QuestionSetId = "atelier_v5";
+    public const string QuestionSetId = "atelier_v6";
     public const string EntryQuestionId = "q0";
 
     public const string BranchSpecialty = "specialty";
-    public const string BranchCoffee = "coffee";
+    public const string BranchSignature = "signature";
+    public const string BranchEspresso = "espresso";
     public const string BranchTea = "tea";
+    public const string BranchSmoothie = "smoothie";
+    public const string BranchJuice = "juice";
+    public const string BranchColdBrew = "coldbrew";
+    public const string BranchVietnamese = "vietnamese";
+
+    // Legacy branch keys kept for ResolveBranchKey / old payloads only.
+    public const string BranchCoffee = "coffee";
     public const string BranchMatcha = "matcha";
     public const string BranchFruit = "fruit";
-    public const string BranchSignature = "signature";
 
     /// <summary>Entry question only — always first.</summary>
     public static IReadOnlyList<GuidedQuestionSeed> Questions { get; } = [BuildEntryQuestion()];
@@ -27,11 +35,13 @@ public static class GuidedSommelierCatalog
     /// <summary>All questions for CMS seed + client catalog.</summary>
     public static IReadOnlyList<GuidedQuestionSeed> AllQuestions { get; } =
         Questions.Concat(BuildSpecialtyQuestions())
-            .Concat(BuildCoffeeQuestions())
-            .Concat(BuildTeaQuestions())
-            .Concat(BuildMatchaQuestions())
-            .Concat(BuildFruitQuestions())
             .Concat(BuildSignatureQuestions())
+            .Concat(BuildEspressoQuestions())
+            .Concat(BuildTeaQuestions())
+            .Concat(BuildSmoothieQuestions())
+            .Concat(BuildJuiceQuestions())
+            .Concat(BuildColdBrewQuestions())
+            .Concat(BuildVietnameseQuestions())
             .ToList();
 
     /// <summary>Ordered follow-up question IDs per branch (after entry).</summary>
@@ -39,11 +49,13 @@ public static class GuidedSommelierCatalog
         new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
         {
             [BranchSpecialty] = ["q_sp_tried", "q_sp_profile", "q_sp_adventure", "q_sp_format"],
-            [BranchCoffee] = ["q_cf_style", "q_cf_sweet", "q_cf_temp"],
-            [BranchTea] = ["q_te_feel", "q_te_moment"],
-            [BranchMatcha] = ["q_ma_style", "q_ma_sweet", "q_ma_temp"],
-            [BranchFruit] = ["q_fr_profile", "q_fr_cold"],
-            [BranchSignature] = ["q_sg_intent"]
+            [BranchSignature] = ["q_sg_feel"],
+            [BranchEspresso] = ["q_es_body", "q_es_detail"],
+            [BranchTea] = ["q_te_pick"],
+            [BranchSmoothie] = ["q_sm_fruit"],
+            [BranchJuice] = ["q_ju_fruit"],
+            [BranchColdBrew] = ["q_cb_style", "q_cb_fruit"],
+            [BranchVietnamese] = ["q_vn_style", "q_vn_temp"]
         };
 
     /// <summary>Legacy name kept for callers; specialty path is now its own branch.</summary>
@@ -57,11 +69,16 @@ public static class GuidedSommelierCatalog
     public static bool IsBranchQuestionId(string? questionId) =>
         !string.IsNullOrWhiteSpace(questionId)
         && (questionId.StartsWith("q_sp_", StringComparison.OrdinalIgnoreCase)
-            || questionId.StartsWith("q_cf_", StringComparison.OrdinalIgnoreCase)
+            || questionId.StartsWith("q_sg_", StringComparison.OrdinalIgnoreCase)
+            || questionId.StartsWith("q_es_", StringComparison.OrdinalIgnoreCase)
             || questionId.StartsWith("q_te_", StringComparison.OrdinalIgnoreCase)
+            || questionId.StartsWith("q_sm_", StringComparison.OrdinalIgnoreCase)
+            || questionId.StartsWith("q_ju_", StringComparison.OrdinalIgnoreCase)
+            || questionId.StartsWith("q_cb_", StringComparison.OrdinalIgnoreCase)
+            || questionId.StartsWith("q_vn_", StringComparison.OrdinalIgnoreCase)
+            || questionId.StartsWith("q_cf_", StringComparison.OrdinalIgnoreCase)
             || questionId.StartsWith("q_ma_", StringComparison.OrdinalIgnoreCase)
-            || questionId.StartsWith("q_fr_", StringComparison.OrdinalIgnoreCase)
-            || questionId.StartsWith("q_sg_", StringComparison.OrdinalIgnoreCase));
+            || questionId.StartsWith("q_fr_", StringComparison.OrdinalIgnoreCase));
 
     public static string? ResolveBranchKey(string? entryOptionId)
     {
@@ -70,11 +87,17 @@ public static class GuidedSommelierCatalog
         return entryOptionId.Trim().ToLowerInvariant() switch
         {
             "q0_specialty" => BranchSpecialty,
-            "q0_coffee" => BranchCoffee,
-            "q0_tea" => BranchTea,
-            "q0_matcha" => BranchMatcha,
-            "q0_fruit" => BranchFruit,
             "q0_signature" => BranchSignature,
+            "q0_espresso" => BranchEspresso,
+            "q0_tea" => BranchTea,
+            "q0_smoothie" => BranchSmoothie,
+            "q0_juice" => BranchJuice,
+            "q0_coldbrew" => BranchColdBrew,
+            "q0_vietnamese" => BranchVietnamese,
+            // Legacy atelier_v5 entry ids
+            "q0_coffee" => BranchEspresso,
+            "q0_matcha" => BranchTea,
+            "q0_fruit" => BranchJuice,
             _ => null
         };
     }
@@ -101,14 +124,44 @@ public static class GuidedSommelierCatalog
         if (loaded.Count == 0)
             return AllQuestions;
 
+        var hasBaristaTree = loaded.Any(q =>
+            string.Equals(q.QuestionId, "q_sg_feel", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(q.QuestionId, "q_es_body", StringComparison.OrdinalIgnoreCase));
+        if (!hasBaristaTree)
+            return AllQuestions;
+
         var hasEntry = loaded.Any(q =>
             string.Equals(q.QuestionId, EntryQuestionId, StringComparison.OrdinalIgnoreCase));
         if (hasEntry)
-            return loaded;
+            return loaded.Select(OverlayBuiltinQuestionStructure).ToList();
 
-        // Old atelier_v4 (or incomplete CMS) — prefer the built-in branch catalog.
         return AllQuestions;
     }
+
+    /// <summary>
+    /// CMS does not store EndsBranch / RequiresPriorOptionId — overlay from the built-in barista tree.
+    /// </summary>
+    public static GuidedOptionSeed OverlayBuiltinOptionStructure(GuidedOptionSeed loaded)
+    {
+        if (!OptionsById.TryGetValue(loaded.OptionId, out var builtin))
+            return loaded;
+
+        return loaded with
+        {
+            EndsBranch = builtin.EndsBranch,
+            RequiresPriorOptionId = builtin.RequiresPriorOptionId,
+            CategoryIntentKey = string.IsNullOrWhiteSpace(loaded.CategoryIntentKey)
+                ? builtin.CategoryIntentKey
+                : loaded.CategoryIntentKey,
+            FlavorTagsJson = string.IsNullOrWhiteSpace(loaded.FlavorTagsJson)
+                ? builtin.FlavorTagsJson
+                : loaded.FlavorTagsJson,
+            BranchKey = string.IsNullOrWhiteSpace(loaded.BranchKey) ? builtin.BranchKey : loaded.BranchKey
+        };
+    }
+
+    private static GuidedQuestionSeed OverlayBuiltinQuestionStructure(GuidedQuestionSeed q) =>
+        q with { Options = q.Options.Select(OverlayBuiltinOptionStructure).ToList() };
 
     private static readonly Dictionary<string, GuidedOptionSeed> OptionsById =
         AllQuestions.SelectMany(q => q.Options)
@@ -141,7 +194,7 @@ public static class GuidedSommelierCatalog
         }
 
         var path = QuestionsForBranch(branch);
-        if (optionIds.Count != path.Count)
+        if (optionIds.Count > path.Count)
         {
             error = "Please complete each step of the tasting.";
             return false;
@@ -149,8 +202,8 @@ public static class GuidedSommelierCatalog
 
         var optionsById = path.SelectMany(q => q.Options)
             .ToDictionary(o => o.OptionId, StringComparer.OrdinalIgnoreCase);
-        var picked = new GuidedOptionSeed[path.Count];
-        for (var i = 0; i < path.Count; i++)
+        var picked = new List<GuidedOptionSeed>(optionIds.Count);
+        for (var i = 0; i < optionIds.Count; i++)
         {
             var id = (optionIds[i] ?? "").Trim();
             if (!optionsById.TryGetValue(id, out var opt))
@@ -165,7 +218,27 @@ public static class GuidedSommelierCatalog
                 return false;
             }
 
-            picked[i] = opt;
+            if (!string.IsNullOrWhiteSpace(opt.RequiresPriorOptionId))
+            {
+                var gate = opt.RequiresPriorOptionId.Trim();
+                var priorOk = optionIds.Take(i).Any(prev =>
+                    string.Equals((prev ?? "").Trim(), gate, StringComparison.OrdinalIgnoreCase));
+                if (!priorOk)
+                {
+                    error = "That choice is not available in this set.";
+                    return false;
+                }
+            }
+
+            picked.Add(opt);
+        }
+
+        var last = picked[^1];
+        var complete = optionIds.Count == path.Count || last.EndsBranch;
+        if (!complete)
+        {
+            error = "Please complete each step of the tasting.";
+            return false;
         }
 
         resolved = picked;
@@ -215,6 +288,37 @@ public static class GuidedSommelierCatalog
         return merged;
     }
 
+    /// <summary>Exact menu drink names carried on leaf answers (JSON string array).</summary>
+    public static IReadOnlyList<string> CollectMenuTargets(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
+    {
+        var targets = new List<string>();
+        foreach (var opt in selectedAnswers)
+        {
+            if (string.IsNullOrWhiteSpace(opt.FlavorTagsJson))
+                continue;
+            var raw = opt.FlavorTagsJson.Trim();
+            if (!raw.StartsWith('['))
+                continue;
+            try
+            {
+                var parsed = JsonSerializer.Deserialize<string[]>(raw);
+                if (parsed is null)
+                    continue;
+                foreach (var name in parsed)
+                {
+                    if (!string.IsNullOrWhiteSpace(name))
+                        targets.Add(name.Trim());
+                }
+            }
+            catch
+            {
+                /* ignore non-array tags (specialty flavor tags) */
+            }
+        }
+
+        return targets;
+    }
+
     public static string ToClientJson() =>
         ToClientJson(AllQuestions, QuestionSetId);
 
@@ -230,7 +334,7 @@ public static class GuidedSommelierCatalog
                 StringComparer.OrdinalIgnoreCase),
             merged.Select(q => new ClientQuestionDto(
                 q.QuestionId,
-                q.Prompt,
+                Localized(q.Prompt, q.PromptEn),
                 q.Options.Select(ToClientOption).ToList())).ToList());
         return JsonSerializer.Serialize(
             dto,
@@ -244,286 +348,392 @@ public static class GuidedSommelierCatalog
     internal static ClientOptionDto ToClientOption(GuidedOptionSeed option) =>
         new(
             option.OptionId,
-            option.Label,
-            string.IsNullOrWhiteSpace(option.GuestReflection) ? null : option.GuestReflection.Trim(),
-            option.BranchKey);
+            Localized(option.Label, option.LabelEn),
+            LocalizedOptional(
+                string.IsNullOrWhiteSpace(option.GuestReflection) ? null : option.GuestReflection.Trim(),
+                string.IsNullOrWhiteSpace(option.GuestReflectionEn) ? null : option.GuestReflectionEn.Trim()),
+            option.BranchKey,
+            option.EndsBranch ? true : null,
+            string.IsNullOrWhiteSpace(option.RequiresPriorOptionId) ? null : option.RequiresPriorOptionId.Trim());
+
+    private static ClientLocalizedText Localized(string vi, string? en) =>
+        new(
+            (vi ?? "").Trim(),
+            string.IsNullOrWhiteSpace(en) ? (vi ?? "").Trim() : en.Trim());
+
+    private static ClientLocalizedText? LocalizedOptional(string? vi, string? en)
+    {
+        if (string.IsNullOrWhiteSpace(vi) && string.IsNullOrWhiteSpace(en))
+            return null;
+        return Localized(vi ?? "", en);
+    }
+
+    private static string Targets(params string[] names) =>
+        JsonSerializer.Serialize(names);
 
     private static GuidedQuestionSeed BuildEntryQuestion() =>
-        new(
+        Q(
             EntryQuestionId,
-            "Hôm nay bạn muốn gì?",
+            "Hôm nay bạn muốn uống gì?",
+            "What are you in the mood for today?",
             [
-                Opt("q0_specialty", "Specialty Coffee", "specialty coffee", BranchSpecialty, BeverageFamilyGrounding.Coffee,
+                Opt("q0_specialty", "☕ Specialty Coffee", "☕ Specialty coffee", "specialty", "specialty",
+                    BranchSpecialty, BeverageFamilyGrounding.Coffee,
                     new DrinkSensoryProfile { AromaFamily = "floral", Energy = "focused", CaffeineIntensity = 3 },
                     MoodKey: "focus"),
-                Opt("q0_coffee", "Cà phê", "cà phê", BranchCoffee, BeverageFamilyGrounding.Coffee,
-                    new DrinkSensoryProfile { AromaFamily = "cocoa", Body = "round", CaffeineIntensity = 3 },
+                Opt("q0_signature", "✨ Signature", "✨ Signature", "signature", "signature",
+                    BranchSignature, BeverageFamilyGrounding.Signature,
+                    new DrinkSensoryProfile { Energy = "playful", SocialMood = "gathered", Finish = "linger" },
+                    MoodKey: "adventurous"),
+                Opt("q0_espresso", "☕ Espresso", "☕ Espresso", "espresso", "espresso",
+                    BranchEspresso, BeverageFamilyGrounding.Espresso,
+                    new DrinkSensoryProfile { AromaFamily = "cocoa", Body = "round", CaffeineIntensity = 4 },
                     MoodKey: "focus"),
-                Opt("q0_tea", "Trà", "trà", BranchTea, BeverageFamilyGrounding.Tea,
+                Opt("q0_vietnamese", "☕ Cà phê Việt", "☕ Vietnamese coffee", "cà phê việt", "vietnamese coffee",
+                    BranchVietnamese, BeverageFamilyGrounding.Vietnamese,
+                    new DrinkSensoryProfile { AromaFamily = "cocoa", Body = "syrupy", CaffeineIntensity = 4 },
+                    MoodKey: "focus"),
+                Opt("q0_coldbrew", "🧊 Cold Brew", "🧊 Cold brew", "cold brew", "cold brew",
+                    BranchColdBrew, BeverageFamilyGrounding.ColdBrew,
+                    new DrinkSensoryProfile { AromaFamily = "cocoa", Energy = "lifted", CaffeineIntensity = 3 },
+                    MoodKey: "bright"),
+                Opt("q0_tea", "🍵 Trà", "🍵 Tea", "trà", "tea",
+                    BranchTea, BeverageFamilyGrounding.Tea,
                     new DrinkSensoryProfile { AromaFamily = "floral", Energy = "still", CaffeineIntensity = 1 },
                     MoodKey: "calm"),
-                Opt("q0_matcha", "Matcha", "matcha", BranchMatcha, BeverageFamilyGrounding.Matcha,
-                    new DrinkSensoryProfile { AromaFamily = "floral", Texture = "satin", CaffeineIntensity = 2 },
-                    MoodKey: "focus"),
-                Opt("q0_fruit", "Trái cây / Nước ép", "trái cây", BranchFruit, BeverageFamilyGrounding.Fruit,
-                    new DrinkSensoryProfile { AromaFamily = "citrus", Acidity = "lifted", Energy = "lifted", CaffeineIntensity = 1 },
+                Opt("q0_smoothie", "🥭 Sinh tố", "🥭 Smoothie", "sinh tố", "smoothie",
+                    BranchSmoothie, BeverageFamilyGrounding.Smoothie,
+                    new DrinkSensoryProfile { Texture = "velvet", Sweetness = "gentle", CaffeineIntensity = 1 },
                     MoodKey: "bright"),
-                Opt("q0_signature", "Signature", "signature", BranchSignature, BeverageFamilyGrounding.Signature,
-                    new DrinkSensoryProfile { Energy = "playful", SocialMood = "gathered", Finish = "linger" },
-                    MoodKey: "adventurous")
+                Opt("q0_juice", "🍊 Nước ép", "🍊 Juice", "nước ép", "juice",
+                    BranchJuice, BeverageFamilyGrounding.Juice,
+                    new DrinkSensoryProfile { AromaFamily = "citrus", Acidity = "lifted", Energy = "lifted", CaffeineIntensity = 1 },
+                    MoodKey: "bright")
             ],
-            "Chọn hướng đồ uống — mỗi hướng có cuộc trò chuyện riêng.");
+            "Chọn đúng nhóm trên menu — barista hỏi ngắn rồi gọi tên ly.",
+            "Pick a real menu family — a short barista chat, then a cup.");
 
+    /// <summary>Specialty Coffee — dedicated flow. Do not change structure or option IDs.</summary>
     private static IReadOnlyList<GuidedQuestionSeed> BuildSpecialtyQuestions() =>
     [
-        new(
+        Q(
             "q_sp_tried",
             "Bạn đã từng thử specialty coffee chưa?",
+            "Have you tried specialty coffee before?",
             [
-                Opt("q_sp_tried_first", "Lần đầu", "lần đầu", null, null,
+                Opt("q_sp_tried_first", "Lần đầu", "First time", "lần đầu", "first time", null, null,
                     new DrinkSensoryProfile { Energy = "still", Texture = "satin" },
                     MoodKey: "calm", RefinementKey: "sc_tried:first"),
-                Opt("q_sp_tried_occasional", "Thỉnh thoảng", "thỉnh thoảng", null, null,
+                Opt("q_sp_tried_occasional", "Thỉnh thoảng", "Now and then", "thỉnh thoảng", "occasional", null, null,
                     new DrinkSensoryProfile { Energy = "lifted", Acidity = "balanced" },
                     MoodKey: "bright", RefinementKey: "sc_tried:occasional"),
-                Opt("q_sp_tried_regular", "Uống thường xuyên", "quen thuộc", null, null,
+                Opt("q_sp_tried_regular", "Uống thường xuyên", "Quite often", "quen thuộc", "familiar", null, null,
                     new DrinkSensoryProfile { Energy = "focused", Finish = "linger" },
                     MoodKey: "adventurous", RefinementKey: "sc_tried:regular")
             ]),
-        new(
+        Q(
             "q_sp_profile",
             "Hồ sơ nào nghe thú vị nhất với bạn?",
+            "Which flavor path sounds most interesting?",
             [
-                Opt("q_sp_profile_floral", "Hoa", "hoa nhẹ", null, null,
+                Opt("q_sp_profile_floral", "Hoa", "Floral & delicate", "hoa nhẹ", "soft florals", null, null,
                     new DrinkSensoryProfile { AromaFamily = "floral", Acidity = "quiet", Finish = "clean" },
                     RefinementKey: "sc_flavor:floral", FlavorTagsJson: "floral,jasmine,gentle"),
-                Opt("q_sp_profile_fruit", "Trái cây", "trái cây tươi", null, null,
+                Opt("q_sp_profile_fruit", "Trái cây", "Bright fruit", "trái cây tươi", "fresh fruit", null, null,
                     new DrinkSensoryProfile { AromaFamily = "stone_fruit", Acidity = "lifted", Energy = "playful" },
                     RefinementKey: "sc_flavor:fruit_forward", FlavorTagsJson: "fruit,peach,bright"),
-                Opt("q_sp_profile_chocolate", "Chocolate", "socola", null, null,
+                Opt("q_sp_profile_chocolate", "Chocolate", "Chocolate & depth", "socola", "cocoa", null, null,
                     new DrinkSensoryProfile { AromaFamily = "cocoa", Body = "syrupy", Finish = "linger" },
                     RefinementKey: "sc_flavor:chocolate", FlavorTagsJson: "chocolate,cocoa,jam"),
-                Opt("q_sp_profile_surprise", "Để quán bất ngờ", "bất ngờ", null, null,
+                Opt("q_sp_profile_surprise", "Để quán bất ngờ", "Surprise me", "bất ngờ", "surprise", null, null,
                     new DrinkSensoryProfile { Energy = "playful", Finish = "linger", Acidity = "crystalline" },
                     RefinementKey: "sc_flavor:surprise", FlavorTagsJson: "blueberry,honey,layered")
             ]),
-        new(
+        Q(
             "q_sp_adventure",
             "Bạn muốn mạo hiểm đến mức nào?",
+            "How adventurous should we go?",
             [
-                Opt("q_sp_adventure_safe", "An toàn", "an toàn", null, null,
+                Opt("q_sp_adventure_safe", "An toàn", "Keep it gentle", "an toàn", "gentle", null, null,
                     new DrinkSensoryProfile { Energy = "still", SocialMood = "quiet", Texture = "satin" },
                     RefinementKey: "sc_experience:soft"),
-                Opt("q_sp_adventure_balanced", "Cân bằng", "cân bằng", null, null,
+                Opt("q_sp_adventure_balanced", "Cân bằng", "Balanced", "cân bằng", "balanced", null, null,
                     new DrinkSensoryProfile { Energy = "still", SocialMood = "gathered", Sweetness = "rounded" },
                     RefinementKey: "sc_experience:balanced"),
-                Opt("q_sp_adventure_experimental", "Thử nghiệm", "thử nghiệm", null, null,
+                Opt("q_sp_adventure_experimental", "Thử nghiệm", "Push a little", "thử nghiệm", "experimental", null, null,
                     new DrinkSensoryProfile { Energy = "playful", Finish = "linger", Body = "round" },
                     RefinementKey: "sc_experience:surprising")
             ]),
-        new(
+        Q(
             "q_sp_format",
             "Bạn muốn nhận gì từ quầy?",
+            "What should we bring to the table?",
             [
-                Opt("q_sp_format_one", "Một gợi ý", "một nguồn", null, null,
+                Opt("q_sp_format_one", "Một gợi ý", "One recommendation", "một nguồn", "one origin", null, null,
                     new DrinkSensoryProfile { Energy = "focused" },
                     RefinementKey: "sc_format:one"),
-                Opt("q_sp_format_compare", "So sánh hai hạt", "so sánh", null, null,
+                Opt("q_sp_format_compare", "So sánh hai hạt", "Compare two coffees", "so sánh", "compare", null, null,
                     new DrinkSensoryProfile { Energy = "playful", SocialMood = "gathered" },
                     RefinementKey: "sc_format:compare")
             ])
     ];
 
-    private static IReadOnlyList<GuidedQuestionSeed> BuildCoffeeQuestions() =>
+    private static IReadOnlyList<GuidedQuestionSeed> BuildSignatureQuestions() =>
     [
-        new(
-            "q_cf_style",
-            "Bạn thường uống kiểu nào?",
+        Q(
+            "q_sg_feel",
+            "Hôm nay bạn muốn cảm giác gì?",
+            "What kind of feeling are you after today?",
             [
-                Opt("q_cf_style_black", "Đen", "đen", null, BeverageFamilyGrounding.Coffee,
-                    new DrinkSensoryProfile { Sweetness = "restrained", Body = "round", CaffeineIntensity = 4 },
-                    RefinementKey: "cf_style:black"),
-                Opt("q_cf_style_milk", "Cà phê sữa", "sữa", null, BeverageFamilyGrounding.Coffee,
-                    new DrinkSensoryProfile { Sweetness = "gentle", Body = "round", Texture = "velvet" },
-                    RefinementKey: "cf_style:milk"),
-                Opt("q_cf_style_latte", "Latte", "latte", null, BeverageFamilyGrounding.Coffee,
-                    new DrinkSensoryProfile { Sweetness = "gentle", Texture = "satin", Body = "round" },
-                    RefinementKey: "cf_style:latte"),
-                Opt("q_cf_style_espresso", "Espresso", "espresso", null, BeverageFamilyGrounding.Coffee,
-                    new DrinkSensoryProfile { Body = "syrupy", Energy = "intense", CaffeineIntensity = 5 },
-                    RefinementKey: "cf_style:espresso")
+                Opt("q_sg_feel_creamy", "🥥 Béo ngậy", "🥥 Creamy & rich", "béo ngậy", "creamy",
+                    null, BeverageFamilyGrounding.Signature,
+                    new DrinkSensoryProfile { Texture = "velvet", Sweetness = "luscious", Body = "round" },
+                    MoodKey: "comfort", FlavorTagsJson: Targets("Coco Bơ")),
+                Opt("q_sg_feel_green", "🌿 Mát xanh", "🌿 Fresh & green", "mát xanh", "green",
+                    null, BeverageFamilyGrounding.Signature,
+                    new DrinkSensoryProfile { Energy = "lifted", Acidity = "lifted", Finish = "clean" },
+                    MoodKey: "bright", FlavorTagsJson: Targets("Three Kick")),
+                Opt("q_sg_feel_citrus", "🍋 Chua sảng khoái", "🍋 Bright & zesty", "chua sảng khoái", "zesty",
+                    null, BeverageFamilyGrounding.Signature,
+                    new DrinkSensoryProfile { AromaFamily = "citrus", Acidity = "crystalline", Energy = "playful" },
+                    MoodKey: "bright", FlavorTagsJson: Targets("Ginger Singer", "Sunrise")),
+                Opt("q_sg_feel_tropical", "🥭 Trái cây nhiệt đới", "🥭 Tropical fruit", "nhiệt đới", "tropical",
+                    null, BeverageFamilyGrounding.Signature,
+                    new DrinkSensoryProfile { AromaFamily = "tropical", Sweetness = "gentle", Energy = "lifted" },
+                    MoodKey: "bright", FlavorTagsJson: Targets("Dưa Fame", "Sunrise"))
+            ])
+    ];
+
+    private static IReadOnlyList<GuidedQuestionSeed> BuildEspressoQuestions() =>
+    [
+        Q(
+            "q_es_body",
+            "Bạn muốn ly espresso thế nào?",
+            "How do you want your espresso cup?",
+            [
+                Opt("q_es_body_black", "☕ Đậm cà phê", "☕ Coffee-forward", "đậm cà phê", "coffee-forward",
+                    null, BeverageFamilyGrounding.Espresso,
+                    new DrinkSensoryProfile { AromaFamily = "cocoa", Body = "dense", CaffeineIntensity = 5 },
+                    MoodKey: "focus"),
+                Opt("q_es_body_milk", "🥛 Có sữa", "🥛 With milk", "có sữa", "with milk",
+                    null, BeverageFamilyGrounding.Espresso,
+                    new DrinkSensoryProfile { Texture = "velvet", Sweetness = "gentle", CaffeineIntensity = 3 },
+                    MoodKey: "comfort")
             ]),
-        new(
-            "q_cf_sweet",
-            "Bạn thích độ ngọt thế nào?",
+        Q(
+            "q_es_detail",
+            "Gu nào hợp bạn hơn?",
+            "Which direction fits you better?",
             [
-                Opt("q_cf_sweet_low", "Ít ngọt", "ít ngọt", null, null,
-                    new DrinkSensoryProfile { Sweetness = "restrained" }),
-                Opt("q_cf_sweet_medium", "Vừa", "ngọt vừa", null, null,
-                    new DrinkSensoryProfile { Sweetness = "gentle" }),
-                Opt("q_cf_sweet_high", "Ngọt", "ngọt", null, null,
-                    new DrinkSensoryProfile { Sweetness = "luscious" }),
-                Opt("q_cf_sweet_any", "Tùy", "tùy", null, null,
-                    new DrinkSensoryProfile { Sweetness = "rounded" })
-            ]),
-        new(
-            "q_cf_temp",
-            "Nóng hay đá?",
-            [
-                Opt("q_cf_temp_hot", "Nóng", "nóng", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "warming", Energy = "focused" }),
-                Opt("q_cf_temp_iced", "Đá", "lạnh", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "cooling", Energy = "lifted" }),
-                Opt("q_cf_temp_any", "Tùy", "tùy", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "temperate" })
+                Opt("q_es_detail_espresso", "☕ Espresso", "☕ Espresso", "espresso", "espresso",
+                    null, BeverageFamilyGrounding.Espresso,
+                    new DrinkSensoryProfile { Body = "dense", CaffeineIntensity = 5 },
+                    RequiresPriorOptionId: "q_es_body_black", FlavorTagsJson: Targets("Espresso")),
+                Opt("q_es_detail_americano", "💧 Americano", "💧 Americano", "americano", "americano",
+                    null, BeverageFamilyGrounding.Espresso,
+                    new DrinkSensoryProfile { Body = "light", CaffeineIntensity = 4 },
+                    RequiresPriorOptionId: "q_es_body_black", FlavorTagsJson: Targets("Americano")),
+                Opt("q_es_detail_classic", "🥛 Sữa cổ điển", "🥛 Classic milk", "sữa cổ điển", "classic milk",
+                    null, BeverageFamilyGrounding.Espresso,
+                    new DrinkSensoryProfile { Texture = "velvet", Sweetness = "gentle", CaffeineIntensity = 3 },
+                    RequiresPriorOptionId: "q_es_body_milk", FlavorTagsJson: Targets("Latte", "Capuchino")),
+                Opt("q_es_detail_caramel", "🍮 Caramel", "🍮 Caramel", "caramel", "caramel",
+                    null, BeverageFamilyGrounding.Espresso,
+                    new DrinkSensoryProfile { Sweetness = "luscious", Texture = "velvet", CaffeineIntensity = 3 },
+                    RequiresPriorOptionId: "q_es_body_milk", FlavorTagsJson: Targets("Salted Caramel Latte")),
+                Opt("q_es_detail_chocolate", "🍫 Chocolate", "🍫 Chocolate", "chocolate", "chocolate",
+                    null, BeverageFamilyGrounding.Espresso,
+                    new DrinkSensoryProfile { AromaFamily = "cocoa", Sweetness = "luscious", CaffeineIntensity = 3 },
+                    RequiresPriorOptionId: "q_es_body_milk", FlavorTagsJson: Targets("Mocha"))
             ])
     ];
 
     private static IReadOnlyList<GuidedQuestionSeed> BuildTeaQuestions() =>
     [
-        new(
-            "q_te_feel",
-            "Bạn muốn trải nghiệm trà thế nào?",
+        Q(
+            "q_te_pick",
+            "Bạn nghiêng về hướng nào?",
+            "Which tea path are you leaning toward?",
             [
-                Opt("q_te_feel_floral", "Hoa", "hoa", null, BeverageFamilyGrounding.Tea,
-                    new DrinkSensoryProfile { AromaFamily = "floral", Energy = "still", Finish = "clean" },
-                    RefinementKey: "te_feel:floral"),
-                Opt("q_te_feel_refresh", "Thanh mát", "thanh mát", null, BeverageFamilyGrounding.Tea,
-                    new DrinkSensoryProfile { Acidity = "lifted", Finish = "clean", Energy = "lifted" },
-                    RefinementKey: "te_feel:refresh"),
-                Opt("q_te_feel_fruit", "Trái cây", "trái cây", null, BeverageFamilyGrounding.Tea,
-                    new DrinkSensoryProfile { AromaFamily = "citrus", Acidity = "lifted", Energy = "playful" },
-                    RefinementKey: "te_feel:fruit"),
-                Opt("q_te_feel_rich", "Đậm đà", "đậm", null, BeverageFamilyGrounding.Tea,
-                    new DrinkSensoryProfile { Body = "round", Finish = "linger", Energy = "still" },
-                    RefinementKey: "te_feel:rich")
-            ]),
-        new(
-            "q_te_moment",
-            "Bạn đang uống vào lúc nào?",
-            [
-                Opt("q_te_moment_morning", "Buổi sáng", "sáng", null, null,
-                    new DrinkSensoryProfile { Energy = "lifted", Acidity = "balanced" },
-                    RefinementKey: "te_moment:morning"),
-                Opt("q_te_moment_afternoon", "Buổi chiều", "chiều", null, null,
-                    new DrinkSensoryProfile { Energy = "focused", SocialMood = "gathered" },
-                    RefinementKey: "te_moment:afternoon"),
-                Opt("q_te_moment_relax", "Thư giãn", "thư giãn", null, null,
-                    new DrinkSensoryProfile { Energy = "still", SocialMood = "quiet", Texture = "satin" },
-                    RefinementKey: "te_moment:relax")
+                Opt("q_te_pick_floral", "🌺 Trái cây / hoa", "🌺 Floral fruit tea", "hoa quả", "floral fruit",
+                    null, BeverageFamilyGrounding.Tea,
+                    new DrinkSensoryProfile { AromaFamily = "floral", Acidity = "lifted", Energy = "lifted" },
+                    MoodKey: "bright", FlavorTagsJson: Targets("Hibicus Tea")),
+                Opt("q_te_pick_mulberry", "🍓 Dâu tằm", "🍓 Mulberry", "dâu tằm", "mulberry",
+                    null, BeverageFamilyGrounding.Tea,
+                    new DrinkSensoryProfile { AromaFamily = "berry", Sweetness = "gentle", Finish = "clean" },
+                    MoodKey: "bright", FlavorTagsJson: Targets("Trà Dâu Tằm")),
+                Opt("q_te_pick_matcha", "🍵 Matcha", "🍵 Matcha", "matcha", "matcha",
+                    null, BeverageFamilyGrounding.Matcha,
+                    new DrinkSensoryProfile { AromaFamily = "floral", Texture = "satin", CaffeineIntensity = 2 },
+                    MoodKey: "focus", FlavorTagsJson: Targets("Matcha Muối"))
             ])
     ];
 
-    private static IReadOnlyList<GuidedQuestionSeed> BuildMatchaQuestions() =>
+    private static IReadOnlyList<GuidedQuestionSeed> BuildSmoothieQuestions() =>
     [
-        new(
-            "q_ma_style",
-            "Bạn muốn matcha thế nào?",
+        Q(
+            "q_sm_fruit",
+            "Bạn muốn trái cây nào?",
+            "Which fruit are you craving?",
             [
-                Opt("q_ma_style_pure", "Matcha thuần", "thuần", null, BeverageFamilyGrounding.Matcha,
-                    new DrinkSensoryProfile { Sweetness = "restrained", Texture = "satin", Body = "round" },
-                    RefinementKey: "ma_style:pure"),
-                Opt("q_ma_style_milk", "Có sữa", "có sữa", null, BeverageFamilyGrounding.Matcha,
-                    new DrinkSensoryProfile { Sweetness = "gentle", Texture = "velvet", Body = "round" },
-                    RefinementKey: "ma_style:milk"),
-                Opt("q_ma_style_sweet", "Ngọt dịu", "ngọt", null, BeverageFamilyGrounding.Matcha,
-                    new DrinkSensoryProfile { Sweetness = "luscious", Texture = "velvet" },
-                    RefinementKey: "ma_style:sweet")
-            ]),
-        new(
-            "q_ma_sweet",
-            "Độ ngọt?",
+                Opt("q_sm_fruit_mango", "🥭 Xoài", "🥭 Mango", "xoài", "mango",
+                    null, BeverageFamilyGrounding.Smoothie,
+                    new DrinkSensoryProfile { AromaFamily = "tropical", Sweetness = "luscious", Texture = "velvet" },
+                    FlavorTagsJson: Targets("Sinh Tố Xoài")),
+                Opt("q_sm_fruit_avocado", "🥑 Bơ", "🥑 Avocado", "bơ", "avocado",
+                    null, BeverageFamilyGrounding.Smoothie,
+                    new DrinkSensoryProfile { Texture = "velvet", Sweetness = "gentle", Body = "round" },
+                    FlavorTagsJson: Targets("Sinh Tố Bơ")),
+                Opt("q_sm_fruit_strawberry", "🍓 Dâu", "🍓 Strawberry", "dâu", "strawberry",
+                    null, BeverageFamilyGrounding.Smoothie,
+                    new DrinkSensoryProfile { AromaFamily = "berry", Sweetness = "gentle", Energy = "lifted" },
+                    FlavorTagsJson: Targets("Sinh Tố Dâu")),
+                Opt("q_sm_fruit_banana", "🍌 Dâu chuối", "🍌 Strawberry banana", "dâu chuối", "strawberry banana",
+                    null, BeverageFamilyGrounding.Smoothie,
+                    new DrinkSensoryProfile { Sweetness = "luscious", Texture = "velvet", Body = "round" },
+                    FlavorTagsJson: Targets("Sinh Tố Dâu Chuối")),
+                Opt("q_sm_fruit_kefir", "🥛 Kefir", "🥛 Kefir", "kefir", "kefir",
+                    null, BeverageFamilyGrounding.Smoothie,
+                    new DrinkSensoryProfile { Texture = "satin", Acidity = "lifted", Energy = "lifted" },
+                    FlavorTagsJson: Targets("Daugurt Kefir"))
+            ])
+    ];
+
+    private static IReadOnlyList<GuidedQuestionSeed> BuildJuiceQuestions() =>
+    [
+        Q(
+            "q_ju_fruit",
+            "Bạn muốn nước ép gì?",
+            "Which juice sounds right?",
             [
-                Opt("q_ma_sweet_low", "Ít ngọt", "ít ngọt", null, null,
-                    new DrinkSensoryProfile { Sweetness = "restrained" }),
-                Opt("q_ma_sweet_medium", "Vừa", "vừa", null, null,
-                    new DrinkSensoryProfile { Sweetness = "gentle" }),
-                Opt("q_ma_sweet_high", "Ngọt", "ngọt", null, null,
-                    new DrinkSensoryProfile { Sweetness = "luscious" })
+                Opt("q_ju_fruit_orange", "🍊 Cam", "🍊 Orange", "cam", "orange",
+                    null, BeverageFamilyGrounding.Juice,
+                    new DrinkSensoryProfile { AromaFamily = "citrus", Acidity = "lifted", Energy = "lifted" },
+                    FlavorTagsJson: Targets("Nước Ép Cam")),
+                Opt("q_ju_fruit_pineapple", "🍍 Thơm", "🍍 Pineapple", "thơm", "pineapple",
+                    null, BeverageFamilyGrounding.Juice,
+                    new DrinkSensoryProfile { AromaFamily = "tropical", Sweetness = "gentle", Energy = "lifted" },
+                    FlavorTagsJson: Targets("Nước Ép Thơm")),
+                Opt("q_ju_fruit_lemon", "🍋 Chanh vàng", "🍋 Yellow lemon", "chanh vàng", "lemon",
+                    null, BeverageFamilyGrounding.Juice,
+                    new DrinkSensoryProfile { AromaFamily = "citrus", Acidity = "crystalline", Finish = "clean" },
+                    FlavorTagsJson: Targets("Nước Ép Chanh Vàng")),
+                Opt("q_ju_fruit_apple", "🍏 Táo xanh", "🍏 Green apple", "táo xanh", "green apple",
+                    null, BeverageFamilyGrounding.Juice,
+                    new DrinkSensoryProfile { AromaFamily = "citrus", Acidity = "lifted", Finish = "clean" },
+                    FlavorTagsJson: Targets("Nước Ép Táo Xanh")),
+                Opt("q_ju_fruit_watermelon", "🍉 Dưa hấu", "🍉 Watermelon", "dưa hấu", "watermelon",
+                    null, BeverageFamilyGrounding.Juice,
+                    new DrinkSensoryProfile { Sweetness = "gentle", Energy = "still", Finish = "clean" },
+                    FlavorTagsJson: Targets("Nước Ép Dưa Hấu"))
+            ])
+    ];
+
+    private static IReadOnlyList<GuidedQuestionSeed> BuildColdBrewQuestions() =>
+    [
+        Q(
+            "q_cb_style",
+            "Cold brew kiểu nào?",
+            "How do you like your cold brew?",
+            [
+                Opt("q_cb_style_pure", "☕ Thuần cà phê", "☕ Pure coffee", "thuần cà phê", "pure coffee",
+                    null, BeverageFamilyGrounding.ColdBrew,
+                    new DrinkSensoryProfile { AromaFamily = "cocoa", Body = "round", CaffeineIntensity = 4 },
+                    EndsBranch: true, FlavorTagsJson: Targets("Cold Brew")),
+                Opt("q_cb_style_fruit", "🍓 Cà phê + trái cây", "🍓 Coffee + fruit", "cà phê trái cây", "coffee and fruit",
+                    null, BeverageFamilyGrounding.ColdBrew,
+                    new DrinkSensoryProfile { AromaFamily = "berry", Acidity = "lifted", CaffeineIntensity = 3 })
             ]),
-        new(
-            "q_ma_temp",
+        Q(
+            "q_cb_fruit",
+            "Trái cây nào đi cùng?",
+            "Which fruit with it?",
+            [
+                Opt("q_cb_fruit_orange", "🍊 Cam", "🍊 Orange", "cam", "orange",
+                    null, BeverageFamilyGrounding.ColdBrew,
+                    new DrinkSensoryProfile { AromaFamily = "citrus", Acidity = "lifted" },
+                    RequiresPriorOptionId: "q_cb_style_fruit", FlavorTagsJson: Targets("Cold Brew Cam")),
+                Opt("q_cb_fruit_apple", "🍏 Táo", "🍏 Apple", "táo", "apple",
+                    null, BeverageFamilyGrounding.ColdBrew,
+                    new DrinkSensoryProfile { Acidity = "lifted", Finish = "clean" },
+                    RequiresPriorOptionId: "q_cb_style_fruit", FlavorTagsJson: Targets("Cold Brew Táo")),
+                Opt("q_cb_fruit_mulberry", "🍓 Dâu tằm", "🍓 Mulberry", "dâu tằm", "mulberry",
+                    null, BeverageFamilyGrounding.ColdBrew,
+                    new DrinkSensoryProfile { AromaFamily = "berry", Sweetness = "gentle" },
+                    RequiresPriorOptionId: "q_cb_style_fruit", FlavorTagsJson: Targets("Cold Brew Dâu Tằm"))
+            ])
+    ];
+
+    private static IReadOnlyList<GuidedQuestionSeed> BuildVietnameseQuestions() =>
+    [
+        Q(
+            "q_vn_style",
+            "Bạn muốn đen hay có sữa?",
+            "Black, or with milk?",
+            [
+                Opt("q_vn_style_black", "☕ Đen", "☕ Black", "đen", "black",
+                    null, BeverageFamilyGrounding.Vietnamese,
+                    new DrinkSensoryProfile { AromaFamily = "cocoa", Body = "dense", CaffeineIntensity = 5 }),
+                Opt("q_vn_style_milk", "🥛 Có sữa", "🥛 With milk", "có sữa", "with milk",
+                    null, BeverageFamilyGrounding.Vietnamese,
+                    new DrinkSensoryProfile { Sweetness = "luscious", Texture = "velvet", CaffeineIntensity = 4 }),
+                Opt("q_vn_style_bacxiu", "🤍 Rất nhiều sữa", "🤍 Extra milky", "bạc xỉu", "bac xiu",
+                    null, BeverageFamilyGrounding.Vietnamese,
+                    new DrinkSensoryProfile { Sweetness = "luscious", Texture = "velvet", CaffeineIntensity = 2 },
+                    EndsBranch: true, FlavorTagsJson: Targets("Bạc Xỉu"))
+            ]),
+        Q(
+            "q_vn_temp",
             "Nóng hay đá?",
+            "Hot or iced?",
             [
-                Opt("q_ma_temp_hot", "Nóng", "nóng", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "warming" }),
-                Opt("q_ma_temp_iced", "Đá", "lạnh", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "cooling" }),
-                Opt("q_ma_temp_any", "Tùy", "tùy", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "temperate" })
+                Opt("q_vn_temp_hot_black", "🔥 Nóng", "🔥 Hot", "nóng", "hot",
+                    null, BeverageFamilyGrounding.Vietnamese,
+                    new DrinkSensoryProfile { TemperatureEmotion = "warming", Body = "dense" },
+                    RequiresPriorOptionId: "q_vn_style_black", FlavorTagsJson: Targets("Cà Phê Đen")),
+                Opt("q_vn_temp_iced_black", "🧊 Đá", "🧊 Iced", "đá", "iced",
+                    null, BeverageFamilyGrounding.Vietnamese,
+                    new DrinkSensoryProfile { TemperatureEmotion = "cooling", Body = "dense" },
+                    RequiresPriorOptionId: "q_vn_style_black", FlavorTagsJson: Targets("Đen Đá Sài Gòn")),
+                Opt("q_vn_temp_hot_milk", "🔥 Nóng", "🔥 Hot", "nóng", "hot",
+                    null, BeverageFamilyGrounding.Vietnamese,
+                    new DrinkSensoryProfile { TemperatureEmotion = "warming", Sweetness = "luscious" },
+                    RequiresPriorOptionId: "q_vn_style_milk", FlavorTagsJson: Targets("Cà Phê Sữa")),
+                Opt("q_vn_temp_iced_milk", "🧊 Đá", "🧊 Iced", "đá", "iced",
+                    null, BeverageFamilyGrounding.Vietnamese,
+                    new DrinkSensoryProfile { TemperatureEmotion = "cooling", Sweetness = "luscious" },
+                    RequiresPriorOptionId: "q_vn_style_milk", FlavorTagsJson: Targets("Sữa Đá Sài Gòn"))
             ])
     ];
 
-    private static IReadOnlyList<GuidedQuestionSeed> BuildFruitQuestions() =>
-    [
-        new(
-            "q_fr_profile",
-            "Hướng vị nào bạn muốn?",
-            [
-                Opt("q_fr_profile_sweet", "Ngọt", "ngọt", null, BeverageFamilyGrounding.Fruit,
-                    new DrinkSensoryProfile { Sweetness = "luscious", Energy = "still" },
-                    RefinementKey: "fr_profile:sweet"),
-                Opt("q_fr_profile_sour", "Chua", "chua", null, BeverageFamilyGrounding.Fruit,
-                    new DrinkSensoryProfile { Acidity = "lifted", Finish = "clean", Energy = "lifted" },
-                    RefinementKey: "fr_profile:sour"),
-                Opt("q_fr_profile_fresh", "Thanh", "thanh", null, BeverageFamilyGrounding.Fruit,
-                    new DrinkSensoryProfile { Acidity = "crystalline", Finish = "clean", Energy = "lifted" },
-                    RefinementKey: "fr_profile:fresh"),
-                Opt("q_fr_profile_tropical", "Nhiệt đới", "nhiệt đới", null, BeverageFamilyGrounding.Fruit,
-                    new DrinkSensoryProfile { AromaFamily = "tropical", Sweetness = "gentle", Energy = "playful" },
-                    RefinementKey: "fr_profile:tropical")
-            ]),
-        new(
-            "q_fr_cold",
-            "Mức lạnh?",
-            [
-                Opt("q_fr_cold_deep", "Rất lạnh", "rất lạnh", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "cooling", Energy = "lifted" },
-                    RefinementKey: "fr_cold:deep"),
-                Opt("q_fr_cold_light", "Mát nhẹ", "mát nhẹ", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "temperate" },
-                    RefinementKey: "fr_cold:light"),
-                Opt("q_fr_cold_any", "Tùy", "tùy", null, null,
-                    new DrinkSensoryProfile { TemperatureEmotion = "cooling" },
-                    RefinementKey: "fr_cold:any")
-            ])
-    ];
-
-    private static IReadOnlyList<GuidedQuestionSeed> BuildSignatureQuestions() =>
-    [
-        new(
-            "q_sg_intent",
-            "Bạn muốn trải nghiệm gì?",
-            [
-                Opt("q_sg_intent_famous", "Món nổi tiếng của quán", "nổi tiếng", null, BeverageFamilyGrounding.Signature,
-                    new DrinkSensoryProfile { SocialMood = "gathered", Finish = "linger" },
-                    MoodKey: "focus", RefinementKey: "sg_intent:famous"),
-                Opt("q_sg_intent_surprise", "Bất ngờ tôi đi", "bất ngờ", null, BeverageFamilyGrounding.Signature,
-                    new DrinkSensoryProfile { Energy = "playful", Finish = "linger" },
-                    MoodKey: "adventurous", RefinementKey: "sg_intent:surprise"),
-                Opt("q_sg_intent_instagram", "Đẹp để chụp", "đẹp", null, BeverageFamilyGrounding.Signature,
-                    new DrinkSensoryProfile { Energy = "playful", SocialMood = "gathered", Sweetness = "gentle" },
-                    MoodKey: "bright", RefinementKey: "sg_intent:instagram"),
-                Opt("q_sg_intent_barista", "Gợi ý của barista", "barista", null, BeverageFamilyGrounding.Signature,
-                    new DrinkSensoryProfile { Energy = "focused", Finish = "linger" },
-                    MoodKey: "focus", RefinementKey: "sg_intent:barista")
-            ])
-    ];
+    private static GuidedQuestionSeed Q(
+        string id,
+        string promptVi,
+        string promptEn,
+        IReadOnlyList<GuidedOptionSeed> options,
+        string? descriptionVi = null,
+        string? descriptionEn = null) =>
+        new(id, promptVi, options, descriptionVi, promptEn, descriptionEn);
 
     private static GuidedOptionSeed Opt(
         string id,
-        string label,
-        string emotional,
+        string labelVi,
+        string labelEn,
+        string emotionalVi,
+        string emotionalEn,
         string? branchKey,
         string? categoryIntent,
         DrinkSensoryProfile sensory,
         string? MoodKey = null,
         string? RefinementKey = null,
-        string? FlavorTagsJson = null) =>
+        string? FlavorTagsJson = null,
+        bool EndsBranch = false,
+        string? RequiresPriorOptionId = null) =>
         new(
             id,
-            label,
-            emotional,
+            labelVi,
+            emotionalVi,
             sensory,
             MoodKey,
             RefinementKey,
@@ -531,7 +741,12 @@ public static class GuidedSommelierCatalog
             FlavorTagsJson,
             categoryIntent,
             null,
-            branchKey);
+            branchKey,
+            labelEn,
+            emotionalEn,
+            null,
+            EndsBranch,
+            RequiresPriorOptionId);
 
     private sealed record ClientCatalogDto(
         string SetId,
@@ -539,20 +754,29 @@ public static class GuidedSommelierCatalog
         IReadOnlyDictionary<string, IReadOnlyList<string>> Branches,
         IReadOnlyList<ClientQuestionDto> Questions);
 
-    private sealed record ClientQuestionDto(string QuestionId, string Prompt, IReadOnlyList<ClientOptionDto> Options);
+    private sealed record ClientQuestionDto(
+        string QuestionId,
+        ClientLocalizedText Prompt,
+        IReadOnlyList<ClientOptionDto> Options);
+
+    internal sealed record ClientLocalizedText(string Vi, string En);
 
     internal sealed record ClientOptionDto(
         string OptionId,
-        string Label,
-        string? Reflection = null,
-        string? BranchKey = null);
+        ClientLocalizedText Label,
+        ClientLocalizedText? Reflection = null,
+        string? BranchKey = null,
+        bool? EndsBranch = null,
+        string? RequiresPriorOptionId = null);
 }
 
 public sealed record GuidedQuestionSeed(
     string QuestionId,
     string Prompt,
     IReadOnlyList<GuidedOptionSeed> Options,
-    string? Description = null);
+    string? Description = null,
+    string? PromptEn = null,
+    string? DescriptionEn = null);
 
 public sealed record GuidedOptionSeed(
     string OptionId,
@@ -565,4 +789,9 @@ public sealed record GuidedOptionSeed(
     string? FlavorTagsJson = null,
     string? CategoryIntentKey = null,
     string? GuestReflection = null,
-    string? BranchKey = null);
+    string? BranchKey = null,
+    string? LabelEn = null,
+    string? EmotionalFragmentEn = null,
+    string? GuestReflectionEn = null,
+    bool EndsBranch = false,
+    string? RequiresPriorOptionId = null);

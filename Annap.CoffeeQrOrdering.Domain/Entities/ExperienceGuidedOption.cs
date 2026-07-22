@@ -10,10 +10,19 @@ public sealed class ExperienceGuidedOption : AuditableEntity
     public string ExternalKey { get; set; } = "";
     public string Label { get; set; } = "";
 
-    /// <summary>Richer copy for CMS / future guest detail.</summary>
+    /// <summary>Native English label — independent copy, not a translation of <see cref="Label"/>.</summary>
+    public string? LabelEn { get; set; }
+
+    /// <summary>Richer copy for CMS / future guest detail (Vietnamese).</summary>
     public string? Description { get; set; }
 
+    /// <summary>Native English description / guest reflection.</summary>
+    public string? DescriptionEn { get; set; }
+
     public string? Subline { get; set; }
+
+    /// <summary>Native English subline / emotional fragment.</summary>
+    public string? SublineEn { get; set; }
     public int SortOrder { get; set; }
     public bool IsEnabled { get; set; } = true;
 

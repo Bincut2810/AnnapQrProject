@@ -10,6 +10,9 @@ namespace Annap.CoffeeQrOrdering.Application;
 public static class BeverageFamilyGrounding
 {
     public const string Coffee = "coffee";
+    public const string Espresso = "espresso";
+    public const string ColdBrew = "coldbrew";
+    public const string Vietnamese = "vietnamese";
     public const string Tea = "tea";
     public const string Juice = "juice";
     public const string Smoothie = "smoothie";
@@ -20,6 +23,9 @@ public static class BeverageFamilyGrounding
     public static readonly string[] KnownFamilies =
     [
         Coffee,
+        Espresso,
+        ColdBrew,
+        Vietnamese,
         Tea,
         Juice,
         Smoothie,
@@ -34,7 +40,14 @@ public static class BeverageFamilyGrounding
         if (value.Length == 0)
             return null;
 
-        if (ContainsAny(value, "coffee", "cafe", "ca phe", "caphe", "espresso", "latte", "americano", "cold brew", "bac xiu"))
+        // Narrow coffee families before the broad "coffee" bucket (specialty / legacy).
+        if (ContainsAny(value, "vietnamese", "viet", "ca phe viet", "bac xiu", "bacxiu", "saigon"))
+            return Vietnamese;
+        if (ContainsAny(value, "cold brew", "coldbrew"))
+            return ColdBrew;
+        if (ContainsAny(value, "espresso", "americano", "latte", "mocha", "capuchino", "cappuccino"))
+            return Espresso;
+        if (ContainsAny(value, "specialty", "coffee", "cafe", "ca phe", "caphe"))
             return Coffee;
         if (ContainsAny(value, "matcha"))
             return Matcha;
@@ -68,6 +81,9 @@ public static class BeverageFamilyGrounding
         NormalizeFamilyKey(familyKey) switch
         {
             Coffee => "Coffee",
+            Espresso => "Espresso",
+            ColdBrew => "Cold Brew",
+            Vietnamese => "Vietnamese Coffee",
             Tea => "Tea",
             Juice => "Juice",
             Smoothie => "Smoothie",
@@ -81,6 +97,9 @@ public static class BeverageFamilyGrounding
         NormalizeFamilyKey(familyKey) switch
         {
             Coffee => ["Espresso", "Cold Brew", "Vietnamese Coffee", "Coffee", "Specialty Coffee"],
+            Espresso => ["Espresso"],
+            ColdBrew => ["Cold Brew"],
+            Vietnamese => ["Vietnamese Coffee"],
             Tea => ["Tea"],
             Juice => ["Juice"],
             Smoothie => ["Smoothie"],
@@ -112,6 +131,9 @@ public static class BeverageFamilyGrounding
         return key switch
         {
             Coffee => CategoryIs(category, "espresso", "cold brew", "vietnamese coffee", "coffee", "specialty coffee"),
+            Espresso => CategoryIs(category, "espresso"),
+            ColdBrew => CategoryIs(category, "cold brew"),
+            Vietnamese => CategoryIs(category, "vietnamese coffee"),
             Tea => CategoryIs(category, "tea") && !ContainsAny(haystack, "matcha"),
             Juice => CategoryIs(category, "juice"),
             Smoothie => CategoryIs(category, "smoothie"),
@@ -132,6 +154,9 @@ public static class BeverageFamilyGrounding
         return key switch
         {
             Coffee => CategoryIs(category, "espresso", "cold brew", "vietnamese coffee", "coffee", "specialty coffee"),
+            Espresso => CategoryIs(category, "espresso"),
+            ColdBrew => CategoryIs(category, "cold brew"),
+            Vietnamese => CategoryIs(category, "vietnamese coffee"),
             Tea => CategoryIs(category, "tea"),
             Juice => CategoryIs(category, "juice"),
             Smoothie => CategoryIs(category, "smoothie"),

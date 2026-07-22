@@ -35,7 +35,9 @@ public static class ExperienceCatalogBootstrapper
                 ExternalKey = q.QuestionId,
                 SetKey = setKey,
                 Prompt = q.Prompt,
+                PromptEn = string.IsNullOrWhiteSpace(q.PromptEn) ? null : q.PromptEn.Trim(),
                 Description = string.IsNullOrWhiteSpace(q.Description) ? null : q.Description.Trim(),
+                DescriptionEn = string.IsNullOrWhiteSpace(q.DescriptionEn) ? null : q.DescriptionEn.Trim(),
                 SortOrder = sort++,
                 IsOptional = GuidedSommelierCatalog.IsBranchQuestionId(q.QuestionId),
                 IsEnabled = true,
@@ -61,8 +63,11 @@ public static class ExperienceCatalogBootstrapper
                     QuestionId = qid,
                     ExternalKey = o.OptionId,
                     Label = o.Label,
-                    Description = null,
+                    LabelEn = string.IsNullOrWhiteSpace(o.LabelEn) ? null : o.LabelEn.Trim(),
+                    Description = string.IsNullOrWhiteSpace(o.GuestReflection) ? null : o.GuestReflection.Trim(),
+                    DescriptionEn = string.IsNullOrWhiteSpace(o.GuestReflectionEn) ? null : o.GuestReflectionEn.Trim(),
                     Subline = o.EmotionalFragment,
+                    SublineEn = string.IsNullOrWhiteSpace(o.EmotionalFragmentEn) ? null : o.EmotionalFragmentEn.Trim(),
                     SortOrder = oSort++,
                     IsEnabled = true,
                     MoodKey = string.IsNullOrWhiteSpace(o.MoodKey) ? null : o.MoodKey.Trim(),
@@ -82,7 +87,7 @@ public static class ExperienceCatalogBootstrapper
         IApplicationDbContext db,
         CancellationToken cancellationToken = default)
     {
-        // atelier_v5 seeds specialty questions with AllQuestions in EnsureGuidedAndDiscoveryAsync.
+        // atelier_v6 seeds specialty questions with AllQuestions in EnsureGuidedAndDiscoveryAsync.
         var setKey = GuidedSommelierCatalog.QuestionSetId;
         if (await db.ExperienceGuidedQuestions.AnyAsync(q => q.SetKey == setKey && q.ExternalKey == "q_sp_profile", cancellationToken))
             return;
@@ -122,8 +127,12 @@ public static class ExperienceCatalogBootstrapper
             var dbQ = dbQuestions.First(x => x.Id == qid);
             if (!string.Equals(dbQ.Prompt, q.Prompt, StringComparison.Ordinal))
                 dbQ.Prompt = q.Prompt;
+            if (!string.Equals(dbQ.PromptEn ?? "", q.PromptEn ?? "", StringComparison.Ordinal))
+                dbQ.PromptEn = string.IsNullOrWhiteSpace(q.PromptEn) ? null : q.PromptEn.Trim();
             if (!string.Equals(dbQ.Description ?? "", q.Description ?? "", StringComparison.Ordinal))
                 dbQ.Description = string.IsNullOrWhiteSpace(q.Description) ? null : q.Description.Trim();
+            if (!string.Equals(dbQ.DescriptionEn ?? "", q.DescriptionEn ?? "", StringComparison.Ordinal))
+                dbQ.DescriptionEn = string.IsNullOrWhiteSpace(q.DescriptionEn) ? null : q.DescriptionEn.Trim();
             dbQ.UpdatedAtUtc = now;
         }
 
@@ -143,7 +152,11 @@ public static class ExperienceCatalogBootstrapper
                 if (row is null)
                     continue;
                 row.Label = o.Label;
+                row.LabelEn = string.IsNullOrWhiteSpace(o.LabelEn) ? null : o.LabelEn.Trim();
                 row.Subline = o.EmotionalFragment;
+                row.SublineEn = string.IsNullOrWhiteSpace(o.EmotionalFragmentEn) ? null : o.EmotionalFragmentEn.Trim();
+                row.Description = string.IsNullOrWhiteSpace(o.GuestReflection) ? row.Description : o.GuestReflection.Trim();
+                row.DescriptionEn = string.IsNullOrWhiteSpace(o.GuestReflectionEn) ? null : o.GuestReflectionEn.Trim();
                 row.MoodKey = string.IsNullOrWhiteSpace(o.MoodKey) ? null : o.MoodKey.Trim();
                 row.RefinementKey = string.IsNullOrWhiteSpace(o.RefinementKey) ? null : o.RefinementKey.Trim();
                 row.FlavorTagsJson = string.IsNullOrWhiteSpace(o.FlavorTagsJson) ? null : o.FlavorTagsJson.Trim();
@@ -153,5 +166,87 @@ public static class ExperienceCatalogBootstrapper
         }
 
         await db.SaveChangesAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Fills empty English display fields from the built-in bilingual catalog.
+    /// Never overwrites existing PromptEn/LabelEn (admin may have authored them).
+    /// Safe on every production startup after migration.
+    /// </summary>
+    public static async Task EnsureNativeEnglishCopyAsync(
+        IApplicationDbContext db,
+        CancellationToken cancellationToken = default)
+    {
+        var setKey = GuidedSommelierCatalog.QuestionSetId;
+        var defaults = GuidedSommelierCatalog.AllQuestions.ToDictionary(
+            q => q.QuestionId,
+            StringComparer.OrdinalIgnoreCase);
+
+        var dbQuestions = await db.ExperienceGuidedQuestions
+            .Where(q => q.SetKey == setKey)
+            .ToListAsync(cancellationToken);
+        if (dbQuestions.Count == 0)
+            return;
+
+        var qMap = dbQuestions.ToDictionary(q => q.ExternalKey, q => q, StringComparer.OrdinalIgnoreCase);
+        var changed = false;
+        var now = DateTimeOffset.UtcNow;
+
+        foreach (var (id, seed) in defaults)
+        {
+            if (!qMap.TryGetValue(id, out var dbQ))
+                continue;
+            if (string.IsNullOrWhiteSpace(dbQ.PromptEn) && !string.IsNullOrWhiteSpace(seed.PromptEn))
+            {
+                dbQ.PromptEn = seed.PromptEn.Trim();
+                dbQ.UpdatedAtUtc = now;
+                changed = true;
+            }
+            if (string.IsNullOrWhiteSpace(dbQ.DescriptionEn) && !string.IsNullOrWhiteSpace(seed.DescriptionEn))
+            {
+                dbQ.DescriptionEn = seed.DescriptionEn.Trim();
+                dbQ.UpdatedAtUtc = now;
+                changed = true;
+            }
+        }
+
+        var dbOptions = await db.ExperienceGuidedOptions
+            .Where(o => qMap.Values.Select(x => x.Id).Contains(o.QuestionId))
+            .ToListAsync(cancellationToken);
+
+        foreach (var seedQ in defaults.Values)
+        {
+            if (!qMap.TryGetValue(seedQ.QuestionId, out var dbQ))
+                continue;
+            foreach (var seedO in seedQ.Options)
+            {
+                var row = dbOptions.FirstOrDefault(x =>
+                    x.QuestionId == dbQ.Id
+                    && string.Equals(x.ExternalKey, seedO.OptionId, StringComparison.OrdinalIgnoreCase));
+                if (row is null)
+                    continue;
+                if (string.IsNullOrWhiteSpace(row.LabelEn) && !string.IsNullOrWhiteSpace(seedO.LabelEn))
+                {
+                    row.LabelEn = seedO.LabelEn.Trim();
+                    row.UpdatedAtUtc = now;
+                    changed = true;
+                }
+                if (string.IsNullOrWhiteSpace(row.SublineEn) && !string.IsNullOrWhiteSpace(seedO.EmotionalFragmentEn))
+                {
+                    row.SublineEn = seedO.EmotionalFragmentEn.Trim();
+                    row.UpdatedAtUtc = now;
+                    changed = true;
+                }
+                if (string.IsNullOrWhiteSpace(row.DescriptionEn) && !string.IsNullOrWhiteSpace(seedO.GuestReflectionEn))
+                {
+                    row.DescriptionEn = seedO.GuestReflectionEn.Trim();
+                    row.UpdatedAtUtc = now;
+                    changed = true;
+                }
+            }
+        }
+
+        if (changed)
+            await db.SaveChangesAsync(cancellationToken);
     }
 }

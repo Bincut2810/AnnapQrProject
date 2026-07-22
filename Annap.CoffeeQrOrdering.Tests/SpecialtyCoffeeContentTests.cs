@@ -66,7 +66,7 @@ public class SpecialtyCoffeeContentTests
         var merged = GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.AllQuestions);
         var json = GuidedSommelierExperienceCatalog.ToClientJson(merged, GuidedSommelierCatalog.QuestionSetId);
 
-        Assert.Contains("atelier_v5", json, StringComparison.Ordinal);
+        Assert.Contains("atelier_v6", json, StringComparison.Ordinal);
         Assert.Contains("q0", json, StringComparison.Ordinal);
         Assert.Contains("q_sp_profile", json, StringComparison.Ordinal);
         Assert.Contains("q_sp_adventure", json, StringComparison.Ordinal);

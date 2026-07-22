@@ -23,11 +23,20 @@ public sealed record GuidedRecommendationRow(
     string? ShortStory,
     string? ImageUrl,
     int CompatibilityPercent,
-    string EmotionalExplanation,
+    GuestLocalizedText EmotionalExplanation,
     string PalateAlignmentLabel,
     string Direction,
     string[] ExplanationTags,
     string ConfidenceLevel);
+
+/// <summary>Guest-facing copy authored natively in Vietnamese and English (not machine-translated).</summary>
+public sealed record GuestLocalizedText(string Vi, string En)
+{
+    public static GuestLocalizedText Of(string vi, string? en = null) =>
+        new((vi ?? "").Trim(), string.IsNullOrWhiteSpace(en) ? (vi ?? "").Trim() : en.Trim());
+
+    public object ToClientDto() => new { vi = Vi, en = En };
+}
 
 /// <summary>
 /// Deterministic, weight-aware ranking using existing <see cref="FlavorAffinityEngine"/>.
@@ -48,6 +57,7 @@ public static class GuidedSommelierRecommendationEngine
         var familyKey = ExtractBeverageFamilyKey(selectedAnswers);
         var beverageIntent = BuildBeverageIntent(familyKey, guestHints, selectedAnswers);
         var scopedMenu = ApplyFamilyLock(menu, familyKey);
+        scopedMenu = ApplyMenuTargetFilter(scopedMenu, selectedAnswers);
         if (scopedMenu.Count == 0)
             return [];
 
@@ -168,86 +178,186 @@ public static class GuidedSommelierRecommendationEngine
             string.Equals(o.OptionId, "q_sp_format_compare", StringComparison.OrdinalIgnoreCase)
             || string.Equals(o.RefinementKey, "sc_format:compare", StringComparison.OrdinalIgnoreCase));
 
-    public static bool IsClassicCoffeePath(IReadOnlyList<GuidedOptionSeed> selectedAnswers) =>
-        string.Equals(ExtractBranchKey(selectedAnswers), GuidedSommelierCatalog.BranchCoffee, StringComparison.OrdinalIgnoreCase);
-
-    public static string ComposeSpecialtyNamingLine(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
+    public static bool IsClassicCoffeePath(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
     {
-        var profile = selectedAnswers
-            .FirstOrDefault(o => o.OptionId.StartsWith("q_sp_profile_", StringComparison.OrdinalIgnoreCase))
-            ?.EmotionalFragment.Trim() ?? "";
-        var adventure = selectedAnswers
-            .FirstOrDefault(o => o.OptionId.StartsWith("q_sp_adventure_", StringComparison.OrdinalIgnoreCase))
-            ?.EmotionalFragment.Trim() ?? "";
-        if (profile.Length > 0 && adventure.Length > 0)
-            return $"Với hướng {profile} và mức {adventure} — quầy mở một nguồn cho bàn bạn.";
-        if (profile.Length > 0)
-            return $"Với hướng {profile} — quầy gọi tên nguồn này cho bàn bạn.";
-        return "Quầy gọi tên nguồn này cho bàn bạn hôm nay.";
+        var branch = ExtractBranchKey(selectedAnswers);
+        return string.Equals(branch, GuidedSommelierCatalog.BranchEspresso, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(branch, GuidedSommelierCatalog.BranchVietnamese, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(branch, GuidedSommelierCatalog.BranchColdBrew, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(branch, GuidedSommelierCatalog.BranchCoffee, StringComparison.OrdinalIgnoreCase);
     }
 
-    public static string ComposePersonalityReflection(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
+    /// <summary>
+    /// When leaf answers name exact menu drinks, hard-filter to those drinks (within family).
+    /// </summary>
+    public static IReadOnlyList<MenuItemScoringRow> ApplyMenuTargetFilter(
+        IReadOnlyList<MenuItemScoringRow> menu,
+        IReadOnlyList<GuidedOptionSeed> selectedAnswers)
+    {
+        var targets = GuidedSommelierCatalog.CollectMenuTargets(selectedAnswers);
+        if (targets.Count == 0 || menu.Count == 0)
+            return menu;
+
+        var hit = menu
+            .Where(m => targets.Any(t => MenuNamesMatch(m.Name, t)))
+            .ToList();
+        return hit.Count > 0 ? hit : menu;
+    }
+
+    private static bool MenuNamesMatch(string? menuName, string? target)
+    {
+        if (string.IsNullOrWhiteSpace(menuName) || string.IsNullOrWhiteSpace(target))
+            return false;
+        return string.Equals(menuName.Trim(), target.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static GuestLocalizedText ComposeSpecialtyNamingLine(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
+    {
+        var profileVi = FragVi(selectedAnswers.FirstOrDefault(o =>
+            o.OptionId.StartsWith("q_sp_profile_", StringComparison.OrdinalIgnoreCase)));
+        var profileEn = FragEn(selectedAnswers.FirstOrDefault(o =>
+            o.OptionId.StartsWith("q_sp_profile_", StringComparison.OrdinalIgnoreCase)));
+        var adventureVi = FragVi(selectedAnswers.FirstOrDefault(o =>
+            o.OptionId.StartsWith("q_sp_adventure_", StringComparison.OrdinalIgnoreCase)));
+        var adventureEn = FragEn(selectedAnswers.FirstOrDefault(o =>
+            o.OptionId.StartsWith("q_sp_adventure_", StringComparison.OrdinalIgnoreCase)));
+
+        if (profileVi.Length > 0 && adventureVi.Length > 0)
+            return GuestLocalizedText.Of(
+                $"Với hướng {profileVi} và mức {adventureVi} — quầy mở một nguồn cho bàn bạn.",
+                $"With a {profileEn} direction and {adventureEn} curiosity — the bar opens an origin for your table.");
+        if (profileVi.Length > 0)
+            return GuestLocalizedText.Of(
+                $"Với hướng {profileVi} — quầy gọi tên nguồn này cho bàn bạn.",
+                $"With a {profileEn} direction — the bar names this origin for your table.");
+        return GuestLocalizedText.Of(
+            "Quầy gọi tên nguồn này cho bàn bạn hôm nay.",
+            "The bar names this origin for your table today.");
+    }
+
+    public static GuestLocalizedText ComposePersonalityReflection(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
     {
         if (IsSpecialtyCoffeePath(selectedAnswers))
             return ComposeSpecialtyNamingLine(selectedAnswers);
 
         if (selectedAnswers.Count == 0)
-            return "Annap đang chọn một ly hợp với ghi chú này.";
+            return GuestLocalizedText.Of(
+                "Annap đang chọn một ly hợp với ghi chú này.",
+                "Annap is choosing a cup to match this note.");
 
-        var family = selectedAnswers[0].Label.Trim();
-        var detail = selectedAnswers.Count > 1 ? selectedAnswers[1].Label.Trim().ToLowerInvariant() : "";
-        if (family.Length > 0 && detail.Length > 0)
-            return $"Vì bạn chọn {family.ToLowerInvariant()} và nghiêng về {detail}, Annap chọn cho bạn.";
-        if (family.Length > 0)
-            return $"Vì bạn chọn {family.ToLowerInvariant()}, Annap chọn cho bạn.";
+        var familyVi = LabelVi(selectedAnswers[0]);
+        var familyEn = LabelEn(selectedAnswers[0]);
+        var detailVi = selectedAnswers.Count > 1 ? LabelVi(selectedAnswers[1]).ToLowerInvariant() : "";
+        var detailEn = selectedAnswers.Count > 1 ? LabelEn(selectedAnswers[1]).ToLowerInvariant() : "";
+        if (familyVi.Length > 0 && detailVi.Length > 0)
+            return GuestLocalizedText.Of(
+                $"Vì bạn chọn {familyVi.ToLowerInvariant()} và nghiêng về {detailVi}, Annap chọn cho bạn.",
+                $"Because you chose {familyEn.ToLowerInvariant()} and leaned toward {detailEn}, Annap chose for you.");
+        if (familyVi.Length > 0)
+            return GuestLocalizedText.Of(
+                $"Vì bạn chọn {familyVi.ToLowerInvariant()}, Annap chọn cho bạn.",
+                $"Because you chose {familyEn.ToLowerInvariant()}, Annap chose for you.");
 
-        return "Annap chọn cho bạn.";
+        return GuestLocalizedText.Of("Annap chọn cho bạn.", "Annap chooses for you.");
     }
 
-    public static string ComposeAmbientLine(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
+    public static GuestLocalizedText ComposeAmbientLine(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
     {
         if (selectedAnswers.Count == 0)
-            return "Tìm theo sở thích của bạn trong menu.";
+            return GuestLocalizedText.Of(
+                "Tìm theo sở thích của bạn trong menu.",
+                "Browse the menu for what suits you.");
 
-        var family = selectedAnswers[0].EmotionalFragment.Trim();
-        var detail = selectedAnswers.Count >= 2 ? selectedAnswers[1].EmotionalFragment.Trim() : "";
+        var familyVi = FragVi(selectedAnswers[0]);
+        var familyEn = FragEn(selectedAnswers[0]);
+        var detailVi = selectedAnswers.Count >= 2 ? FragVi(selectedAnswers[1]) : "";
+        var detailEn = selectedAnswers.Count >= 2 ? FragEn(selectedAnswers[1]) : "";
 
-        if (family.Length == 0 && detail.Length == 0)
-            return "Tìm theo sở thích của bạn trong menu.";
+        if (familyVi.Length == 0 && detailVi.Length == 0)
+            return GuestLocalizedText.Of(
+                "Tìm theo sở thích của bạn trong menu.",
+                "Browse the menu for what suits you.");
 
-        if (detail.Length > 0 && family.Length > 0)
-            return $"{Capitalize(family)} · {detail} — tìm trong menu theo hướng đó.";
+        if (detailVi.Length > 0 && familyVi.Length > 0)
+            return GuestLocalizedText.Of(
+                $"{Capitalize(familyVi)} · {detailVi} — tìm trong menu theo hướng đó.",
+                $"{Capitalize(familyEn)} · {detailEn} — finding that direction on the menu.");
 
-        var primary = family.Length > 0 ? family : detail;
-        return $"{Capitalize(primary)} — tìm trong menu theo hướng đó.";
+        var primaryVi = familyVi.Length > 0 ? familyVi : detailVi;
+        var primaryEn = familyEn.Length > 0 ? familyEn : detailEn;
+        return GuestLocalizedText.Of(
+            $"{Capitalize(primaryVi)} — tìm trong menu theo hướng đó.",
+            $"{Capitalize(primaryEn)} — finding that direction on the menu.");
+    }
+
+    private static string FragVi(GuidedOptionSeed? o) =>
+        o is null ? "" : (o.EmotionalFragment ?? "").Trim();
+
+    private static string FragEn(GuidedOptionSeed? o)
+    {
+        if (o is null) return "";
+        return string.IsNullOrWhiteSpace(o.EmotionalFragmentEn)
+            ? FragVi(o)
+            : o.EmotionalFragmentEn.Trim();
+    }
+
+    private static string LabelVi(GuidedOptionSeed? o) =>
+        o is null ? "" : (o.Label ?? "").Trim();
+
+    private static string LabelEn(GuidedOptionSeed? o)
+    {
+        if (o is null) return "";
+        return string.IsNullOrWhiteSpace(o.LabelEn) ? LabelVi(o) : o.LabelEn.Trim();
     }
 
     private static string Capitalize(string s) =>
         string.IsNullOrEmpty(s) ? s : string.Concat(s[..1].ToUpperInvariant(), s[1..]);
 
-    private static string ExplainForRank(int rank, int pct, string drinkName, string ambient, string categoryDirectionLine, string? tastingNotes = null)
+    private static GuestLocalizedText ExplainForRank(
+        int rank,
+        int pct,
+        string drinkName,
+        GuestLocalizedText ambient,
+        GuestLocalizedText categoryDirectionLine,
+        string? tastingNotes = null)
     {
         _ = pct;
-        var name = string.IsNullOrWhiteSpace(drinkName) ? "Ly này" : drinkName.Trim();
-        var dir = (categoryDirectionLine ?? "").Trim().TrimEnd('—', ' ', '-');
+        var name = string.IsNullOrWhiteSpace(drinkName) ? "this cup" : drinkName.Trim();
+        var nameVi = string.IsNullOrWhiteSpace(drinkName) ? "Ly này" : drinkName.Trim();
+        var dirVi = (categoryDirectionLine.Vi ?? "").Trim().TrimEnd('—', ' ', '-');
+        var dirEn = (categoryDirectionLine.En ?? "").Trim().TrimEnd('—', ' ', '-');
         var taste = string.IsNullOrWhiteSpace(tastingNotes) ? "" : tastingNotes.Trim().TrimEnd('.');
         if (rank == 0)
         {
-            if (dir.Length > 0 && taste.Length > 0)
-                return $"{dir} {name} sẽ hợp với buổi hôm nay: {taste}.";
-            if (dir.Length > 0)
-                return $"{dir} {name} là lựa chọn Annap gửi cho bạn hôm nay.";
-            if (!string.IsNullOrWhiteSpace(ambient))
-                return $"{ambient.Trim()} {name} là lựa chọn Annap gửi cho bạn hôm nay.";
+            if (dirVi.Length > 0 && taste.Length > 0)
+                return GuestLocalizedText.Of(
+                    $"{dirVi} {nameVi} sẽ hợp với buổi hôm nay: {taste}.",
+                    $"{dirEn} {name} will suit today: {taste}.");
+            if (dirVi.Length > 0)
+                return GuestLocalizedText.Of(
+                    $"{dirVi} {nameVi} là lựa chọn Annap gửi cho bạn hôm nay.",
+                    $"{dirEn} {name} is the cup Annap sends for you today.");
+            if (!string.IsNullOrWhiteSpace(ambient.Vi))
+                return GuestLocalizedText.Of(
+                    $"{ambient.Vi.Trim()} {nameVi} là lựa chọn Annap gửi cho bạn hôm nay.",
+                    $"{ambient.En.Trim()} {name} is the cup Annap sends for you today.");
             if (taste.Length > 0)
-                return $"Annap chọn {name} cho gu hôm nay của bạn — {taste}.";
-            return $"Annap chọn {name} cho gu hôm nay của bạn.";
+                return GuestLocalizedText.Of(
+                    $"Annap chọn {nameVi} cho gu hôm nay của bạn — {taste}.",
+                    $"Annap chose {name} for today's palate — {taste}.");
+            return GuestLocalizedText.Of(
+                $"Annap chọn {nameVi} cho gu hôm nay của bạn.",
+                $"Annap chose {name} for today's palate.");
         }
 
         if (rank == 1)
-            return $"{name} cũng là một hướng khác đáng thử.";
+            return GuestLocalizedText.Of(
+                $"{nameVi} cũng là một hướng khác đáng thử.",
+                $"{name} is another direction worth tasting.");
 
-        return $"{name} là một lựa chọn dịu hơn nếu bạn muốn đổi nhịp.";
+        return GuestLocalizedText.Of(
+            $"{nameVi} là một lựa chọn dịu hơn nếu bạn muốn đổi nhịp.",
+            $"{name} is a softer choice if you want to change pace.");
     }
 
     private static string ComputeDirection(DrinkSensoryProfile cup, DrinkSensoryProfile lead)
@@ -333,12 +443,16 @@ public static class GuidedSommelierRecommendationEngine
 
     public static string? ExtractBeverageFamilyKey(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
     {
+        string? found = null;
         foreach (var opt in selectedAnswers)
         {
             var key = BeverageFamilyGrounding.ResolveFamilyKey(opt.CategoryIntentKey);
             if (key is not null)
-                return key;
+                found = key;
         }
+
+        if (found is not null)
+            return found;
 
         // Fallback: infer from option IDs and labels for DB-backed options that predate CategoryIntentKey.
         foreach (var opt in selectedAnswers)
@@ -369,13 +483,13 @@ public static class GuidedSommelierRecommendationEngine
                 .Where(m => BeverageFamilyGrounding.Matches(familyKey, m.CategoryName, m.Name))
                 .ToList();
 
-    public static string ComposeCategoryDirectionLine(
+    public static GuestLocalizedText ComposeCategoryDirectionLine(
         string? familyKey,
         IReadOnlyList<GuidedOptionSeed> selectedAnswers)
     {
         var family = BeverageFamilyGrounding.NormalizeFamilyKey(familyKey);
         if (family is null)
-            return "";
+            return GuestLocalizedText.Of("", "");
 
         var cafLevel = 0;
         var sweetnessKey = "";
@@ -393,38 +507,82 @@ public static class GuidedSommelierRecommendationEngine
         return family switch
         {
             BeverageFamilyGrounding.Coffee when cafLevel >= 4 && isSweet =>
-                "Vì bạn muốn một ly rõ vị và đủ ngọt,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn một ly rõ vị và đủ ngọt,",
+                    "Because you want a clear cup with enough sweetness,"),
             BeverageFamilyGrounding.Coffee when cafLevel >= 4 =>
-                "Vì bạn muốn một ly rõ vị và tỉnh táo,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn một ly rõ vị và tỉnh táo,",
+                    "Because you want a clear, wakeful cup,"),
             BeverageFamilyGrounding.Coffee when cafLevel <= 2 && isLow =>
-                "Vì bạn muốn một ly cà phê nhẹ và ít ngọt,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn một ly cà phê nhẹ và ít ngọt,",
+                    "Because you want a light coffee with restrained sweetness,"),
             BeverageFamilyGrounding.Coffee when cafLevel <= 2 =>
-                "Vì bạn muốn một ly cà phê êm hơn,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn một ly cà phê êm hơn,",
+                    "Because you want a gentler coffee,"),
             BeverageFamilyGrounding.Coffee when isLow =>
-                "Vì bạn muốn cà phê ít ngọt,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn cà phê ít ngọt,",
+                    "Because you want coffee with less sweetness,"),
             BeverageFamilyGrounding.Coffee when isSweet =>
-                "Vì bạn thích vị cà phê mềm hơn,",
+                GuestLocalizedText.Of(
+                    "Vì bạn thích vị cà phê mềm hơn,",
+                    "Because you prefer a softer coffee tone,"),
             BeverageFamilyGrounding.Coffee =>
-                "Vì bạn đang nghiêng về cà phê,",
+                GuestLocalizedText.Of(
+                    "Vì bạn đang nghiêng về cà phê,",
+                    "Because you're leaning toward coffee,"),
+            BeverageFamilyGrounding.Espresso =>
+                GuestLocalizedText.Of(
+                    "Vì bạn chọn espresso,",
+                    "Because you chose espresso,"),
+            BeverageFamilyGrounding.ColdBrew =>
+                GuestLocalizedText.Of(
+                    "Vì bạn chọn cold brew,",
+                    "Because you chose cold brew,"),
+            BeverageFamilyGrounding.Vietnamese =>
+                GuestLocalizedText.Of(
+                    "Vì bạn chọn cà phê Việt,",
+                    "Because you chose Vietnamese coffee,"),
             BeverageFamilyGrounding.Tea =>
-                "Vì bạn chọn trà,",
+                GuestLocalizedText.Of(
+                    "Vì bạn chọn trà,",
+                    "Because you chose tea,"),
             BeverageFamilyGrounding.Juice when isLow =>
-                "Vì bạn muốn một ly mát và ít ngọt,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn một ly mát và ít ngọt,",
+                    "Because you want something cool with restrained sweetness,"),
             BeverageFamilyGrounding.Juice =>
-                "Vì bạn muốn một ly mát và dễ uống,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn một ly mát và dễ uống,",
+                    "Because you want something cool and easy to sip,"),
             BeverageFamilyGrounding.Smoothie when isLow =>
-                "Vì bạn muốn sinh tố ít ngọt,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn sinh tố ít ngọt,",
+                    "Because you want a smoothie with less sweetness,"),
             BeverageFamilyGrounding.Smoothie =>
-                "Vì bạn muốn một ly mềm và dễ uống,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn một ly mềm và dễ uống,",
+                    "Because you want something soft and easy to sip,"),
             BeverageFamilyGrounding.Matcha =>
-                "Vì bạn chọn matcha,",
+                GuestLocalizedText.Of(
+                    "Vì bạn chọn matcha,",
+                    "Because you chose matcha,"),
             BeverageFamilyGrounding.Fruit when isLow =>
-                "Vì bạn muốn trái cây nhẹ và ít ngọt,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn trái cây nhẹ và ít ngọt,",
+                    "Because you want fruit that is light and less sweet,"),
             BeverageFamilyGrounding.Fruit =>
-                "Vì bạn muốn một ly mát và dễ uống,",
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn một ly mát và dễ uống,",
+                    "Because you want something cool and easy to sip,"),
             BeverageFamilyGrounding.Signature =>
-                "Vì bạn muốn thử signature của quán,",
-            _ => ""
+                GuestLocalizedText.Of(
+                    "Vì bạn muốn thử signature của quán,",
+                    "Because you want to try the house signature,"),
+            _ => GuestLocalizedText.Of("", "")
         };
     }
 

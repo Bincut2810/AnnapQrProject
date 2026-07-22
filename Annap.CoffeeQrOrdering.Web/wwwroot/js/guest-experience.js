@@ -103,6 +103,8 @@
         var sommCalibrationBranch = "";
         var SOMM_ENTRY_SPECIALTY_ID = "q0_specialty";
         var SOMM_COFFEE_OPTION_ID = "q0_specialty";
+        /** Last successful recommend payload — re-localize on language switch without re-ranking. */
+        var sommLastRecommendPack = null;
         var discNonce = 1;
         var discLastMs = 0;
         var discTimers = [];
@@ -162,6 +164,38 @@
         /** Ritual copy from guest i18n bundle. */
         function geRitualT(path) {
             return geFlowT(path);
+        }
+
+        function geGuestLang() {
+            try {
+                if (window.LuxuryI18n && typeof window.LuxuryI18n.getLang === "function") {
+                    return window.LuxuryI18n.getLang() === "en" ? "en" : "vi";
+                }
+            } catch (_gl) {}
+            return (document.documentElement.lang || "vi").toLowerCase().indexOf("en") === 0
+                ? "en"
+                : "vi";
+        }
+
+        /** Resolve catalog bilingual fields: string (legacy) or { vi, en } native copy. */
+        function geLocalize(field) {
+            if (field == null) return "";
+            if (typeof field === "string") return String(field).trim();
+            if (typeof field !== "object") return String(field).trim();
+            var lang = geGuestLang();
+            var primary = lang === "en" ? field.en : field.vi;
+            var fallback = lang === "en" ? field.vi : field.en;
+            var s = primary != null && String(primary).trim() ? String(primary).trim() : "";
+            if (s) return s;
+            return fallback != null && String(fallback).trim() ? String(fallback).trim() : "";
+        }
+
+        function geOptionLabel(opt) {
+            return opt ? geLocalize(opt.label) : "";
+        }
+
+        function geQuestionPrompt(q) {
+            return q ? geLocalize(q.prompt) : "";
         }
 
         var sommSettleTimer = null;
@@ -1669,12 +1703,32 @@
             if (opt && opt.branchKey) return String(opt.branchKey).trim();
             var id = String(optionId || "").toLowerCase();
             if (id === "q0_specialty") return "specialty";
-            if (id === "q0_coffee") return "coffee";
-            if (id === "q0_tea") return "tea";
-            if (id === "q0_matcha") return "matcha";
-            if (id === "q0_fruit") return "fruit";
             if (id === "q0_signature") return "signature";
+            if (id === "q0_espresso" || id === "q0_coffee") return "espresso";
+            if (id === "q0_vietnamese") return "vietnamese";
+            if (id === "q0_coldbrew") return "coldbrew";
+            if (id === "q0_tea") return "tea";
+            if (id === "q0_smoothie") return "smoothie";
+            if (id === "q0_juice" || id === "q0_fruit") return "juice";
+            if (id === "q0_matcha") return "tea";
             return "";
+        }
+
+        function sommOptionVisible(opt) {
+            if (!opt) return false;
+            var gate = opt.requiresPriorOptionId || opt.RequiresPriorOptionId || "";
+            if (!gate) return true;
+            var g = String(gate).trim();
+            if (!g) return true;
+            for (var i = 0; i < answers.length; i++) {
+                if (String(answers[i] || "") === g) return true;
+            }
+            return false;
+        }
+
+        function sommOptionEndsBranch(opt) {
+            if (!opt) return false;
+            return !!(opt.endsBranch || opt.EndsBranch);
         }
 
         function sommAnswerLabels() {
@@ -1688,7 +1742,7 @@
                 for (oi = 0; oi < opts.length; oi++) {
                     var opt = opts[oi];
                     if (opt && opt.optionId) {
-                        idToLabel[opt.optionId] = opt.label || "";
+                        idToLabel[opt.optionId] = geOptionLabel(opt);
                     }
                 }
             }
@@ -1728,10 +1782,7 @@
         }
 
         function sommResolveOptionReflection(optionId, catalogReflection) {
-            var cms =
-                catalogReflection != null && String(catalogReflection).trim()
-                    ? String(catalogReflection).trim()
-                    : "";
+            var cms = geLocalize(catalogReflection);
             if (cms) return cms;
             var i18n = sommReflectionI18nFallback(optionId);
             if (i18n) return i18n;
@@ -1856,7 +1907,7 @@
                 var oi;
                 for (oi = 0; oi < opts.length; oi++) {
                     if (opts[oi] && opts[oi].optionId === oid) {
-                        value = opts[oi].label || "";
+                        value = geOptionLabel(opts[oi]);
                         break;
                     }
                 }
@@ -2443,16 +2494,10 @@
             if (!sommStepHost || !q) return;
             var isFlavor =
                 q.questionId === "q_sp_profile" || q.questionId === "q_sc_flavor";
-            var question = geFlowT(
+            var question = geQuestionPrompt(q) || geFlowT(
                 isFlavor
                     ? "ge.sommelier.tasting.calibration.flavor.question"
-                    : "ge.sommelier.tasting.calibration.feel.question",
-                isFlavor
-                    ? "Hồ sơ nào nghe thú vị nhất với bạn?"
-                    : "Bạn muốn mạo hiểm đến mức nào?",
-                isFlavor
-                    ? "Which profile sounds most interesting?"
-                    : "How adventurous are you?"
+                    : "ge.sommelier.tasting.calibration.feel.question"
             );
             var parts = [];
             parts.push(
@@ -2473,19 +2518,27 @@
                     '">'
             );
             var opts = q.options || [];
+            var selectedOid = answers[stepIdx] || "";
             var j;
             for (j = 0; j < opts.length; j++) {
                 var o = opts[j];
                 var oid = o && o.optionId ? o.optionId : "";
                 var copy = sommCalibrationCardCopy(oid);
-                var ariaParts = [copy.title || (o && o.label) || ""].concat(copy.notes);
+                var catalogTitle = geOptionLabel(o);
+                if (!copy.title && catalogTitle) copy.title = catalogTitle;
+                var ariaParts = [copy.title || catalogTitle || ""].concat(copy.notes);
                 var ariaLabel = ariaParts.filter(Boolean).join(". ");
+                var isSel = oid && oid === selectedOid;
                 parts.push(
-                    '<button type="button" class="ge-calibration-card ge-host-choice guest-hit" data-ge-opt="' +
+                    '<button type="button" class="ge-calibration-card ge-host-choice guest-hit' +
+                        (isSel ? " is-selected" : "") +
+                        '" data-ge-opt="' +
                         geEsc(oid) +
                         '" aria-label="' +
                         geEsc(ariaLabel) +
-                        '">'
+                        '"' +
+                        (isSel ? ' aria-pressed="true"' : "") +
+                        ">"
                 );
                 if (copy.title) {
                     parts.push(
@@ -2493,10 +2546,10 @@
                             geEsc(copy.title) +
                             "</span>"
                     );
-                } else if (o && o.label) {
+                } else if (catalogTitle) {
                     parts.push(
                         '<span class="ge-calibration-card__title">' +
-                            geEsc(o.label) +
+                            geEsc(catalogTitle) +
                             "</span>"
                     );
                 }
@@ -2567,17 +2620,24 @@
                     "</span>"
             );
             html.push("</p>");
-            html.push('<p class="ge-host-prompt">' + geEsc(q && q.prompt) + "</p>");
+            html.push('<p class="ge-host-prompt">' + geEsc(geQuestionPrompt(q)) + "</p>");
             html.push('<div class="ge-host-choices">');
             var opts = (q && q.options) || [];
+            var selectedOid = answers[stepIdx] || "";
             for (var j = 0; j < opts.length; j++) {
                 var o = opts[j];
+                if (!sommOptionVisible(o)) continue;
                 var oid = o && o.optionId ? o.optionId : "";
-                var olab = o && o.label ? o.label : "";
+                var olab = geOptionLabel(o);
+                var isSel = oid && oid === selectedOid;
                 html.push(
-                    '<button type="button" class="ge-opt ge-host-choice guest-hit" data-ge-opt="' +
+                    '<button type="button" class="ge-opt ge-host-choice guest-hit' +
+                        (isSel ? " is-selected" : "") +
+                        '" data-ge-opt="' +
                         geEsc(oid) +
-                        '">' +
+                        '"' +
+                        (isSel ? ' aria-pressed="true"' : "") +
+                        ">" +
                         geEsc(olab) +
                         "</button>"
                 );
@@ -2602,7 +2662,7 @@
                     sommBranchKey = branchFromOpt;
                     sommSpecialtyPath = branchFromOpt === "specialty";
                 }
-                if (oid === SOMM_ENTRY_SPECIALTY_ID || oid === SOMM_COFFEE_OPTION_ID) {
+                if (oid === SOMM_ENTRY_SPECIALTY_ID) {
                     sommSpecialtyPath = true;
                     sommBranchKey = sommBranchKey || "specialty";
                 }
@@ -2610,6 +2670,8 @@
                 if (flavorBranch) {
                     sommCalibrationBranch = flavorBranch;
                 }
+                var chosenOpt = sommFindCatalogOption(oid);
+                var endsNow = sommOptionEndsBranch(chosenOpt);
                 stepIdx++;
                 sommShowAcknowledgment(oid, b, completedStep);
                 if (sommSettleTimer) window.clearTimeout(sommSettleTimer);
@@ -2627,7 +2689,7 @@
                       : SOMM_SETTLE_MS[completedStep] || RITUAL_SETTLE_MS;
                 sommSettleTimer = window.setTimeout(function () {
                     sommSettleTimer = null;
-                    if (stepIdx >= sommActiveQuestions().length) {
+                    if (endsNow || stepIdx >= sommActiveQuestions().length) {
                         sommBeginReveal();
                         return;
                     }
@@ -2700,85 +2762,11 @@
                             panelSomm.classList.remove("ge-panel--somm-waiting");
                             panelSomm.classList.remove("ge-panel--somm-recognizing");
                         }
-                        var reflection = pack.j && pack.j.personalityReflection ? pack.j.personalityReflection : "";
-                        var res = (pack.j && pack.j.results) || [];
-                        var isSpecialtyResult =
-                            sommSpecialtyPath ||
-                            !!(pack.j && pack.j.isSpecialtyCoffee);
-                        var parts = [];
-                        if (res.length > 0) {
-                            var lead = res[0];
-                            var leadExplain =
-                                lead.emotionalExplanation ||
-                                lead.EmotionalExplanation ||
-                                "";
-                            var reasonText = isSpecialtyResult
-                                ? ""
-                                : leadExplain ||
-                                  reflection ||
-                                  geHouseT(
-                                      "ge.host.serveLine",
-                                      "Annap chọn cho bạn.",
-                                      "Annap chooses for you."
-                                  );
-                            parts.push(
-                                geBuildCupMomentHtml({
-                                    hero: res[0],
-                                    alts: isSpecialtyResult ? [] : res.slice(1, 3),
-                                    addAttr: "data-ge-add",
-                                    reasonText: reasonText,
-                                    mode: isSpecialtyResult ? "specialty" : "default",
-                                    showRecBadge: false,
-                                    ctaLabel: isSpecialtyResult
-                                        ? geFlowT(
-                                              "ge.host.prepareForTable",
-                                              "Pha cho bàn tôi",
-                                              "Prepare for my table"
-                                          )
-                                        : geFlowT(
-                                              "ge.host.trayInvite",
-                                              "Thêm vào khay",
-                                              "Add to tray"
-                                          )
-                                })
-                            );
-                        } else {
-                            parts.push(
-                                '<p class="ge-muted">' +
-                                    geEsc(
-                                        geHouseT(
-                                            "ge.cupMoment.empty",
-                                            "Quán chưa thể gọi tên một ly lúc này.",
-                                            "The house could not name a cup just now."
-                                        )
-                                    ) +
-                                    "</p>"
-                            );
-                        }
-                        sommResults.innerHTML = parts.join("");
-                        sommResults.classList.add("ge-sommelier-results--cup-moment");
-                        geArmCupMomentDelays(sommResults);
+                        sommLastRecommendPack = pack.j || null;
+                        sommPaintRecommendResults(sommLastRecommendPack);
                         if (window.InteractionFeedback) {
                             window.InteractionFeedback.trigger("whoosh", { silentVisual: true });
                         }
-                        var rb = document.createElement("button");
-                        rb.type = "button";
-                        rb.className = "ge-restart ge-restart--sommelier guest-hit";
-                        rb.textContent = geFlowT("ge.sommelier.beginAgain", "Viết lại gu", "Rewrite my taste");
-                        rb.addEventListener("click", function () {
-                            answers = [];
-                            stepIdx = 0;
-                            sommBranchKey = "";
-                            sommSpecialtyPath = false;
-                            sommCalibrationBranch = "";
-                            sommRecognitionReadyAt = 0;
-                            if (panelSomm) panelSomm.classList.remove("ge-panel--sommelier-revealing");
-                            if (sommResults) sommResults.classList.remove("ge-sommelier-results--cup-moment");
-                            geShow(sommResults, false);
-                            sommBeginEntry();
-                        });
-                        sommResults.appendChild(rb);
-                        geShow(sommResults, true);
                         if (panelSomm) panelSomm.classList.remove("ge-panel--sommelier-revealing");
                     });
                 })
@@ -2794,6 +2782,95 @@
                     sommMountErrorHtml();
                 });
         }
+
+        function sommPaintRecommendResults(packJ) {
+            if (!sommResults) return;
+            var reflection = packJ && packJ.personalityReflection ? geLocalize(packJ.personalityReflection) : "";
+            var res = (packJ && packJ.results) || [];
+            var isSpecialtyResult =
+                sommSpecialtyPath || !!(packJ && packJ.isSpecialtyCoffee);
+            var parts = [];
+            if (res.length > 0) {
+                var lead = res[0];
+                var leadExplain = geLocalize(
+                    lead.emotionalExplanation || lead.EmotionalExplanation || ""
+                );
+                var reasonText = isSpecialtyResult
+                    ? ""
+                    : leadExplain ||
+                      reflection ||
+                      geHouseT("ge.host.serveLine");
+                parts.push(
+                    geBuildCupMomentHtml({
+                        hero: res[0],
+                        alts: isSpecialtyResult ? [] : res.slice(1, 3),
+                        addAttr: "data-ge-add",
+                        reasonText: reasonText,
+                        mode: isSpecialtyResult ? "specialty" : "default",
+                        showRecBadge: false,
+                        ctaLabel: isSpecialtyResult
+                            ? geFlowT("ge.host.prepareForTable")
+                            : geFlowT("ge.host.trayInvite")
+                    })
+                );
+            } else {
+                parts.push(
+                    '<p class="ge-muted">' +
+                        geEsc(geHouseT("ge.cupMoment.empty")) +
+                        "</p>"
+                );
+            }
+            sommResults.innerHTML = parts.join("");
+            sommResults.classList.add("ge-sommelier-results--cup-moment");
+            geArmCupMomentDelays(sommResults);
+            var rb = document.createElement("button");
+            rb.type = "button";
+            rb.className = "ge-restart ge-restart--sommelier guest-hit";
+            rb.textContent = geFlowT("ge.sommelier.beginAgain");
+            rb.addEventListener("click", function () {
+                answers = [];
+                stepIdx = 0;
+                sommBranchKey = "";
+                sommSpecialtyPath = false;
+                sommCalibrationBranch = "";
+                sommRecognitionReadyAt = 0;
+                sommLastRecommendPack = null;
+                if (panelSomm) panelSomm.classList.remove("ge-panel--sommelier-revealing");
+                if (sommResults) sommResults.classList.remove("ge-sommelier-results--cup-moment");
+                geShow(sommResults, false);
+                sommBeginEntry();
+            });
+            sommResults.appendChild(rb);
+            geShow(sommResults, true);
+        }
+
+        function sommOnGuestLanguageChanged() {
+            var resultsOpen =
+                sommResults &&
+                !sommResults.classList.contains("hidden") &&
+                sommResults.offsetParent !== null;
+            if (resultsOpen && sommLastRecommendPack) {
+                sommPaintRecommendResults(sommLastRecommendPack);
+                return;
+            }
+            var panelOpen =
+                panelSomm &&
+                !panelSomm.classList.contains("hidden") &&
+                panelSomm.offsetParent !== null;
+            if (panelOpen && sommStepHost) {
+                var waiting =
+                    panelSomm.classList.contains("ge-panel--somm-waiting") ||
+                    panelSomm.classList.contains("ge-panel--somm-recognizing") ||
+                    panelSomm.classList.contains("ge-panel--sommelier-revealing");
+                if (!waiting) {
+                    sommRender();
+                } else if (sommStepHost.querySelector(".ge-somm-note")) {
+                    sommMountNoteCard();
+                }
+            }
+        }
+
+        window.addEventListener("luxury:i18n-changed", sommOnGuestLanguageChanged);
 
         /* —— Discovery — Letter Room (three envelopes, no taste quiz) —— */
         function geLetterRoomMerge() {

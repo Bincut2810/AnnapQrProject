@@ -82,7 +82,15 @@ public static class GuidedSommelierExperienceCatalog
                 .AsNoTracking()
                 .Where(q => q.SetKey == key && q.IsEnabled)
                 .OrderBy(q => q.SortOrder)
-                .Select(q => new { q.ExternalKey, q.Prompt, q.Id, q.Description })
+                .Select(q => new
+                {
+                    q.ExternalKey,
+                    q.Prompt,
+                    q.PromptEn,
+                    q.Id,
+                    q.Description,
+                    q.DescriptionEn
+                })
                 .ToListAsync(cancellationToken);
 
             if (rows.Count == 0)
@@ -114,7 +122,7 @@ public static class GuidedSommelierExperienceCatalog
                         ? o.Description.Trim()
                         : null;
                     var branchKey = GuidedSommelierCatalog.ResolveBranchKey(o.ExternalKey);
-                    seeds.Add(new GuidedOptionSeed(
+                    seeds.Add(GuidedSommelierCatalog.OverlayBuiltinOptionStructure(new GuidedOptionSeed(
                         o.ExternalKey,
                         o.Label,
                         emotional,
@@ -127,18 +135,32 @@ public static class GuidedSommelierExperienceCatalog
                             ?? GuidedSommelierCatalog.ResolveBranchKey(o.ExternalKey) switch
                             {
                                 GuidedSommelierCatalog.BranchSpecialty => BeverageFamilyGrounding.Coffee,
-                                GuidedSommelierCatalog.BranchCoffee => BeverageFamilyGrounding.Coffee,
+                                GuidedSommelierCatalog.BranchEspresso => BeverageFamilyGrounding.Espresso,
+                                GuidedSommelierCatalog.BranchColdBrew => BeverageFamilyGrounding.ColdBrew,
+                                GuidedSommelierCatalog.BranchVietnamese => BeverageFamilyGrounding.Vietnamese,
+                                GuidedSommelierCatalog.BranchCoffee => BeverageFamilyGrounding.Espresso,
                                 GuidedSommelierCatalog.BranchTea => BeverageFamilyGrounding.Tea,
                                 GuidedSommelierCatalog.BranchMatcha => BeverageFamilyGrounding.Matcha,
-                                GuidedSommelierCatalog.BranchFruit => BeverageFamilyGrounding.Fruit,
+                                GuidedSommelierCatalog.BranchFruit => BeverageFamilyGrounding.Juice,
+                                GuidedSommelierCatalog.BranchSmoothie => BeverageFamilyGrounding.Smoothie,
+                                GuidedSommelierCatalog.BranchJuice => BeverageFamilyGrounding.Juice,
                                 GuidedSommelierCatalog.BranchSignature => BeverageFamilyGrounding.Signature,
                                 _ => null
                             },
                         guestReflection,
-                        branchKey));
+                        branchKey,
+                        string.IsNullOrWhiteSpace(o.LabelEn) ? null : o.LabelEn.Trim(),
+                        string.IsNullOrWhiteSpace(o.SublineEn) ? null : o.SublineEn.Trim(),
+                        string.IsNullOrWhiteSpace(o.DescriptionEn) ? null : o.DescriptionEn.Trim())));
                 }
 
-                list.Add(new GuidedQuestionSeed(q.ExternalKey, q.Prompt, seeds, q.Description));
+                list.Add(new GuidedQuestionSeed(
+                    q.ExternalKey,
+                    q.Prompt,
+                    seeds,
+                    q.Description,
+                    string.IsNullOrWhiteSpace(q.PromptEn) ? null : q.PromptEn.Trim(),
+                    string.IsNullOrWhiteSpace(q.DescriptionEn) ? null : q.DescriptionEn.Trim()));
             }
 
             if (list.Count == 0)

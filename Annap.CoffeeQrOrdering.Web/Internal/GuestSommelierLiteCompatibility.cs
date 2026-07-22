@@ -4,7 +4,7 @@ namespace Annap.CoffeeQrOrdering.Web.Internal;
 
 /// <summary>
 /// Validates whether the live guided sommelier catalog supports AI Sommelier Lite on seated QR arrival.
-/// atelier_v5 is category-branched; Lite remains gated off until preference maps are rewritten.
+/// atelier_v6 is category-branched barista flow; Lite remains gated off until preference maps are rewritten.
 /// </summary>
 public sealed record GuestSommelierLiteCompatibilityResult(
     bool IsCompatible,
@@ -44,7 +44,9 @@ public static class GuestSommelierLiteCompatibility
         var merged = GuidedSommelierCatalog.MergeClientCatalogQuestions(loadedCatalog);
         var hasV5Entry = merged.Any(q =>
             string.Equals(q.QuestionId, GuidedSommelierCatalog.EntryQuestionId, StringComparison.OrdinalIgnoreCase));
-        if (hasV5Entry || string.Equals(GuidedSommelierCatalog.QuestionSetId, "atelier_v5", StringComparison.OrdinalIgnoreCase))
+        if (hasV5Entry
+            || string.Equals(GuidedSommelierCatalog.QuestionSetId, "atelier_v5", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(GuidedSommelierCatalog.QuestionSetId, "atelier_v6", StringComparison.OrdinalIgnoreCase))
         {
             return Incompatible("core_questions_missing", ["q1", "q2", "q3", "q4"]);
         }

@@ -275,6 +275,10 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                         .HasMaxLength(1200)
                         .HasColumnType("character varying(1200)");
 
+                    b.Property<string>("DescriptionEn")
+                        .HasMaxLength(1200)
+                        .HasColumnType("character varying(1200)");
+
                     b.Property<string>("ExternalKey")
                         .IsRequired()
                         .HasMaxLength(96)
@@ -289,6 +293,10 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Label")
                         .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("LabelEn")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
@@ -312,6 +320,10 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Subline")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("SublineEn")
                         .HasMaxLength(400)
                         .HasColumnType("character varying(400)");
 
@@ -345,6 +357,10 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                         .HasMaxLength(2000)
                         .HasColumnType("character varying(2000)");
 
+                    b.Property<string>("DescriptionEn")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
                     b.Property<string>("ExternalKey")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -358,6 +374,10 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Prompt")
                         .IsRequired()
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)");
+
+                    b.Property<string>("PromptEn")
                         .HasMaxLength(600)
                         .HasColumnType("character varying(600)");
 

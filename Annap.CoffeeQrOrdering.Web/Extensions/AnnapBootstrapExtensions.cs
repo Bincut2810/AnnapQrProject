@@ -113,6 +113,7 @@ public static class AnnapBootstrapExtensions
             await HomepageExperienceBootstrapper.EnsureDefaultsAsync(db, cancellationToken);
             await ExperienceCatalogBootstrapper.EnsureGuidedAndDiscoveryAsync(db, cancellationToken);
             await ExperienceCatalogBootstrapper.EnsureSpecialtyCoffeeDiscoveryQuestionsAsync(db, cancellationToken);
+            await ExperienceCatalogBootstrapper.EnsureNativeEnglishCopyAsync(db, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -167,6 +168,7 @@ public static class AnnapBootstrapExtensions
             await DbInitializer.EnsureVenueTablesAsync(db, cancellationToken);
             await ExperienceCatalogBootstrapper.EnsureGuidedAndDiscoveryAsync(db, cancellationToken);
             await ExperienceCatalogBootstrapper.EnsureSpecialtyCoffeeDiscoveryQuestionsAsync(db, cancellationToken);
+            await ExperienceCatalogBootstrapper.EnsureNativeEnglishCopyAsync(db, cancellationToken);
 
             var mediaMaintenance = scope.ServiceProvider.GetRequiredService<MenuMediaMaintenanceService>();
             await mediaMaintenance.RunAsync(cancellationToken: cancellationToken);

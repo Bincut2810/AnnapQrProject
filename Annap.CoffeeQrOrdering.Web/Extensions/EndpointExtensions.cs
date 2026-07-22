@@ -373,8 +373,8 @@ public static class EndpointExtensions
             return Results.Ok(new
             {
                 questionSetId = GuidedSommelierCatalog.QuestionSetId,
-                ambient = GuidedSommelierRecommendationEngine.ComposeAmbientLine(resolved),
-                personalityReflection = reflection,
+                ambient = GuidedSommelierRecommendationEngine.ComposeAmbientLine(resolved).ToClientDto(),
+                personalityReflection = reflection.ToClientDto(),
                 isSpecialtyCoffee,
                 results = ranked.Select(r => new
                 {
@@ -387,7 +387,7 @@ public static class EndpointExtensions
                     tastingNotes = r.TastingNotes ?? "",
                     shortStory = r.ShortStory ?? "",
                     imageUrl = r.ImageUrl,
-                    emotionalExplanation = r.EmotionalExplanation,
+                    emotionalExplanation = r.EmotionalExplanation.ToClientDto(),
                 }),
                 groundingDiagnostics = diagnostics
             });

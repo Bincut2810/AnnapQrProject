@@ -53,6 +53,7 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
             Id = q.Id,
             ExternalKey = q.ExternalKey,
             Prompt = q.Prompt,
+            PromptEn = q.PromptEn ?? "",
             Description = q.Description ?? "",
             SortOrder = q.SortOrder,
             IsOptional = q.IsOptional,
@@ -65,8 +66,11 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
                     QuestionId = q.Id,
                     ExternalKey = o.ExternalKey,
                     Label = o.Label,
+                    LabelEn = o.LabelEn ?? "",
                     Description = o.Description ?? "",
+                    DescriptionEn = o.DescriptionEn ?? "",
                     Subline = o.Subline ?? "",
+                    SublineEn = o.SublineEn ?? "",
                     SortOrder = o.SortOrder,
                     IsEnabled = o.IsEnabled,
                     MoodKey = o.MoodKey ?? "",
@@ -95,6 +99,7 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
                 q.Id,
                 q.ExternalKey,
                 q.Prompt,
+                q.PromptEn,
                 q.Description,
                 q.SortOrder,
                 q.IsEnabled,
@@ -104,8 +109,11 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
                     o.Id,
                     o.ExternalKey,
                     o.Label,
+                    o.LabelEn,
                     o.Subline,
+                    o.SublineEn,
                     o.Description,
+                    o.DescriptionEn,
                     o.SortOrder,
                     o.IsEnabled,
                     o.MoodKey,
@@ -128,6 +136,7 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
             if (q is null)
                 continue;
             q.Prompt = (qf.Prompt ?? "").Trim();
+            q.PromptEn = string.IsNullOrWhiteSpace(qf.PromptEn) ? null : qf.PromptEn.Trim();
             q.Description = string.IsNullOrWhiteSpace(qf.Description) ? null : qf.Description.Trim();
             q.SortOrder = qf.SortOrder;
             q.IsOptional = qf.IsOptional;
@@ -140,8 +149,11 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
                 if (o is null)
                     continue;
                 o.Label = (of.Label ?? "").Trim();
+                o.LabelEn = string.IsNullOrWhiteSpace(of.LabelEn) ? null : of.LabelEn.Trim();
                 o.Description = string.IsNullOrWhiteSpace(of.Description) ? null : of.Description.Trim();
+                o.DescriptionEn = string.IsNullOrWhiteSpace(of.DescriptionEn) ? null : of.DescriptionEn.Trim();
                 o.Subline = string.IsNullOrWhiteSpace(of.Subline) ? null : of.Subline.Trim();
+                o.SublineEn = string.IsNullOrWhiteSpace(of.SublineEn) ? null : of.SublineEn.Trim();
                 o.SortOrder = of.SortOrder;
                 o.IsEnabled = of.IsEnabled;
                 o.MoodKey = string.IsNullOrWhiteSpace(of.MoodKey) ? null : of.MoodKey.Trim();
@@ -281,7 +293,9 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
                 ExternalKey = sq.ExternalKey,
                 SetKey = newKey,
                 Prompt = sq.Prompt,
+                PromptEn = sq.PromptEn,
                 Description = sq.Description,
+                DescriptionEn = sq.DescriptionEn,
                 SortOrder = sq.SortOrder,
                 IsOptional = sq.IsOptional,
                 IsEnabled = false,  // new campaigns start disabled until ready
@@ -297,8 +311,11 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
                     QuestionId = newQ.Id,
                     ExternalKey = so.ExternalKey,
                     Label = so.Label,
+                    LabelEn = so.LabelEn,
                     Description = so.Description,
+                    DescriptionEn = so.DescriptionEn,
                     Subline = so.Subline,
+                    SublineEn = so.SublineEn,
                     SortOrder = so.SortOrder,
                     IsEnabled = so.IsEnabled,
                     MoodKey = so.MoodKey,
@@ -358,7 +375,7 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
                 m.CatName))
             .ToList();
 
-        PreviewAmbient = GuidedSommelierRecommendationEngine.ComposeAmbientLine(resolved);
+        PreviewAmbient = GuidedSommelierRecommendationEngine.ComposeAmbientLine(resolved).Vi;
         PreviewRows = GuidedSommelierRecommendationEngine.Rank(guestHints, resolved, rows, 5, affinity);
     }
 
@@ -378,6 +395,7 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
         public Guid Id { get; set; }
         public string ExternalKey { get; set; } = "";
         public string Prompt { get; set; } = "";
+        public string PromptEn { get; set; } = "";
         public string Description { get; set; } = "";
         public int SortOrder { get; set; }
         public bool IsOptional { get; set; }
@@ -391,8 +409,11 @@ public sealed class IndexModel(IApplicationDbContext db, IMenuInventoryGate inve
         public Guid QuestionId { get; set; }
         public string ExternalKey { get; set; } = "";
         public string Label { get; set; } = "";
+        public string LabelEn { get; set; } = "";
         public string Description { get; set; } = "";
+        public string DescriptionEn { get; set; } = "";
         public string Subline { get; set; } = "";
+        public string SublineEn { get; set; } = "";
         public int SortOrder { get; set; }
         public bool IsEnabled { get; set; }
         public string MoodKey { get; set; } = "";

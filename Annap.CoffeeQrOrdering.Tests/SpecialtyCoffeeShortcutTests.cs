@@ -91,15 +91,16 @@ public class SpecialtyCoffeeShortcutTests
     }
 
     [Fact]
-    public void Tea_branch_never_asks_about_milk_or_caffeine_options()
+    public void Tea_branch_maps_directly_to_menu_teas_without_fake_matcha_pure()
     {
         var teaPath = GuidedSommelierCatalog.QuestionsForBranch(GuidedSommelierCatalog.BranchTea);
         var optionIds = teaPath.SelectMany(q => q.Options).Select(o => o.OptionId).ToList();
 
         Assert.DoesNotContain(optionIds, id => id.Contains("caffeine", StringComparison.OrdinalIgnoreCase));
-        Assert.DoesNotContain(optionIds, id => id.Contains("milk", StringComparison.OrdinalIgnoreCase) && !id.StartsWith("q_ma_", StringComparison.Ordinal));
-        Assert.Contains(optionIds, id => id.StartsWith("q_te_feel_", StringComparison.Ordinal));
-        Assert.Contains(optionIds, id => id.StartsWith("q_te_moment_", StringComparison.Ordinal));
+        Assert.DoesNotContain(optionIds, id => id.Contains("q_ma_style_pure", StringComparison.OrdinalIgnoreCase));
+        Assert.Contains(optionIds, id => id.StartsWith("q_te_pick_", StringComparison.Ordinal));
+        Assert.Contains("q_te_pick_matcha", optionIds);
+        Assert.Contains("q_te_pick_mulberry", optionIds);
     }
 
     [Fact]
@@ -136,12 +137,12 @@ public class SpecialtyCoffeeShortcutTests
     }
 
     [Fact]
-    public void Classic_coffee_branch_excludes_specialty_category()
+    public void Classic_espresso_branch_excludes_specialty_category()
     {
         Assert.True(
             GuidedSommelierExperienceCatalog.TryResolveSommelierAnswers(
                 AllQuestions(),
-                ["q0_coffee", "q_cf_style_latte", "q_cf_sweet_medium", "q_cf_temp_hot"],
+                ["q0_espresso", "q_es_body_milk", "q_es_detail_classic"],
                 out var resolved,
                 out _));
 
@@ -154,7 +155,7 @@ public class SpecialtyCoffeeShortcutTests
             Row(Guid.NewGuid(), "Kinini Village — Dufatanye", "Specialty Coffee", new DrinkSensoryProfile { AromaFamily = "floral" })
         };
         var filtered = GuidedSommelierRecommendationEngine.ApplyClassicCoffeeFilter(
-            GuidedSommelierRecommendationEngine.ApplyFamilyLock(rows, BeverageFamilyGrounding.Coffee));
+            GuidedSommelierRecommendationEngine.ApplyFamilyLock(rows, BeverageFamilyGrounding.Espresso));
 
         Assert.Single(filtered);
         Assert.Equal("Latte", filtered[0].Name);

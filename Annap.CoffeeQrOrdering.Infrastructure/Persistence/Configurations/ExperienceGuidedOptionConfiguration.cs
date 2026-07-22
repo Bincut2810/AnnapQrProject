@@ -13,8 +13,11 @@ public sealed class ExperienceGuidedOptionConfiguration : IEntityTypeConfigurati
 
         builder.Property(x => x.ExternalKey).HasMaxLength(96).IsRequired();
         builder.Property(x => x.Label).HasMaxLength(200).IsRequired();
+        builder.Property(x => x.LabelEn).HasMaxLength(200);
         builder.Property(x => x.Description).HasMaxLength(1200);
+        builder.Property(x => x.DescriptionEn).HasMaxLength(1200);
         builder.Property(x => x.Subline).HasMaxLength(400);
+        builder.Property(x => x.SublineEn).HasMaxLength(400);
         builder.Property(x => x.SensoryProfileJson).HasMaxLength(8000).IsRequired();
         builder.Property(x => x.MoodKey).HasMaxLength(120);
         builder.Property(x => x.RefinementKey).HasMaxLength(120);

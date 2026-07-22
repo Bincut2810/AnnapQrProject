@@ -105,7 +105,11 @@
                             <input class="somm-q-prompt exp-input bg-transparent border-0 border-b border-white/10 focus:border-white/30 rounded-none px-0 pb-1"
                                    asp-for="QuestionsForm[qi].Prompt"
                                    form="@saveFormId"
-                                   placeholder="Câu hỏi cho khách…" />
+                                   placeholder="Câu hỏi tiếng Việt…" />
+                            <input class="somm-q-prompt exp-input mt-2 bg-transparent border-0 border-b border-white/10 focus:border-white/30 rounded-none px-0 pb-1 text-[0.95rem] opacity-90"
+                                   asp-for="QuestionsForm[qi].PromptEn"
+                                   form="@saveFormId"
+                                   placeholder="English question (native copy, not a translation)…" />
                             <input class="exp-input mt-2 text-xs w-full opacity-60"
                                    asp-for="QuestionsForm[qi].Description"
                                    form="@saveFormId"
@@ -135,25 +139,46 @@
                                                 </label>
                                             </div>
                                             <div>
-                                                <p class="somm-section-label">Nhãn hiển thị cho khách</p>
+                                                <p class="somm-section-label">Nhãn tiếng Việt</p>
                                                 <input class="exp-input w-full text-sm font-medium"
                                                        asp-for="QuestionsForm[qi].Options[oi].Label"
                                                        form="@saveFormId"
                                                        placeholder="Nhãn câu trả lời…" />
                                             </div>
                                             <div>
-                                                <p class="somm-section-label">Dòng cảm xúc <span class="normal-case font-normal opacity-60">(sau khi chọn)</span></p>
+                                                <p class="somm-section-label">English label <span class="normal-case font-normal opacity-60">(native copy)</span></p>
+                                                <input class="exp-input w-full text-sm font-medium"
+                                                       asp-for="QuestionsForm[qi].Options[oi].LabelEn"
+                                                       form="@saveFormId"
+                                                       placeholder="Smooth &amp; comforting…" />
+                                            </div>
+                                            <div>
+                                                <p class="somm-section-label">Dòng cảm xúc VI <span class="normal-case font-normal opacity-60">(sau khi chọn)</span></p>
                                                 <input class="exp-input w-full text-xs"
                                                        asp-for="QuestionsForm[qi].Options[oi].Subline"
+                                                       form="@saveFormId"
+                                                       placeholder="êm và dễ gần…" />
+                                            </div>
+                                            <div>
+                                                <p class="somm-section-label">Emotional line EN</p>
+                                                <input class="exp-input w-full text-xs"
+                                                       asp-for="QuestionsForm[qi].Options[oi].SublineEn"
                                                        form="@saveFormId"
                                                        placeholder="toward something gentle and held…" />
                                             </div>
                                             <div>
-                                                <p class="somm-section-label">Lời phản hồi sommelier <span class="normal-case font-normal opacity-60">(hiển thị cho khách)</span></p>
+                                                <p class="somm-section-label">Lời phản hồi VI <span class="normal-case font-normal opacity-60">(hiển thị cho khách)</span></p>
                                                 <textarea class="exp-input w-full text-xs min-h-[3.5rem]"
                                                           asp-for="QuestionsForm[qi].Options[oi].Description"
                                                           form="@saveFormId"
                                                           placeholder="Một ly tỏ ra dần theo buổi tối…"></textarea>
+                                            </div>
+                                            <div>
+                                                <p class="somm-section-label">Sommelier reflection EN</p>
+                                                <textarea class="exp-input w-full text-xs min-h-[3.5rem]"
+                                                          asp-for="QuestionsForm[qi].Options[oi].DescriptionEn"
+                                                          form="@saveFormId"
+                                                          placeholder="A cup that reveals itself with the evening…"></textarea>
                                             </div>
                                             <div class="somm-compact-row">
                                                 <div>

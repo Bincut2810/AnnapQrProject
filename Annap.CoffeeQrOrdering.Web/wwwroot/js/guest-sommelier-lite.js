@@ -24,7 +24,11 @@
 
         compatible: false,
 
-        preferenceMap: null
+        preferenceMap: null,
+
+        lastRecommendPack: null,
+
+        lastVt: ""
 
     };
 
@@ -36,6 +40,30 @@
             if (v) return v;
         }
         return key;
+    }
+
+    function guestLang() {
+        try {
+            if (global.LuxuryI18n && typeof global.LuxuryI18n.getLang === "function") {
+                return global.LuxuryI18n.getLang() === "en" ? "en" : "vi";
+            }
+        } catch (_e) {}
+        return (document.documentElement.lang || "vi").toLowerCase().indexOf("en") === 0
+            ? "en"
+            : "vi";
+    }
+
+    /** Resolve catalog/API bilingual fields: string (legacy) or { vi, en }. */
+    function localize(field) {
+        if (field == null) return "";
+        if (typeof field === "string") return String(field).trim();
+        if (typeof field !== "object") return String(field).trim();
+        var lang = guestLang();
+        var primary = lang === "en" ? field.en : field.vi;
+        var fallback = lang === "en" ? field.vi : field.en;
+        var s = primary != null && String(primary).trim() ? String(primary).trim() : "";
+        if (s) return s;
+        return fallback != null && String(fallback).trim() ? String(fallback).trim() : "";
     }
 
 
@@ -334,25 +362,17 @@
         var parts = [];
 
         if (reflection) {
-
-            parts.push('<p class="guest-sommelier-lite__card-reason">' + esc(reflection) + "</p>");
-
+            parts.push('<p class="guest-sommelier-lite__card-reason">' + esc(localize(reflection)) + "</p>");
         }
 
         var canAdd = !!(global.GuestInteractionContract && typeof global.GuestInteractionContract.addItem === "function");
 
         for (var i = 0; i < Math.min(results.length, 3); i++) {
-
             var r = results[i];
-
             var id = r.menuItemId || r.MenuItemId || "";
-
             var name = r.name || r.Name || "";
-
             var price = r.price != null ? r.price : r.Price;
-
-            var reason = r.emotionalExplanation || r.EmotionalExplanation || "";
-
+            var reason = localize(r.emotionalExplanation || r.EmotionalExplanation || "");
             var detailHref = vt ? "/menu/drink/" + id + "?vt=" + encodeURIComponent(vt) : "/menu/drink/" + id;
 
             parts.push('<article class="guest-sommelier-lite__card">');
@@ -673,6 +693,9 @@
 
                         setStatus(statusEl, "", false);
 
+                        state.lastRecommendPack = pack.j || null;
+                        state.lastVt = readVt();
+
                         renderResults(
 
                             resultsEl,
@@ -681,7 +704,7 @@
 
                             pack.j && pack.j.personalityReflection,
 
-                            readVt(),
+                            state.lastVt,
 
                             statusEl
 
@@ -725,6 +748,22 @@
 
             }
 
+        });
+
+        global.addEventListener("luxury:i18n-changed", function () {
+            if (global.LuxuryI18n && typeof global.LuxuryI18n.applyDom === "function") {
+                global.LuxuryI18n.applyDom(root);
+            }
+            updateCapabilityNotice(capabilityEl);
+            if (state.lastRecommendPack && resultsEl && !resultsEl.hidden) {
+                renderResults(
+                    resultsEl,
+                    state.lastRecommendPack.results || [],
+                    state.lastRecommendPack.personalityReflection,
+                    state.lastVt || readVt(),
+                    statusEl
+                );
+            }
         });
 
     }
