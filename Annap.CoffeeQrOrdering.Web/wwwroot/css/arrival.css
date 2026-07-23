@@ -47,8 +47,8 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Bias left so cream arch + entrance path stay in frame on wide crops */
-    object-position: 38% 42%;
+    /* Prefer arch + reveal vertical ANNAP sign (higher X = more of right side in frame) */
+    object-position: 42% center;
     display: block;
     opacity: 0;
     transform: translateZ(0);
@@ -356,7 +356,7 @@ html.annap-arrival-active .annap-if-pref {
     }
 
     .annap-arrival__photo {
-        object-position: 36% 42%;
+        object-position: 45% center;
     }
 
     .annap-arrival__gate {
@@ -387,7 +387,7 @@ html.annap-arrival-active .annap-if-pref {
     }
 
     .annap-arrival__photo {
-        object-position: 34% 40%;
+        object-position: 62% center;
     }
 
     .annap-arrival__gate {
@@ -426,6 +426,13 @@ html.annap-arrival-active .annap-if-pref {
     }
 }
 
+/* Small phones — shift crop further toward the vertical ANNAP sign */
+@media (max-width: 480px) {
+    .annap-arrival__photo {
+        object-position: 68% center;
+    }
+}
+
 /* Landscape phones / short viewports */
 @media (max-height: 480px) and (orientation: landscape) {
     .annap-arrival {
@@ -435,7 +442,7 @@ html.annap-arrival-active .annap-if-pref {
     }
 
     .annap-arrival__photo {
-        object-position: 32% 45%;
+        object-position: 50% center;
     }
 
     .annap-arrival__gate {
@@ -480,7 +487,7 @@ html.annap-arrival-active .annap-if-pref {
     }
 
     .annap-arrival__photo {
-        object-position: 40% 40%;
+        object-position: 42% center;
     }
 
     .annap-arrival__gate {
