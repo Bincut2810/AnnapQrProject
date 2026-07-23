@@ -17,8 +17,6 @@ html.annap-correspond-ui .menu-cat-section h2,
 html.annap-correspond-ui .menu-chapter-head .menu-cat-heading,
 html.annap-correspond-ui .menu-chapter-hero .menu-editorial-card__name,
 .guest-table-notice__title,
-.ge-hero-title,
-.ge-ritual-title,
 .ge-sommelier-lite__title,
 .guest-sommelier-lite__headline {
   font-family: var(--font-display);
@@ -34,14 +32,7 @@ html.annap-correspond-ui .menu-chapter-head .menu-cat-heading {
   font-weight: 500;
 }
 
-.ge-hero-title,
-.ge-ritual-title {
-  font-size: clamp(1.875rem, 7vw, 3.5rem);
-}
-
 html.annap-correspond-ui .menu-cat-section > div > p,
-.ge-hero-lead,
-.ge-ritual-lead,
 .guest-table-notice__lead {
   font-family: var(--font-ui);
   font-style: normal;
@@ -152,9 +143,7 @@ html.annap-correspond-ui .menu-chapter-support .menu-editorial-card__name {
 }
 
 /* Table / order codes — mono everywhere (never display serif) */
-#track-table,
-.ge-ritual-table,
-.ge-ritual-table--quiet {
+#track-table {
   font-family: var(--font-code) !important;
   font-variant-numeric: tabular-nums;
   font-weight: 600;

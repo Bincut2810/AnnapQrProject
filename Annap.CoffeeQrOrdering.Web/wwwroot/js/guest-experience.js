@@ -869,42 +869,6 @@
             }
         }
 
-        function centerArrivalModes() {
-            try {
-                var stack =
-                    landing && landing.querySelector
-                        ? landing.querySelector("#ge-ritual-invitation")
-                        : null;
-                if (!stack) {
-                    window.scrollTo(0, 0);
-                    return;
-                }
-                var vv = window.visualViewport;
-                var vh = (vv && vv.height) || window.innerHeight || document.documentElement.clientHeight || 0;
-                var currentY = window.scrollY || document.documentElement.scrollTop || 0;
-                var rect = stack.getBoundingClientRect();
-                var breathingRoom = Math.max(46, Math.min(96, vh * 0.14));
-                var targetY = currentY + rect.top - Math.max(breathingRoom, (vh - rect.height) * 0.42);
-                if (!isFinite(targetY) || targetY < 0) targetY = 0;
-                window.scrollTo(0, Math.round(targetY));
-            } catch (_cm) {
-                try { window.scrollTo(0, 0); } catch (_st) { /* ignore */ }
-            }
-        }
-
-        function enterModePending() {
-            try {
-                var html = document.documentElement;
-                html.classList.add("annap-mode-pending");
-                if (landing) landing.classList.add("ge-landing--mode-focus");
-                centerArrivalModes();
-                window.requestAnimationFrame(function () {
-                    centerArrivalModes();
-                });
-                window.setTimeout(centerArrivalModes, 180);
-            } catch (_mp) { /* ignore */ }
-        }
-
         function exitModePending() {
             try {
                 if (window.__annapModeFocusTimer) {
@@ -912,7 +876,6 @@
                     window.__annapModeFocusTimer = null;
                 }
                 document.documentElement.classList.remove("annap-mode-pending", "annap-mode-focus");
-                if (landing) landing.classList.remove("ge-landing--mode-focus");
             } catch (_xp) { /* ignore */ }
         }
 

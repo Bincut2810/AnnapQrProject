@@ -81,223 +81,9 @@
     animation: geFadeUp 0.85s var(--ge-ease) both;
 }
 
-/* —— Annap ritual arrival: discovery-first hospitality (not menu-first) —— */
-.ge-landing--ritual {
-    position: relative;
-    max-width: min(28rem, 94vw);
-    min-height: min(88dvh, 44rem);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding-top: clamp(2rem, 10vh, 4.5rem);
-    padding-bottom: clamp(2.5rem, 12vh, 5rem);
-    overflow: hidden;
-}
-
-.ge-ritual-atmosphere {
-    position: absolute;
-    inset: -12% -18%;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-}
-
-.ge-ritual-atmosphere__veil {
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(95% 70% at 50% 18%, rgba(253, 249, 244, 0.55), transparent 62%),
-        radial-gradient(80% 55% at 82% 88%, rgba(42, 102, 85, 0.08), transparent 58%),
-        linear-gradient(180deg, rgba(253, 249, 244, 0.35) 0%, rgba(248, 242, 235, 0.12) 48%, rgba(253, 249, 244, 0.4) 100%);
-    animation: geRitualVeil 14s ease-in-out infinite alternate;
-}
-
-.ge-ritual-atmosphere__glow {
-    position: absolute;
-    left: 50%;
-    top: 38%;
-    width: min(22rem, 88vw);
-    height: min(22rem, 88vw);
-    margin: -11rem 0 0 -11rem;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(212, 160, 67, 0.14) 0%, transparent 68%);
-    animation: geRitualGlow 9s ease-in-out infinite alternate;
-}
-
-@keyframes geRitualVeil {
-    from { opacity: 0.88; transform: scale(1); }
-    to { opacity: 1; transform: scale(1.03); }
-}
-
-@keyframes geRitualGlow {
-    from { opacity: 0.45; transform: translate3d(-2%, 0, 0) scale(0.96); }
-    to { opacity: 0.72; transform: translate3d(2%, 1%, 0) scale(1.04); }
-}
-
-.ge-ritual-stage,
-.ge-ritual-invitation,
-.ge-ritual-secondary,
 .ge-homepage-empty {
     position: relative;
     z-index: 1;
-}
-
-.ge-ritual-lockup {
-    margin: 0 auto 0.65rem;
-    opacity: 0.92;
-}
-
-.ge-ritual-table {
-    margin-top: 0.35rem;
-}
-
-.ge-ritual-script-kicker {
-    margin: clamp(1.25rem, 4vh, 2rem) auto 0.5rem;
-    max-width: 14rem;
-    font-size: 0.56rem;
-    letter-spacing: 0.34em;
-    text-transform: uppercase;
-    text-align: center;
-    color: rgba(140, 35, 24, 0.58);
-}
-
-.ge-ritual-title {
-    max-width: 16.5rem;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
-    font-family: var(--font-display);
-    font-size: clamp(1.875rem, 7vw, 2.75rem);
-    line-height: 1.12;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-}
-
-.ge-ritual-lead {
-    max-width: 18rem;
-    margin: 0.85rem auto 0;
-    text-align: center;
-    font-size: 0.92rem;
-    line-height: 1.55;
-    color: rgb(var(--muted));
-    opacity: 0.9;
-}
-
-.ge-ritual-invitation {
-    margin-top: clamp(2rem, 7vh, 3.25rem);
-    text-align: center;
-    transition: opacity 0.55s var(--ge-ease), transform 0.55s var(--ge-ease);
-}
-
-.ge-ritual-invitation--pulse {
-    animation: geRitualPulse 0.52s var(--ge-ease);
-}
-
-@keyframes geRitualPulse {
-    0% { transform: translate3d(0, 0, 0); }
-    40% { transform: translate3d(0, -3px, 0); }
-    100% { transform: translate3d(0, 0, 0); }
-}
-
-.ge-ritual-invitation__line {
-    margin: 0 auto 1.15rem;
-    max-width: 17rem;
-    font-family: var(--font-ui);
-    font-size: 1.05rem;
-    font-style: italic;
-    line-height: 1.45;
-    color: rgba(42, 32, 26, 0.82);
-}
-
-.ge-ritual-begin {
-    display: block;
-    width: min(17.5rem, 88vw);
-    margin: 0 auto;
-    padding: 1.05rem 1.35rem 0.95rem;
-    border: 1px solid rgba(140, 35, 24, 0.22);
-    border-radius: 2px;
-    background: linear-gradient(165deg, rgba(253, 249, 244, 0.92) 0%, rgba(248, 240, 230, 0.78) 100%);
-    color: rgb(var(--fg));
-    box-shadow:
-        0 18px 48px rgba(42, 32, 20, 0.1),
-        0 1px 0 rgba(255, 255, 255, 0.65) inset;
-    transition:
-        transform 0.42s var(--ge-ease),
-        box-shadow 0.42s var(--ge-ease),
-        border-color 0.35s ease;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.ge-ritual-begin:active {
-    transform: scale(0.985);
-}
-
-.ge-ritual-begin__label {
-    display: block;
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.ge-ritual-begin__sub {
-    display: block;
-    margin-top: 0.35rem;
-    font-family: var(--font-ui);
-    font-size: 0.95rem;
-    font-style: normal;
-    letter-spacing: 0.01em;
-    color: rgba(42, 102, 85, 0.75);
-}
-
-.ge-ritual-begin-hint {
-    margin: 0.85rem auto 0;
-    max-width: 15rem;
-    font-size: 0.68rem;
-    line-height: 1.45;
-    letter-spacing: 0.06em;
-    color: rgb(var(--muted-2));
-}
-
-.ge-ritual-secondary {
-    margin-top: clamp(2rem, 6vh, 2.75rem);
-    text-align: center;
-    transition: opacity 0.45s ease;
-}
-
-.ge-ritual-secondary__label {
-    margin: 0 0 0.65rem;
-    font-size: 0.52rem;
-    letter-spacing: 0.28em;
-    text-transform: uppercase;
-    color: rgb(var(--muted-2));
-}
-
-.ge-ritual-secondary__links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.35rem 1.1rem;
-}
-
-.ge-ritual-secondary__link {
-    padding: 0.25rem 0.15rem;
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    color: rgb(var(--muted));
-    background: none;
-    border: 0;
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-color: rgba(180, 155, 125, 0.45);
-    transition: color 0.3s ease, text-decoration-color 0.3s ease;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.ge-ritual-secondary__link:hover,
-.ge-ritual-secondary__link:focus-visible {
-    color: rgb(var(--fg));
-    text-decoration-color: rgba(180, 155, 125, 0.85);
 }
 
 .ge-choice-stack--legacy {
@@ -307,12 +93,6 @@
 .ge-env-fan,
 .ge-env {
     display: none !important;
-}
-
-html.annap-guest-no-motion .ge-ritual-atmosphere__veil,
-html.annap-guest-no-motion .ge-ritual-atmosphere__glow,
-html.annap-guest-no-motion .ge-ritual-invitation--pulse {
-    animation: none !important;
 }
 
 @keyframes geFadeUp {
@@ -424,26 +204,6 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
     text-transform: uppercase;
     color: rgb(var(--muted-2));
     text-align: center;
-}
-
-.ge-hero-title {
-    margin-top: 1.75rem;
-    font-family: var(--font-display);
-    font-weight: 500;
-    font-size: clamp(1.875rem, 7.2vw, 3.5rem);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    text-align: center;
-    color: rgb(var(--fg));
-}
-
-.ge-hero-lead {
-    margin-top: 1.25rem;
-    font-size: 0.95rem;
-    line-height: 1.65;
-    text-align: center;
-    color: rgb(var(--muted));
-    font-weight: 300;
 }
 
 .ge-origin-ledger {
@@ -584,27 +344,6 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
     box-shadow:
         0 14px 42px rgba(42, 32, 20, 0.08),
         3px 10px 0 -5px rgba(232, 221, 208, 0.72);
-}
-
-.ge-landing--solo-hero .ge-hero-curated-kicker {
-    margin: 0 auto 0.65rem;
-    max-width: 16rem;
-    font-size: 0.58rem;
-    letter-spacing: 0.32em;
-    text-transform: uppercase;
-    color: rgba(140, 35, 24, 0.62);
-}
-
-.ge-landing--solo-hero .ge-hero-title {
-    max-width: 18rem;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.ge-landing--solo-hero .ge-origin-ledger {
-    opacity: 0.55;
-    transform: scale(0.96);
-    transition: opacity 0.45s ease, transform 0.52s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .ge-homepage-empty {
@@ -3637,11 +3376,6 @@ body.guest-app #guest-experience-root .ge-back:hover {
     background: rgba(255, 255, 255, 0.95);
 }
 
-body.guest-app #guest-experience-root .ge-hero-title,
-body.guest-app #guest-experience-root .ge-ritual-title {
-    font-family: var(--font-display);
-}
-
 body.guest-app #guest-experience-root .ge-host-prompt,
 body.guest-app #guest-experience-root .ge-cup-moment__name,
 body.guest-app #guest-experience-root .ge-sig-name {
@@ -3658,21 +3392,6 @@ body.guest-app #guest-experience-root .ge-landing {
     max-width: 100%;
 }
 
-body.guest-app #guest-experience-root .ge-landing--ritual {
-    min-height: min(100svh, var(--vv-h, 100svh));
-}
-
-body.guest-app #guest-experience-root .ge-ritual-title {
-    font-size: clamp(2rem, 9.5vw, 2.75rem);
-}
-
-body.guest-app #guest-experience-root .ge-ritual-begin {
-    width: min(16.5rem, 92vw);
-}
-
-body.guest-app #guest-experience-root .ge-hero-title {
-    font-size: clamp(2.35rem, 10.5vw, 3.2rem);
-    line-height: 1.05;
 }
 
 body.guest-app #guest-experience-root .ge-sig-card {
@@ -3806,36 +3525,9 @@ html.annap-mode-pending .ge-landing {
     padding-bottom: clamp(2rem, 8vh, 4rem);
 }
 
-/* Escape hatch invisible during mode-focus; fades in afterwards */
-html.annap-mode-pending .ge-hero-lead {
-    max-width: 21rem;
-    margin-left: auto;
-    margin-right: auto;
-    opacity: 0.72;
-    font-size: 0.92rem;
-}
-
-html.annap-mode-pending .ge-hero-title {
-    font-size: clamp(1.85rem, 6.5vw, 2.55rem);
-}
-
 html.annap-mode-pending .ge-choice-stack {
     margin-top: clamp(2rem, 7vh, 3.25rem);
     gap: max(1.05rem, 2.5vh);
-}
-
-html.annap-mode-pending .ge-landing--ritual,
-html.annap-mode-focus .ge-landing--ritual {
-    min-height: var(--vv-h, 100svh);
-    justify-content: center;
-}
-
-html.annap-mode-pending .ge-origin-ledger {
-    display: none;
-}
-
-html.annap-mode-pending .ge-ritual-invitation {
-    margin-top: clamp(1.35rem, 5vh, 2.25rem);
 }
 
 /* Menu escape + tray hidden until a mode path is chosen */
@@ -3891,73 +3583,7 @@ html.annap-mode-pending .ge-choice {
     animation: none !important;
 }
 
-/* Kicker — first readable element, appears as overlay fades */
-.ge-landing--mode-focus .ge-kicker {
-    animation: geModeFocusIn 0.72s cubic-bezier(0.22, 1, 0.36, 1) 380ms both;
-}
-
-/* Headline — primary hospitality statement */
-.ge-landing--mode-focus .ge-hero-title {
-    animation: geModeFocusIn 0.78s cubic-bezier(0.22, 1, 0.36, 1) 580ms both;
-}
-
-/* Lead sentence */
-.ge-landing--mode-focus .ge-hero-lead {
-    animation: geModeFocusIn 0.70s cubic-bezier(0.22, 1, 0.36, 1) 760ms both;
-}
-
-.ge-landing--mode-focus .ge-ritual-script-kicker {
-    animation: geModeFocusIn 0.68s cubic-bezier(0.22, 1, 0.36, 1) 520ms both;
-}
-
-.ge-landing--mode-focus .ge-ritual-invitation__line {
-    animation: geModeFocusIn 0.72s cubic-bezier(0.22, 1, 0.36, 1) 920ms both;
-}
-
-.ge-landing--mode-focus .ge-ritual-begin {
-    animation: geModeFocusIn 0.82s cubic-bezier(0.22, 1, 0.36, 1) 1080ms both;
-}
-
-.ge-landing--mode-focus .ge-ritual-begin-hint {
-    animation: geModeFocusIn 0.68s cubic-bezier(0.22, 1, 0.36, 1) 1240ms both;
-}
-
-.ge-landing--mode-focus .ge-ritual-secondary,
-.ge-landing--mode-focus .ge-ritual-secondary__link {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-    pointer-events: auto !important;
-}
-
-/* Reduced motion: reveal immediately, no stagger */
-html.annap-guest-no-motion .ge-landing--mode-focus .ge-kicker,
-html.annap-guest-no-motion .ge-landing--mode-focus .ge-hero-title,
-html.annap-guest-no-motion .ge-landing--mode-focus .ge-hero-lead,
-html.annap-guest-no-motion .ge-landing--mode-focus .ge-ritual-script-kicker,
-html.annap-guest-no-motion .ge-landing--mode-focus .ge-ritual-invitation__line,
-html.annap-guest-no-motion .ge-landing--mode-focus .ge-ritual-begin,
-html.annap-guest-no-motion .ge-landing--mode-focus .ge-ritual-begin-hint,
-html.annap-guest-no-motion .ge-landing--mode-focus .ge-ritual-secondary {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-}
-
 @media (prefers-reduced-motion: reduce) {
-    .ge-landing--mode-focus .ge-kicker,
-    .ge-landing--mode-focus .ge-hero-title,
-    .ge-landing--mode-focus .ge-hero-lead,
-    .ge-landing--mode-focus .ge-ritual-script-kicker,
-    .ge-landing--mode-focus .ge-ritual-invitation__line,
-    .ge-landing--mode-focus .ge-ritual-begin,
-    .ge-landing--mode-focus .ge-ritual-begin-hint,
-    .ge-landing--mode-focus .ge-ritual-secondary {
-        animation: none !important;
-        opacity: 1 !important;
-        transform: none !important;
-    }
-
     .ge-somm-rite__ink span,
     .ge-discovery-ambient::before,
     .ge-discovery-card--commit,
@@ -4058,24 +3684,6 @@ html.annap-guest-no-motion .ge-landing--mode-focus .ge-ritual-secondary {
         letter-spacing: 0.32em;
     }
 
-    body.guest-app #guest-experience-root .ge-hero-title,
-    html.annap-mode-focus .ge-hero-title,
-    html.annap-mode-pending .ge-hero-title {
-        margin-top: 0.9rem;
-        font-size: clamp(1.85rem, 8.2vw, 2.35rem);
-        line-height: 1.02;
-    }
-
-    html.annap-mode-focus .ge-hero-lead,
-    html.annap-mode-pending .ge-hero-lead {
-        max-width: 20.5rem;
-        margin-top: 0.78rem;
-        margin-left: auto;
-        margin-right: auto;
-        font-size: 0.78rem;
-        line-height: 1.5;
-    }
-
     html.annap-mode-focus .ge-origin-ledger,
     html.annap-mode-pending .ge-origin-ledger {
         max-width: 22rem;
@@ -4108,33 +3716,6 @@ html.annap-guest-no-motion .ge-landing--mode-focus .ge-ritual-secondary {
         margin-top: 0.16rem;
         font-size: 0.58rem;
         line-height: 1.12;
-    }
-
-    html.annap-mode-focus .ge-ritual-script-kicker,
-    html.annap-mode-pending .ge-ritual-script-kicker {
-        margin-top: 0.65rem;
-        font-size: 0.5rem;
-    }
-
-    html.annap-mode-focus .ge-ritual-invitation,
-    html.annap-mode-pending .ge-ritual-invitation {
-        margin-top: 0.75rem;
-    }
-
-    html.annap-mode-focus .ge-ritual-invitation__line,
-    html.annap-mode-pending .ge-ritual-invitation__line {
-        font-size: 0.92rem;
-        margin-bottom: 0.85rem;
-    }
-
-    html.annap-mode-focus .ge-ritual-begin,
-    html.annap-mode-pending .ge-ritual-begin {
-        padding: 0.88rem 1rem 0.82rem;
-    }
-
-    html.annap-mode-focus .ge-ritual-secondary,
-    html.annap-mode-pending .ge-ritual-secondary {
-        margin-top: 1.1rem;
     }
 
     html.annap-mode-focus .ge-choice-stack,
@@ -4687,12 +4268,7 @@ html.annap-guest-no-motion #ge-panel-discovery {
     .ge-root {
         --ge-tray-clearance: max(8.25rem, calc(6.25rem + env(safe-area-inset-bottom, 0px)));
     }
-
-    .ge-ritual-atmosphere__veil {
-        opacity: 0.55;
-    }
-
-    .ge-panel--sommelier-revealing::before {
+.ge-panel--sommelier-revealing::before {
         animation: none;
         opacity: 0.28;
     }
@@ -5169,14 +4745,6 @@ body.ge-sommelier-flow .ge-sommelier-results--cup-moment .ge-restart {
     margin-bottom: 0.25rem;
 }
 
-html.annap-mode-pending body.annap-has-order-tray-dock #guest-experience-root .ge-landing--ritual {
-    padding-bottom: max(9rem, calc(7rem + env(safe-area-inset-bottom, 0px)));
-}
-
-html.annap-mode-pending body.annap-has-order-tray-dock .ge-ritual-secondary {
-    margin-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
-}
-
 body.guest-app.ge-sommelier-flow .annap-root-surface > footer {
     margin-bottom: max(5.5rem, calc(4.25rem + env(safe-area-inset-bottom, 0px)));
 }
@@ -5336,201 +4904,6 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 
     .ge-somm-tasting--ritual .ge-somm-tasting__personal,
     .ge-somm-tasting--ritual .ge-somm-tasting__support {
-        font-size: 0.8125rem;
-    }
-}
-
-/* UX-S5C — ritual entry hero: focused primary CTA, quiet menu path */
-.ge-landing--ritual {
-    justify-content: flex-start;
-    padding-top: clamp(1.25rem, 6vh, 2.75rem);
-    padding-bottom: max(9rem, calc(7rem + env(safe-area-inset-bottom, 0px)));
-}
-
-.ge-ritual-hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 20rem;
-    margin: 0 auto;
-}
-
-.ge-ritual-hero .ge-ritual-stage {
-    width: 100%;
-    text-align: center;
-}
-
-.ge-ritual-hero__brand {
-    margin-top: 0.15rem;
-    font-size: 0.5625rem;
-    letter-spacing: 0.2em;
-    opacity: 0.72;
-}
-
-.ge-landing--ritual .ge-ritual-lockup {
-    margin-bottom: 0.45rem;
-    max-width: 4.5rem;
-    opacity: 0.78;
-}
-
-.ge-landing--ritual .ge-ritual-lockup .ge-annap-lockup__mark {
-    width: 100%;
-    height: auto;
-}
-
-.ge-landing--ritual .ge-address-stamp {
-    display: none;
-}
-
-.ge-ritual-hero .ge-ritual-script-kicker {
-    margin-top: clamp(0.85rem, 3vh, 1.35rem);
-    max-width: none;
-    font-family: var(--font-ui);
-    font-size: 0.625rem;
-    font-weight: 600;
-    font-style: normal;
-    letter-spacing: 0.18em;
-    color: rgb(var(--muted-2));
-}
-
-.ge-ritual-hero .ge-ritual-title {
-    max-width: 17rem;
-    margin-top: 0.35rem;
-    font-size: clamp(1.75rem, 6.8vw, 2.35rem);
-    line-height: 1.14;
-}
-
-.ge-ritual-hero .ge-ritual-lead {
-    max-width: 17.5rem;
-    margin-top: 0.65rem;
-    font-family: var(--font-ui);
-    font-size: 0.875rem;
-    line-height: 1.55;
-    opacity: 1;
-}
-
-.ge-ritual-hero__cta {
-    width: 100%;
-    margin-top: clamp(1.35rem, 4.5vh, 2rem);
-}
-
-.ge-ritual-hero__cta .ge-ritual-invitation__line {
-    margin-bottom: 0.85rem;
-    max-width: 16rem;
-    font-family: var(--font-ui);
-    font-size: 0.8125rem;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 1.5;
-    color: rgb(var(--muted));
-}
-
-.ge-ritual-hero__cta .ge-ritual-begin {
-    width: 100%;
-    min-height: 2.75rem;
-    padding: 0.85rem 1.1rem;
-    border-radius: 0.5rem;
-    border-color: rgba(42, 102, 85, 0.28);
-    background: linear-gradient(
-        165deg,
-        rgba(253, 249, 244, 0.98) 0%,
-        rgba(242, 248, 245, 0.92) 100%
-    );
-    box-shadow:
-        0 8px 24px rgba(42, 32, 20, 0.08),
-        0 1px 0 rgba(255, 255, 255, 0.7) inset;
-}
-
-.ge-ritual-hero__cta .ge-ritual-begin__label {
-    font-family: var(--font-ui);
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: none;
-    color: rgb(var(--fg));
-}
-
-.ge-ritual-hero__cta .ge-ritual-begin__sub {
-    font-family: var(--font-ui);
-    font-size: 0.75rem;
-    font-style: normal;
-    font-weight: 400;
-    letter-spacing: 0.01em;
-    color: rgb(var(--muted));
-}
-
-.ge-ritual-framing {
-    margin: 0.65rem auto 0;
-    max-width: 16rem;
-    font-family: var(--font-ui);
-    font-size: 0.6875rem;
-    font-weight: 400;
-    line-height: 1.45;
-    letter-spacing: 0.04em;
-    color: rgb(var(--muted-2));
-}
-
-.ge-ritual-secondary--menu {
-    margin-top: clamp(1.15rem, 4vh, 1.75rem);
-}
-
-.ge-ritual-secondary--menu .ge-ritual-secondary__label {
-    display: none;
-}
-
-.ge-ritual-secondary--menu .ge-ritual-secondary__links {
-    gap: 0;
-}
-
-.ge-ritual-secondary__link--menu {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 2.75rem;
-    padding: 0.35rem 0.75rem;
-    font-family: var(--font-ui);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    text-underline-offset: 0.2em;
-    color: rgb(var(--muted));
-}
-
-.ge-ritual-secondary__link--menu:hover,
-.ge-ritual-secondary__link--menu:focus-visible {
-    color: rgb(var(--fg));
-    text-decoration: underline;
-}
-
-.ge-ritual-secondary__link--alt {
-    display: none !important;
-}
-
-.ge-landing--primary-sommelier .ge-ritual-hero__cta .ge-ritual-begin:hover,
-.ge-landing--primary-sommelier .ge-ritual-hero__cta .ge-ritual-begin:focus-visible {
-    border-color: rgba(42, 102, 85, 0.42);
-    box-shadow:
-        0 10px 28px rgba(42, 32, 20, 0.1),
-        0 1px 0 rgba(255, 255, 255, 0.75) inset;
-}
-
-@media (max-width: 640px) {
-    .ge-landing--ritual {
-        min-height: min(100dvh, 100svh);
-        padding-top: max(1rem, env(safe-area-inset-top, 0px));
-    }
-
-    .ge-ritual-hero {
-        max-width: min(18.5rem, 92vw);
-    }
-
-    .ge-ritual-hero .ge-ritual-title {
-        font-size: clamp(1.65rem, 6.2vw, 2rem);
-    }
-
-    .ge-ritual-hero .ge-ritual-lead {
         font-size: 0.8125rem;
     }
 }
@@ -5753,59 +5126,6 @@ html.annap-guest-no-motion .ge-somm-note__ink span {
 
 /* Premium UX pass — screenshot-led refinements (CSS-only, lightweight) */
 
-/* Part A — ritual entry: invitation card + ambient warmth */
-.ge-landing--ritual .ge-ritual-atmosphere__glow {
-    opacity: 0.92;
-    background: radial-gradient(
-        ellipse 85% 65% at 50% 18%,
-        rgba(212, 184, 150, 0.16) 0%,
-        rgba(212, 184, 150, 0.04) 42%,
-        transparent 72%
-    );
-}
-
-.ge-ritual-invitation-card {
-    width: 100%;
-    padding: 1.05rem 1rem 1rem;
-    border-radius: 0.65rem;
-    border: 1px solid rgba(212, 184, 150, 0.38);
-    background: linear-gradient(
-        168deg,
-        rgba(253, 249, 244, 0.98) 0%,
-        rgba(245, 238, 228, 0.9) 100%
-    );
-    box-shadow:
-        0 6px 22px rgba(26, 18, 9, 0.06),
-        0 0 0 1px rgba(255, 255, 255, 0.55) inset,
-        0 0 28px rgba(212, 184, 150, 0.08);
-}
-
-.ge-ritual-hero__cta .ge-ritual-invitation-card .ge-ritual-invitation__line {
-    margin-bottom: 0.75rem;
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(var(--muted-2));
-}
-
-.ge-ritual-hero__cta .ge-ritual-invitation-card .ge-ritual-begin {
-    border-color: rgba(42, 102, 85, 0.34);
-    box-shadow:
-        0 10px 26px rgba(42, 32, 20, 0.09),
-        0 1px 0 rgba(255, 255, 255, 0.72) inset;
-}
-
-.ge-ritual-hero__cta .ge-ritual-invitation-card .ge-ritual-begin:active {
-    transform: scale(0.985);
-    box-shadow:
-        0 4px 14px rgba(42, 32, 20, 0.07),
-        0 1px 0 rgba(255, 255, 255, 0.65) inset;
-}
-
-.ge-ritual-framing {
-    opacity: 0.82;
-}
-
 /* Part B — question screen: quiet progress + tactile options */
 #ge-panel-sommelier .ge-somm-progress {
     display: flex;
@@ -5966,7 +5286,6 @@ body.somm-waiting-quiet-tray .order-tray-root--dock:not(.order-tray-root--sheet-
 }
 
 /* Part F — reduced motion */
-html.annap-guest-no-motion .ge-ritual-begin:active,
 html.annap-guest-no-motion #ge-panel-sommelier .ge-host-choice:active,
 html.annap-guest-no-motion #ge-sommelier-results .ge-btn-solid:active,
 html.annap-guest-no-motion #ge-sommelier-results .ge-rec-alt-row__add:active {
@@ -5988,80 +5307,6 @@ html.annap-guest-no-motion body.somm-waiting-quiet-tray .order-tray-root--dock:n
 }
 
 /* HOSPITALITY-PREMIUM-A — entry, question, loading hospitality pass */
-
-/* Entry: ritual-first hierarchy, quiet context */
-.ge-landing--ritual .ge-ritual-stage--ritual-first {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.ge-landing--ritual .ge-ritual-hero__brand {
-    opacity: 0.58;
-    font-size: 0.5625rem;
-    letter-spacing: 0.18em;
-}
-
-.ge-landing--ritual .ge-ritual-table--quiet {
-    margin-top: 0.25rem;
-    font-family: var(--font-ui);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    text-transform: none;
-    color: rgb(var(--muted-2));
-    opacity: 0.72;
-}
-
-.ge-landing--ritual .ge-table-notice--quiet {
-    margin-top: 0.2rem;
-    max-width: 15rem;
-    font-family: var(--font-ui);
-    font-size: 0.6875rem;
-    font-weight: 400;
-    line-height: 1.45;
-    text-align: center;
-    color: rgb(var(--muted));
-    opacity: 0.55;
-}
-
-.ge-landing--ritual .ge-ritual-script-kicker {
-    margin-top: clamp(1rem, 3.5vh, 1.5rem);
-}
-
-.ge-landing--ritual .ge-ritual-title {
-    margin-top: 0.4rem;
-    letter-spacing: -0.015em;
-}
-
-.ge-landing--ritual .ge-ritual-lead {
-    margin-top: 0.55rem;
-    font-size: 0.8125rem;
-    opacity: 0.88;
-}
-
-.ge-ritual-invitation-card {
-    position: relative;
-}
-
-.ge-ritual-invitation-card::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    pointer-events: none;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.45) inset;
-}
-
-.ge-ritual-hero__cta .ge-ritual-framing {
-    margin-top: 0.75rem;
-    font-size: 0.625rem;
-    opacity: 0.68;
-}
-
-.ge-ritual-secondary--menu .ge-ritual-secondary__link--menu {
-    opacity: 0.78;
-}
 
 /* Question: dialogue, quiet chrome */
 body.ge-sommelier-flow #ge-panel-sommelier.ge-panel--sommelier .ge-panel-head--quiet {
@@ -6167,7 +5412,6 @@ html.annap-mode-pending #order-tray-root.order-tray-root--dock:not(.order-tray-r
     opacity: 0.86;
 }
 
-html.annap-guest-no-motion .ge-ritual-invitation-card::before,
 html.annap-guest-no-motion .ge-somm-note__card::before {
     animation: none;
 }
@@ -6457,56 +5701,6 @@ html.annap-guest-no-motion body.ge-sommelier-flow:has(#ge-sommelier-results.ge-s
     #order-tray-chip {
     opacity: 0.76;
     transform: none;
-}
-
-/* HOSPITALITY-REFINE-C — simplify, focus, elevate */
-
-/* Part A — entry: ritual hero focus, less copy */
-.ge-landing--ritual .ge-ritual-lockup {
-    display: none;
-}
-
-.ge-landing--ritual .ge-ritual-table--quiet {
-    margin-top: 0;
-    font-size: 0.625rem;
-    opacity: 0.5;
-}
-
-.ge-landing--ritual .ge-ritual-script-kicker {
-    margin-top: clamp(0.75rem, 3vh, 1.15rem);
-    font-size: 0.5625rem;
-    letter-spacing: 0.2em;
-    color: rgb(var(--muted-2));
-}
-
-.ge-landing--ritual .ge-ritual-title {
-    margin-top: 0.3rem;
-    max-width: 16rem;
-    font-size: clamp(1.7rem, 6.4vw, 2.2rem);
-    line-height: 1.16;
-}
-
-.ge-landing--ritual .ge-ritual-hero__cta {
-    margin-top: clamp(1.5rem, 5vh, 2.25rem);
-}
-
-.ge-landing--ritual .ge-ritual-invitation-card {
-    padding: 0.95rem 0.9rem 0.9rem;
-    box-shadow:
-        0 4px 18px rgba(26, 18, 9, 0.05),
-        0 0 0 1px rgba(255, 255, 255, 0.5) inset;
-}
-
-.ge-landing--ritual .ge-ritual-invitation-card .ge-ritual-begin {
-    margin-top: 0;
-}
-
-.ge-landing--ritual .ge-ritual-secondary--menu {
-    margin-top: clamp(1rem, 3.5vh, 1.5rem);
-}
-
-html.annap-mode-pending .ge-landing--ritual {
-    padding-bottom: max(8.5rem, calc(6.75rem + env(safe-area-inset-bottom, 0px)));
 }
 
 /* Part B — question: concierge, not survey */
@@ -6876,33 +6070,6 @@ body:has(#guest-experience-root) .guest-masthead__nav {
     }
 }
 
-.ge-ritual-invitation-card {
-    border: 1px solid rgba(190, 165, 130, 0.42);
-    border-radius: 1rem;
-    background: linear-gradient(180deg, rgba(253, 249, 244, 0.92), rgba(248, 242, 234, 0.88));
-    box-shadow: 0 10px 28px -18px rgba(42, 32, 20, 0.22);
-    padding: 0.35rem;
-}
-
-.ge-ritual-begin {
-    border-radius: 0.85rem;
-    min-height: 3.25rem;
-    background: rgb(var(--fg));
-    color: rgb(var(--paper, 253 249 244));
-}
-
-.ge-ritual-title {
-    font-size: clamp(1.55rem, 5.4vw, 2.15rem);
-    line-height: 1.18;
-    max-width: 16ch;
-    margin-inline: auto;
-}
-
-.ge-ritual-script-kicker {
-    letter-spacing: 0.22em;
-    font-size: 0.68rem;
-}
-
 #ge-panel-sommelier .ge-host-prompt {
     font-size: clamp(1.05rem, 4.2vw, 1.25rem);
     line-height: 1.45;
@@ -7068,36 +6235,6 @@ html.annap-compact-guest-header .guest-masthead--compact .guest-masthead__nav {
 
 html.annap-compact-guest-header .guest-main {
     padding-top: max(0.35rem, env(safe-area-inset-top));
-}
-
-body.guest-app:has(#guest-experience-root) .ge-ritual-hero {
-    padding-top: 0.35rem;
-}
-
-body.guest-app:has(#guest-experience-root) .ge-ritual-title {
-    font-size: clamp(1.45rem, 5.6vw, 2rem);
-    line-height: 1.22;
-    max-width: 16ch;
-    margin-inline: auto;
-}
-
-body.guest-app:has(#guest-experience-root) .ge-ritual-script-kicker {
-    letter-spacing: 0.18em;
-    font-size: 0.625rem;
-}
-
-body.guest-app:has(#guest-experience-root) .ge-ritual-invitation-card {
-    border-radius: 0.85rem;
-    border: 1px solid rgba(190, 165, 130, 0.42);
-    background:
-        linear-gradient(180deg, rgba(255, 252, 247, 0.98) 0%, rgba(248, 242, 232, 0.94) 100%);
-    box-shadow: 0 3px 16px -12px rgba(26, 18, 9, 0.2);
-    padding: 0.35rem;
-}
-
-body.guest-app:has(#guest-experience-root) .ge-ritual-begin {
-    min-height: 3.25rem;
-    border-radius: 0.7rem;
 }
 
 #ge-panel-sommelier .ge-host-turn--dialog {

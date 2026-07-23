@@ -66,8 +66,9 @@
   },
   "ge": {
     "arrival": {
-      "inviteIn": "Please come in",
+      "inviteIn": "Invite",
       "menuWord": "Menu",
+      "welcomeWord": "Welcome.",
       "secondaryMenu": "Menu",
       "secondaryGroup": "Group ordering",
       "secondarySommelier": "Prefer a conversation",

@@ -126,8 +126,9 @@
   <data name="feedback.soundToggle" xml:space="preserve"><value>Sound feedback</value></data>
   <data name="ge.arrival.beginTasting" xml:space="preserve"><value>Please come in</value></data>
   <data name="ge.arrival.curatedEmptyTitle" xml:space="preserve"><value>Experience temporarily being curated.</value></data>
-  <data name="ge.arrival.inviteIn" xml:space="preserve"><value>Please come in</value></data>
+  <data name="ge.arrival.inviteIn" xml:space="preserve"><value>Invite</value></data>
   <data name="ge.arrival.menuWord" xml:space="preserve"><value>Menu</value></data>
+  <data name="ge.arrival.welcomeWord" xml:space="preserve"><value>Welcome.</value></data>
   <data name="ge.arrival.secondaryDiscovery" xml:space="preserve"><value>Sealed surprise</value></data>
   <data name="ge.arrival.secondaryGroup" xml:space="preserve"><value>Group ordering</value></data>
   <data name="ge.arrival.secondaryMenu" xml:space="preserve"><value>Menu</value></data>

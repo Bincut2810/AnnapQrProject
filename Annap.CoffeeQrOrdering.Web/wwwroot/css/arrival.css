@@ -1,20 +1,23 @@
+/* Annap Arrival — storefront photo welcome (single visual system) */
+
 .annap-arrival {
-    --arr-wall-a: #f8f2e8;
-    --arr-wall-b: #ecdec8;
-    --arr-wall-c: #d8c8b0;
-    --arr-light-a: #fff9ec;
-    --arr-light-b: #f6e6c6;
-    --arr-wood-a: #855c3e;
-    --arr-wood-b: #523626;
-    --arr-ink: #1e1610;
-    --arr-gold: #c4a574;
-    --arr-gold-glow: rgba(196, 165, 116, 0.4);
-    --arr-ease: ease;
+    --arr-ink: #f7f1e6;
+    --arr-ink-soft: rgba(247, 241, 230, 0.88);
+    --arr-gold: #e8d4a8;
+    --arr-ease: cubic-bezier(0.22, 1, 0.36, 1);
+    --arr-safe-top: max(1rem, env(safe-area-inset-top, 0px));
+    --arr-safe-right: max(1rem, env(safe-area-inset-right, 0px));
+    --arr-safe-bottom: max(1.25rem, env(safe-area-inset-bottom, 0px));
+    --arr-safe-left: max(1rem, env(safe-area-inset-left, 0px));
+    /* Photo focal map (portrait 1080×1350): cream arch ~12–42% x, mid y; logo sign ~72–92% x */
+    --arr-gate-x: 8%;
+    --arr-gate-y: 46%;
+    --arr-actions-y: 58%;
     position: fixed;
     inset: 0;
     z-index: 100;
     overflow: hidden;
-    background: #1a140f;
+    background: #0a0a0a;
     color: var(--arr-ink);
     contain: layout paint;
 }
@@ -30,1065 +33,238 @@
     transition: opacity 480ms ease;
 }
 
+/* ── Stage: photo + overlay ── */
+
 .annap-arrival__stage {
     position: absolute;
     inset: 0;
     pointer-events: none;
 }
 
-/* ── WALL ── */
-
-.annap-arrival__bg { position: absolute; inset: 0; }
-
-.annap-arrival__bg-dark {
+.annap-arrival__photo {
     position: absolute;
     inset: 0;
-    background:
-        radial-gradient(90% 70% at 20% 18%, rgba(255, 220, 170, 0.05) 0%, transparent 55%),
-        linear-gradient(168deg, #2a2018 0%, #1a140f 50%, #120e0a 100%);
-}
-
-.annap-arrival__bg-lit {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background:
-        radial-gradient(100% 75% at 14% 12%, #fff8ea 0%, transparent 46%),
-        radial-gradient(60% 50% at 82% 78%, rgba(92, 62, 42, 0.08) 0%, transparent 55%),
-        linear-gradient(170deg, var(--arr-wall-a) 0%, var(--arr-wall-b) 42%, var(--arr-wall-c) 78%, #cbb99a 100%);
-}
-
-.annap-arrival__plaster {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background:
-        radial-gradient(ellipse 38% 28% at 64% 30%, rgba(255, 252, 245, 0.28) 0%, transparent 70%),
-        radial-gradient(ellipse 22% 18% at 30% 55%, rgba(190, 165, 130, 0.1) 0%, transparent 70%);
-    mix-blend-mode: soft-light;
-}
-
-.annap-arrival__paper {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background-image:
-        radial-gradient(circle at 1px 1px, rgba(80, 60, 40, 0.03) 0.4px, transparent 0.55px);
-    background-size: 5px 5px;
-    mix-blend-mode: multiply;
-}
-
-/* Soft leaf-shadow silhouettes — blurred, not clipart */
-.annap-arrival__foliage {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-}
-
-.annap-arrival__foliage span {
-    position: absolute;
-    border-radius: 60% 40% 55% 45%;
-    background: rgba(70, 55, 35, 0.045);
-    filter: blur(18px);
-}
-
-.annap-arrival__foliage span:nth-child(1) {
-    width: 14%;
-    height: 22%;
-    top: 18%;
-    left: 28%;
-    transform: rotate(-18deg);
-}
-
-.annap-arrival__foliage span:nth-child(2) {
-    width: 10%;
-    height: 16%;
-    top: 32%;
-    left: 38%;
-    transform: rotate(22deg);
-    filter: blur(18px);
-    opacity: 0.7;
-}
-
-.annap-arrival__foliage span:nth-child(3) {
-    width: 12%;
-    height: 20%;
-    top: 24%;
-    left: 48%;
-    transform: rotate(-8deg);
-    filter: blur(16px);
-    opacity: 0.55;
-}
-
-.annap-arrival__foliage span:nth-child(4) {
-    width: 8%;
-    height: 12%;
-    top: 42%;
-    left: 34%;
-    transform: rotate(14deg);
-    filter: blur(12px);
-    opacity: 0.45;
-}
-
-/* ── WINDOW ── */
-
-.annap-arrival__mid { position: absolute; inset: 0; }
-
-.annap-arrival__window-bleed {
-    position: absolute;
-    inset: -12% -16% -10% -14%;
-    background: radial-gradient(
-        ellipse at 40% 36%,
-        rgba(255, 248, 220, 0.48) 0%,
-        rgba(245, 226, 170, 0.18) 40%,
-        transparent 74%
-    );
-    filter: blur(26px);
-    opacity: 0;
-}
-
-.annap-arrival__window-cast {
-    position: absolute;
-    left: 2%;
-    top: 4%;
-    width: min(34vw, 20rem);
-    height: min(60vh, 34rem);
-    background: radial-gradient(ellipse at 42% 38%, rgba(255, 236, 185, 0.16) 0%, transparent 72%);
-    filter: blur(36px);
-    opacity: 0;
-}
-
-.annap-arrival__window {
-    position: absolute;
-    left: 5%;
-    top: 6.5%;
-    width: min(27vw, 16rem);
-    height: min(56vh, 31rem);
-    opacity: 0;
-    transform: rotate(-0.5deg);
-}
-
-.annap-arrival__window-outer {
-    position: absolute;
-    inset: 0;
-    padding: 13px 12px 20px;
-    background:
-        repeating-linear-gradient(93deg, transparent 0 4px, rgba(30, 16, 8, 0.1) 4px 5px),
-        repeating-linear-gradient(2deg, transparent 0 7px, rgba(255, 220, 170, 0.04) 7px 8px),
-        linear-gradient(150deg, #b5865e 0%, var(--arr-wood-a) 34%, #6a4630 68%, var(--arr-wood-b) 100%);
-    box-shadow:
-        12px 22px 44px rgba(26, 20, 15, 0.36),
-        inset 0 1.5px 0 rgba(255, 232, 195, 0.32),
-        inset 0 -2px 3px rgba(20, 10, 4, 0.4),
-        inset 1.5px 0 0 rgba(255, 220, 170, 0.14),
-        inset -1.5px 0 2px rgba(20, 10, 4, 0.3),
-        inset 0 0 0 0.5px rgba(30, 16, 8, 0.22);
-}
-
-.annap-arrival__window-inner {
-    position: relative;
     width: 100%;
-    height: calc(100% - 6px);
-    overflow: hidden;
-    background: #3a2818;
-    box-shadow:
-        inset 0 0 36px rgba(8, 4, 2, 0.62),
-        inset 0 3px 10px rgba(8, 4, 2, 0.42),
-        inset 0 -2px 8px rgba(255, 230, 180, 0.06),
-        inset 0 0 0 0.5px rgba(20, 10, 4, 0.35);
+    height: 100%;
+    object-fit: cover;
+    /* Bias left so cream arch + entrance path stay in frame on wide crops */
+    object-position: 38% 42%;
+    display: block;
+    opacity: 0;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    will-change: opacity;
 }
 
-.annap-arrival__exterior {
+.annap-arrival.is-settled .annap-arrival__photo {
+    will-change: auto;
+}
+
+.annap-arrival__overlay {
     position: absolute;
     inset: 0;
-    background:
-        radial-gradient(ellipse 80% 60% at 40% 70%, rgba(90, 120, 70, 0.55) 0%, transparent 60%),
-        radial-gradient(ellipse 50% 40% at 70% 40%, rgba(120, 140, 80, 0.4) 0%, transparent 55%),
-        radial-gradient(ellipse 60% 50% at 25% 30%, rgba(70, 100, 55, 0.45) 0%, transparent 50%),
-        linear-gradient(180deg, #c8d4a8 0%, #8a9e6a 35%, #5a7045 70%, #3a4a30 100%);
-    filter: blur(3px);
-    transform: scale(1.05);
-}
-
-.annap-arrival__glass {
-    position: absolute;
-    inset: 3px;
-    background:
-        radial-gradient(ellipse 70% 55% at 38% 42%, rgba(255, 248, 220, 0.28) 0%, transparent 65%),
-        linear-gradient(125deg, rgba(255, 252, 245, 0.38) 0%, transparent 22%, transparent 70%, rgba(200, 180, 140, 0.1) 100%),
-        linear-gradient(180deg, rgba(255, 248, 230, 0.28) 0%, rgba(255, 240, 200, 0.1) 48%, rgba(200, 180, 140, 0.06) 100%);
-    box-shadow:
-        inset 0 0 24px rgba(255, 247, 230, 0.18),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.annap-arrival__glass-sheen {
-    position: absolute;
-    inset: 0;
+    /* Soften only for type; leave arch + logo readable */
     background:
         linear-gradient(
-            112deg,
-            rgba(255, 255, 255, 0.22) 0%,
-            transparent 16%,
-            transparent 58%,
-            rgba(255, 247, 230, 0.08) 100%
+            105deg,
+            rgba(0, 0, 0, 0.28) 0%,
+            rgba(0, 0, 0, 0.12) 38%,
+            rgba(0, 0, 0, 0.08) 62%,
+            rgba(0, 0, 0, 0.32) 100%
         ),
-        radial-gradient(ellipse 8% 4% at 62% 28%, rgba(255, 255, 255, 0.18) 0%, transparent 100%),
-        radial-gradient(ellipse 5% 3% at 28% 72%, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+        linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.18) 0%,
+            rgba(0, 0, 0, 0.1) 45%,
+            rgba(0, 0, 0, 0.35) 100%
+        );
+    opacity: 0;
+    pointer-events: none;
+    transform: translateZ(0);
 }
 
-.annap-arrival__mullion {
+/* ── Safe layout ── */
+
+.annap-arrival__safe {
     position: absolute;
+    inset: 0;
     z-index: 2;
-    background:
-        repeating-linear-gradient(90deg, transparent 0 3px, rgba(30, 16, 8, 0.08) 3px 4px),
-        linear-gradient(180deg, #b08860 0%, var(--arr-wood-a) 50%, var(--arr-wood-b) 100%);
-    box-shadow:
-        1px 0 0 rgba(255, 230, 190, 0.15),
-        -1px 0 0 rgba(30, 16, 8, 0.3);
-}
-
-.annap-arrival__mullion--v {
-    top: 3px;
-    bottom: 3px;
-    left: calc(50% - 3.5px);
-    width: 7px;
-}
-
-.annap-arrival__mullion--h {
-    left: 3px;
-    right: 3px;
-    top: calc(45% - 3.5px);
-    height: 7px;
-    background:
-        repeating-linear-gradient(0deg, transparent 0 3px, rgba(30, 16, 8, 0.08) 3px 4px),
-        linear-gradient(90deg, #b08860 0%, var(--arr-wood-a) 50%, var(--arr-wood-b) 100%);
-    box-shadow:
-        0 1px 0 rgba(255, 230, 190, 0.15),
-        0 -1px 0 rgba(30, 16, 8, 0.3);
-}
-
-.annap-arrival__sill {
-    position: absolute;
-    left: -6%;
-    right: -6%;
-    bottom: -4px;
-    height: 20px;
-    background:
-        repeating-linear-gradient(90deg, transparent 0 5px, rgba(30, 16, 8, 0.08) 5px 6px),
-        linear-gradient(180deg, #b08860 0%, var(--arr-wood-a) 40%, var(--arr-wood-b) 100%);
-    box-shadow:
-        0 6px 14px rgba(26, 20, 15, 0.3),
-        inset 0 1px 0 rgba(255, 230, 190, 0.28),
-        inset 0 -3px 5px rgba(20, 10, 4, 0.25);
-}
-
-/* ── LIGHT ── */
-
-.annap-arrival__bloom {
-    position: absolute;
-    left: -10%;
-    top: -14%;
-    width: 65%;
-    height: 70%;
-    background:
-        radial-gradient(ellipse 58% 52% at 30% 34%, rgba(255, 246, 220, 0.15) 0%, transparent 72%),
-        radial-gradient(ellipse 42% 46% at 24% 42%, rgba(245, 226, 170, 0.09) 0%, transparent 70%);
-    filter: blur(14px);
-    opacity: 0;
-}
-
-.annap-arrival__haze {
-    position: absolute;
-    left: 8%;
-    top: 10%;
-    width: 52%;
-    height: 72%;
-    background:
-        radial-gradient(ellipse 60% 50% at 28% 40%, rgba(255, 248, 230, 0.07) 0%, transparent 70%),
-        linear-gradient(
-            108deg,
-            rgba(255, 248, 230, 0) 0%,
-            rgba(255, 248, 230, 0.045) 34%,
-            rgba(245, 228, 180, 0.03) 58%,
-            transparent 82%
-        );
-    filter: blur(52px);
-    opacity: 0;
-}
-
-.annap-arrival__shafts {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    overflow: hidden;
-}
-
-.annap-arrival__shaft {
-    position: absolute;
-    top: 3%;
-    left: 3%;
-    width: 68%;
-    height: 92%;
-    filter: blur(36px);
-}
-
-.annap-arrival__shaft--a {
-    background: linear-gradient(
-        108deg,
-        rgba(255, 248, 230, 0) 0%,
-        rgba(255, 248, 230, 0.12) 20%,
-        rgba(245, 228, 180, 0.06) 44%,
-        rgba(245, 228, 180, 0.02) 62%,
-        transparent 80%
-    );
-}
-
-.annap-arrival__shaft--b {
-    left: 8%;
-    width: 58%;
-    filter: blur(44px);
-    opacity: 0.65;
-    background: linear-gradient(
-        114deg,
-        rgba(255, 248, 230, 0) 0%,
-        rgba(255, 248, 230, 0.08) 24%,
-        rgba(245, 228, 180, 0.04) 50%,
-        transparent 74%
-    );
-}
-
-.annap-arrival__shaft--c {
-    left: 0;
-    width: 54%;
-    filter: blur(56px);
-    opacity: 0.45;
-    background: linear-gradient(
-        102deg,
-        rgba(255, 248, 230, 0) 12%,
-        rgba(255, 248, 230, 0.055) 34%,
-        transparent 70%
-    );
-}
-
-.annap-arrival__wall-shade {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    background:
-        radial-gradient(ellipse 48% 42% at 90% 92%, rgba(26, 20, 15, 0.12) 0%, transparent 70%),
-        radial-gradient(ellipse 28% 38% at 3% 68%, rgba(26, 20, 15, 0.06) 0%, transparent 65%);
-}
-
-/* ── TABLE ── */
-
-.annap-arrival__fore { position: absolute; inset: 0; }
-
-.annap-arrival__table {
-    position: absolute;
-    left: -6%;
-    right: -8%;
-    bottom: 0;
-    height: 34%;
-    opacity: 0;
-    transform: translateY(4px) perspective(900px) rotateX(3.5deg);
-    transform-origin: 50% 100%;
-}
-
-.annap-arrival__table-face {
-    position: absolute;
-    inset: 0 0 10% 0;
-    border-radius: 0 0 50% 50% / 0 0 3.5% 3.5%;
-    background:
-        repeating-linear-gradient(
-            93deg,
-            transparent 0 8px,
-            rgba(40, 24, 12, 0.055) 8px 9px,
-            transparent 9px 18px,
-            rgba(255, 220, 170, 0.04) 18px 19px
-        ),
-        repeating-linear-gradient(
-            88deg,
-            transparent 0 13px,
-            rgba(30, 16, 8, 0.03) 13px 14px
-        ),
-        radial-gradient(ellipse 80% 40% at 50% 0%, rgba(255, 236, 200, 0.12) 0%, transparent 55%),
-        linear-gradient(
-            185deg,
-            #b08a62 0%,
-            var(--arr-wood-a) 28%,
-            #7a5238 55%,
-            var(--arr-wood-b) 82%,
-            #4a3220 100%
-        );
-    box-shadow:
-        inset 0 1.5px 0 rgba(255, 236, 200, 0.28),
-        inset 0 20px 44px rgba(255, 230, 190, 0.07),
-        inset 0 -28px 48px rgba(20, 10, 4, 0.26),
-        0 -12px 40px rgba(26, 20, 15, 0.08);
-}
-
-.annap-arrival__table-edge {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 11%;
-    border-radius: 0 0 50% 50% / 0 0 28% 28%;
-    background: linear-gradient(180deg, #6a4a32 0%, #4a3222 50%, #2e2018 100%);
-    box-shadow:
-        inset 0 1px 0 rgba(255, 220, 170, 0.14),
-        0 10px 28px rgba(20, 10, 4, 0.22),
-        0 4px 12px rgba(20, 10, 4, 0.12);
-}
-
-.annap-arrival__table-gloss {
-    position: absolute;
-    left: 12%;
-    top: 6%;
-    width: 38%;
-    height: 18%;
-    background: linear-gradient(125deg, rgba(255, 248, 230, 0.05) 0%, transparent 60%);
-    filter: blur(16px);
-    opacity: 0.55;
     pointer-events: none;
 }
 
-/* ── CUP ── */
-
-.annap-arrival__still {
+/* Gate lockup — pinned onto cream arch face */
+.annap-arrival__gate {
     position: absolute;
-    left: clamp(13%, 21vw, 29%);
-    bottom: clamp(19%, 25vh, 31%);
-    width: 8.5rem;
-    height: 8.75rem;
-    opacity: 0;
-    transform: translateY(4px) rotate(1deg);
-}
-
-.annap-arrival__contact {
-    position: absolute;
-    left: -4%;
-    bottom: -4%;
-    width: 108%;
-    height: 24%;
-    background: radial-gradient(ellipse at center, rgba(26, 20, 15, 0.38) 0%, transparent 70%);
-    filter: blur(9px);
-}
-
-.annap-arrival__cup-reflect {
-    position: absolute;
-    left: 14%;
-    bottom: 4%;
-    width: 72%;
-    height: 14%;
-    border-radius: 50%;
-    background: radial-gradient(ellipse at center, rgba(255, 250, 240, 0.22) 0%, transparent 70%);
-    filter: blur(4px);
-    transform: scaleY(0.4);
-    opacity: 0.45;
-}
-
-.annap-arrival__saucer {
-    position: absolute;
-    left: 3%;
-    bottom: 8%;
-    width: 94%;
-    height: 20%;
-    border-radius: 50%;
-    background:
-        radial-gradient(ellipse at 42% 28%, #fffefb 0%, #f0e8df 42%, #d8cec2 74%, #c4b8a8 100%);
-    box-shadow:
-        0 5px 14px rgba(20, 10, 4, 0.24),
-        0 1px 3px rgba(20, 10, 4, 0.12),
-        inset 0 2px 3px rgba(255, 255, 255, 0.8),
-        inset 0 -4px 7px rgba(80, 60, 40, 0.14);
-}
-
-.annap-arrival__saucer::after {
-    content: "";
-    position: absolute;
-    left: 7%;
-    right: 7%;
-    bottom: -20%;
-    height: 30%;
-    border-radius: 50%;
-    background: linear-gradient(180deg, #d4c8ba 0%, #b8aa98 100%);
-    box-shadow: 0 2px 5px rgba(20, 10, 4, 0.14);
-    z-index: -1;
-}
-
-.annap-arrival__cup {
-    position: absolute;
-    left: 26%;
-    bottom: 20%;
-    width: 46%;
-    height: 50%;
-}
-
-.annap-arrival__cup-handle {
-    position: absolute;
-    right: -24%;
-    top: 26%;
-    width: 38%;
-    height: 44%;
-    border: 3.5px solid #ebe3d8;
-    border-left-color: transparent;
-    border-radius: 0 58% 58% 0 / 0 48% 48% 0;
-    box-shadow:
-        inset -1px 0 0 rgba(255, 255, 255, 0.55),
-        inset 0 -2px 4px rgba(80, 60, 40, 0.08),
-        1px 2px 5px rgba(40, 25, 14, 0.1);
-}
-
-.annap-arrival__cup-body {
-    position: absolute;
-    left: 5%;
-    right: 5%;
-    top: 14%;
-    bottom: 0;
-    border-radius: 10% 10% 44% 44% / 8% 8% 30% 30%;
-    background:
-        linear-gradient(118deg, rgba(255, 255, 255, 0.32) 0%, transparent 38%),
-        linear-gradient(180deg, #faf5ef 0%, #ebe3d8 52%, #d6cbc0 100%);
-    box-shadow:
-        inset -10px 0 16px rgba(90, 70, 50, 0.12),
-        inset 6px 0 14px rgba(255, 255, 255, 0.42),
-        inset 0 -14px 18px rgba(60, 45, 30, 0.12),
-        0 4px 12px rgba(20, 10, 4, 0.16),
-        0 1px 3px rgba(20, 10, 4, 0.1);
-    overflow: hidden;
-}
-
-.annap-arrival__cup-hl {
-    position: absolute;
-    left: 12%;
-    top: 20%;
-    width: 22%;
-    height: 48%;
-    border-radius: 40%;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.38) 0%, transparent 85%);
-    filter: blur(2.5px);
-}
-
-.annap-arrival__cup-inner {
-    position: absolute;
-    left: 12%;
-    right: 12%;
-    top: 8%;
-    height: 40%;
-    border-radius: 50%;
-    background: radial-gradient(ellipse at 50% 28%, #5a4030 0%, #2a1c14 72%);
-    opacity: 0.58;
-    box-shadow: inset 0 5px 10px rgba(10, 6, 4, 0.5);
-}
-
-.annap-arrival__cup-rim {
-    position: absolute;
-    left: -2%;
-    right: -2%;
-    top: 4%;
-    height: 20%;
-    border-radius: 50%;
-    background: radial-gradient(ellipse at 50% 38%, #fffefb 0%, #e8e0d6 55%, #c8bcb0 100%);
-    box-shadow:
-        inset 0 1px 1px rgba(255, 255, 255, 0.95),
-        0 0.5px 1px rgba(40, 25, 14, 0.14);
-}
-
-.annap-arrival__steam {
-    position: absolute;
-    left: 18%;
-    top: -50%;
-    width: 62%;
-    height: 70%;
-    opacity: 0;
-}
-
-.annap-arrival__steam svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-}
-
-.annap-arrival__steam-path {
-    fill: none;
-    stroke-linecap: round;
-    opacity: 0;
-    filter: blur(2.2px);
-}
-
-/* ── DUST ── */
-
-.annap-arrival__dust {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-}
-
-.annap-arrival__dust i {
-    position: absolute;
-    width: 1.5px;
-    height: 1.5px;
-    border-radius: 50%;
-    background: rgba(255, 248, 230, 0.42);
-    box-shadow: 0 0 2px rgba(255, 240, 200, 0.22);
-    opacity: 0.16;
-}
-
-.annap-arrival__dust i:nth-child(1)  { left: 17%; top: 20%; }
-.annap-arrival__dust i:nth-child(2)  { left: 25%; top: 15%; width: 1.5px; height: 1.5px; }
-.annap-arrival__dust i:nth-child(3)  { left: 33%; top: 28%; }
-.annap-arrival__dust i:nth-child(4)  { left: 41%; top: 13%; width: 1.5px; height: 1.5px; }
-.annap-arrival__dust i:nth-child(5)  { left: 47%; top: 24%; }
-.annap-arrival__dust i:nth-child(6)  { left: 54%; top: 18%; width: 1.5px; height: 1.5px; }
-.annap-arrival__dust i:nth-child(7)  { left: 30%; top: 40%; }
-.annap-arrival__dust i:nth-child(8)  { left: 38%; top: 36%; width: 1.5px; height: 1.5px; }
-.annap-arrival__dust i:nth-child(9)  { left: 21%; top: 46%; }
-.annap-arrival__dust i:nth-child(10) { left: 57%; top: 30%; width: 1.5px; height: 1.5px; }
-.annap-arrival__dust i:nth-child(11) { left: 44%; top: 42%; }
-.annap-arrival__dust i:nth-child(12) { left: 27%; top: 54%; width: 1.5px; height: 1.5px; }
-.annap-arrival__dust i:nth-child(13) { left: 51%; top: 48%; }
-.annap-arrival__dust i:nth-child(14) { left: 35%; top: 19%; width: 1.5px; height: 1.5px; }
-.annap-arrival__dust i:nth-child(15) { left: 60%; top: 22%; }
-.annap-arrival__dust i:nth-child(16) { left: 14%; top: 34%; width: 1.5px; height: 1.5px; }
-
-.annap-arrival__vignette {
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(ellipse at 36% 34%, transparent 28%, rgba(26, 20, 15, 0.18) 100%),
-        linear-gradient(180deg, transparent 60%, rgba(26, 20, 15, 0.08) 100%);
-    opacity: 0;
-}
-
-/* ── TYPOGRAPHY ── */
-
-.annap-arrival__copy {
-    position: absolute;
-    z-index: 2;
-    right: clamp(1.5rem, 10vw, 7rem);
-    top: clamp(26%, 32vh, 38%);
-    bottom: auto;
-    left: auto;
-    width: min(24rem, 44vw);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    left: max(var(--arr-safe-left), var(--arr-gate-x));
+    top: var(--arr-gate-y);
+    transform: translateY(-50%);
+    width: min(20rem, 36vw);
+    max-width: calc(100% - 12rem);
+    pointer-events: none;
 }
 
 .annap-arrival__headline {
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.42em;
+    align-items: flex-start;
+    gap: 0.4rem;
 }
 
-.annap-arrival__name {
+.annap-arrival__table {
     font-family: "Fraunces", Georgia, "Times New Roman", serif;
-    font-size: clamp(3rem, 5.4vw, 5rem);
-    font-weight: 700;
-    font-optical-sizing: auto;
-    font-kerning: normal;
-    line-height: 0.96;
-    letter-spacing: -0.038em;
-    color: #1a140f;
-    text-shadow: 0 1px 0 rgba(255, 248, 235, 0.12);
+    font-weight: 500;
+    font-size: clamp(2.2rem, 4.2vw, 3.75rem);
+    line-height: 1.05;
+    letter-spacing: 0.06em;
+    color: var(--arr-ink);
+    text-shadow:
+        0 1px 1px rgba(0, 0, 0, 0.25),
+        0 6px 22px rgba(0, 0, 0, 0.35);
     opacity: 0;
-    transform: translateY(4px);
+    transform: translate3d(0, 14px, 0);
 }
 
-.annap-arrival__sub {
+.annap-arrival__welcome {
     font-family: "Fraunces", Georgia, "Times New Roman", serif;
-    font-size: clamp(1.5rem, 2.5vw, 2.15rem);
-    font-weight: 300;
+    font-weight: 400;
     font-style: italic;
-    font-optical-sizing: auto;
-    line-height: 1.22;
-    letter-spacing: -0.02em;
-    color: rgba(30, 22, 16, 0.4);
+    font-size: clamp(1rem, 1.6vw, 1.35rem);
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    color: var(--arr-ink-soft);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.45);
     opacity: 0;
-    transform: translateY(4px);
+    transform: translate3d(0, 12px, 0);
 }
 
+/* Actions — right-center, clear of vertical annap sign (~72–92% x) */
 .annap-arrival__actions {
-    margin-top: 3.5rem;
+    position: absolute;
+    right: max(var(--arr-safe-right), 4%);
+    top: var(--arr-actions-y);
+    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 1.2rem;
-    width: 100%;
-    max-width: 14rem;
+    align-items: flex-end;
+    gap: 0.85rem;
+    width: min(14rem, 28vw);
+    max-width: 34vw;
+    pointer-events: auto;
 }
 
-/* Primary CTA — luxury editorial underline */
-.annap-arrival__invite {
+.annap-arrival__invite,
+.annap-arrival__menu {
+    appearance: none;
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
+    justify-content: flex-end;
     gap: 0.55rem;
     margin: 0;
-    padding: 0.2rem 0 0.4rem;
+    padding: 0.5rem 0.1rem;
     border: 0;
-    border-radius: 0;
     background: transparent;
-    box-shadow: none;
-    font-family: "Fraunces", Georgia, "Times New Roman", serif;
-    font-size: 1.375rem;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    line-height: 1.3;
-    color: var(--arr-ink);
-    cursor: pointer;
-    appearance: none;
-    -webkit-tap-highlight-color: transparent;
-    position: relative;
-    opacity: 0;
-    transform: translateY(4px);
-    transition: color 280ms ease;
-}
-
-.annap-arrival__invite::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: calc(100% - 1.35rem);
-    height: 1px;
-    background: rgba(30, 22, 16, 0.55);
-    transition: width 280ms ease, background-color 280ms ease;
-}
-
-.annap-arrival__invite:hover,
-.annap-arrival__invite:focus-visible {
-    color: #120e0a;
-    background: transparent;
-    box-shadow: none;
-}
-
-.annap-arrival__invite:hover::after,
-.annap-arrival__invite:focus-visible::after {
-    width: 100%;
-    background: rgba(18, 14, 10, 0.75);
-}
-
-.annap-arrival__invite:hover .annap-arrival__cta-arrow,
-.annap-arrival__invite:focus-visible .annap-arrival__cta-arrow {
-    transform: translateX(6px);
-}
-
-.annap-arrival__invite:focus-visible {
-    outline: none;
-}
-
-.annap-arrival__invite:active {
-    color: #0e0a08;
-    background: transparent;
-    box-shadow: none;
-}
-
-/* Secondary CTA — quiet editorial */
-.annap-arrival__menu {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.45rem;
-    margin: 0;
-    padding: 0.1rem 0 0.28rem;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-    font-family: "Fraunces", Georgia, "Times New Roman", serif;
-    font-size: 0.9375rem;
-    font-weight: 400;
-    letter-spacing: 0.015em;
-    line-height: 1.3;
     color: var(--arr-ink);
     text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-    position: relative;
-    opacity: 0;
-    transform: translateY(4px);
     cursor: pointer;
-    transition: opacity 280ms ease, color 280ms ease;
-}
-
-.annap-arrival__menu::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 100%;
-    height: 1px;
-    background: rgba(30, 22, 16, 0.35);
+    min-height: 44px;
     opacity: 0;
-    transition: opacity 280ms ease;
+    transform: translate3d(0, 14px, 0);
+    transition: color 220ms ease, opacity 220ms ease;
 }
 
-.annap-arrival__menu .annap-arrival__cta-arrow {
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: opacity 280ms ease, transform 280ms ease;
+.annap-arrival__invite:focus-visible,
+.annap-arrival__menu:focus-visible {
+    outline: 2px solid var(--arr-gold);
+    outline-offset: 4px;
 }
 
-.annap-arrival__menu:hover::after,
-.annap-arrival__menu:focus-visible::after {
-    opacity: 1;
+.annap-arrival__cta-text {
+    font-family: "Fraunces", Georgia, "Times New Roman", serif;
+    font-weight: 500;
+    letter-spacing: 0.04em;
 }
 
-.annap-arrival__menu:hover .annap-arrival__cta-arrow,
-.annap-arrival__menu:focus-visible .annap-arrival__cta-arrow {
-    opacity: 0.7;
-    transform: translateX(0);
+.annap-arrival__invite .annap-arrival__cta-text {
+    font-size: clamp(1.15rem, 1.8vw, 1.45rem);
+}
+
+.annap-arrival__menu .annap-arrival__cta-text {
+    font-size: clamp(0.92rem, 1.3vw, 1.1rem);
+    opacity: 0.78;
 }
 
 .annap-arrival__cta-arrow {
-    display: inline-block;
-    font-size: 0.92em;
-    transition: transform 280ms ease;
-    opacity: 0.8;
+    font-size: 0.95em;
+    opacity: 0.7;
+    transition: transform 220ms var(--arr-ease);
 }
 
-.annap-arrival__hint {
-    position: absolute;
-    z-index: 2;
-    left: 50%;
-    bottom: clamp(1.5rem, 4vh, 2.75rem);
-    transform: translateX(-50%);
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.65rem;
-    opacity: 0;
-    pointer-events: none;
+.annap-arrival__invite:hover .annap-arrival__cta-arrow,
+.annap-arrival__menu:hover .annap-arrival__cta-arrow,
+.annap-arrival__invite:focus-visible .annap-arrival__cta-arrow,
+.annap-arrival__menu:focus-visible .annap-arrival__cta-arrow {
+    transform: translateX(4px);
 }
 
-.annap-arrival__hint-rule {
-    width: 1px;
-    height: 1.75rem;
-    background: linear-gradient(180deg, transparent, rgba(36, 27, 20, 0.28));
-}
-
-.annap-arrival__hint-text {
-    font-family: var(--font-ui, Inter, system-ui, sans-serif);
-    font-size: 0.6875rem;
-    font-weight: 300;
-    letter-spacing: 0.14em;
-    text-transform: none;
-    color: rgba(36, 27, 20, 0.42);
-}
-
-.annap-arrival__logo {
-    position: absolute;
-    z-index: 2;
-    right: clamp(1.25rem, 3vw, 2.5rem);
-    bottom: clamp(1.25rem, 3.5vh, 2.25rem);
-    width: 1.75rem;
-    height: 1.75rem;
-    border: 1px solid rgba(36, 27, 20, 0.22);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: "Fraunces", Georgia, serif;
-    font-size: 0.7rem;
-    font-weight: 500;
-    color: rgba(36, 27, 20, 0.35);
-    opacity: 0;
-    pointer-events: none;
-}
-
-/*
-  0.0 dark
-  0.3 light
-  0.8 steam
-  1.2 dust
-  1.6 headline
-  2.2 subtitle
-  2.6 Mời bạn
-  3.0 Thực đơn
-*/
-.annap-arrival.is-live .annap-arrival__bg-lit {
+.annap-arrival__menu:hover .annap-arrival__cta-text,
+.annap-arrival__menu:focus-visible .annap-arrival__cta-text {
     opacity: 1;
-    transition: opacity 1100ms var(--arr-ease) 0.3s;
 }
 
-.annap-arrival.is-live .annap-arrival__plaster {
+/* ── Live entrance (minimal fade / fade-up only) ── */
+
+.annap-arrival.is-live .annap-arrival__photo {
     opacity: 1;
-    transition: opacity 1000ms var(--arr-ease) 0.35s;
+    transition: opacity 900ms var(--arr-ease);
 }
 
-.annap-arrival.is-live .annap-arrival__paper {
-    opacity: 0.45;
-    transition: opacity 900ms var(--arr-ease) 0.4s;
-}
-
-.annap-arrival.is-live .annap-arrival__foliage {
+.annap-arrival.is-live .annap-arrival__overlay {
     opacity: 1;
-    transition: opacity 1400ms var(--arr-ease) 0.6s;
+    transition: opacity 900ms var(--arr-ease) 60ms;
 }
 
 .annap-arrival.is-live .annap-arrival__table {
     opacity: 1;
-    transform: translateY(0) perspective(900px) rotateX(3.5deg);
-    transition: opacity 950ms var(--arr-ease) 0.3s, transform 950ms var(--arr-ease) 0.3s;
+    transform: translate3d(0, 0, 0);
+    transition:
+        opacity 680ms var(--arr-ease) 280ms,
+        transform 680ms var(--arr-ease) 280ms;
 }
 
-.annap-arrival.is-live .annap-arrival__wall-shade,
-.annap-arrival.is-live .annap-arrival__vignette {
+.annap-arrival.is-live .annap-arrival__welcome {
     opacity: 1;
-    transition: opacity 1000ms var(--arr-ease) 0.35s;
-}
-
-.annap-arrival.is-live .annap-arrival__window,
-.annap-arrival.is-live .annap-arrival__window-bleed,
-.annap-arrival.is-live .annap-arrival__window-cast {
-    opacity: 1;
-    transition: opacity 1100ms var(--arr-ease) 0.3s;
-}
-
-.annap-arrival.is-live .annap-arrival__bloom {
-    opacity: 1;
-    transition: opacity 1200ms var(--arr-ease) 0.3s;
-    animation: arr-breathe 8s ease-in-out 1.5s infinite alternate;
-}
-
-.annap-arrival.is-live .annap-arrival__haze {
-    opacity: 1;
-    transition: opacity 1300ms var(--arr-ease) 0.4s;
-    animation: arr-breathe 8s ease-in-out 2s infinite alternate;
-}
-
-.annap-arrival.is-live .annap-arrival__shafts {
-    opacity: 1;
-    transition: opacity 1200ms var(--arr-ease) 0.35s;
-    animation: arr-drift 18s ease-in-out 1.6s infinite alternate;
-}
-
-.annap-arrival.is-live .annap-arrival__still {
-    opacity: 1;
-    transform: translateY(0) rotate(1deg);
-    transition: opacity 850ms var(--arr-ease) 0.55s, transform 850ms var(--arr-ease) 0.55s;
-}
-
-.annap-arrival.is-live .annap-arrival__steam {
-    opacity: 1;
-    transition: opacity 800ms var(--arr-ease) 0.8s;
-}
-
-.annap-arrival.is-live .annap-arrival__steam-path--a { animation: arr-steam-a 8.5s ease-in-out 0.8s infinite; }
-.annap-arrival.is-live .annap-arrival__steam-path--b { animation: arr-steam-b 9.8s ease-in-out 1.4s infinite; }
-.annap-arrival.is-live .annap-arrival__steam-path--c { animation: arr-steam-c 9.2s ease-in-out 1.8s infinite; }
-.annap-arrival.is-live .annap-arrival__steam-path--d { animation: arr-steam-d 10.4s ease-in-out 2.2s infinite; }
-
-.annap-arrival.is-live .annap-arrival__dust {
-    opacity: 1;
-    transition: opacity 1200ms var(--arr-ease) 1.2s;
-}
-
-.annap-arrival.is-live .annap-arrival__dust i {
-    animation: arr-dust 36s ease-in-out 1.2s infinite alternate;
-}
-
-.annap-arrival.is-live .annap-arrival__dust i:nth-child(odd) { animation-duration: 42s; }
-.annap-arrival.is-live .annap-arrival__dust i:nth-child(3n) { animation-duration: 32s; animation-delay: 2s; }
-
-.annap-arrival.is-live .annap-arrival__name {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 750ms var(--arr-ease) 1.6s, transform 750ms var(--arr-ease) 1.6s;
-}
-
-.annap-arrival.is-live .annap-arrival__sub {
-    opacity: 1;
-    transform: translateY(0);
-    transition: opacity 700ms var(--arr-ease) 2.2s, transform 700ms var(--arr-ease) 2.2s;
+    transform: translate3d(0, 0, 0);
+    transition:
+        opacity 680ms var(--arr-ease) 420ms,
+        transform 680ms var(--arr-ease) 420ms;
 }
 
 .annap-arrival.is-live .annap-arrival__invite {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
     transition:
-        opacity 650ms var(--arr-ease) 2.6s,
-        transform 650ms var(--arr-ease) 2.6s,
-        color 280ms ease;
+        opacity 620ms var(--arr-ease) 560ms,
+        transform 620ms var(--arr-ease) 560ms,
+        color 220ms ease;
 }
 
 .annap-arrival.is-live .annap-arrival__menu {
-    opacity: 0.4;
-    transform: translateY(0);
+    opacity: 0.88;
+    transform: translate3d(0, 0, 0);
     transition:
-        opacity 650ms var(--arr-ease) 3s,
-        transform 650ms var(--arr-ease) 3s,
-        color 280ms ease;
+        opacity 620ms var(--arr-ease) 700ms,
+        transform 620ms var(--arr-ease) 700ms,
+        color 220ms ease;
 }
 
 .annap-arrival.is-live .annap-arrival__menu:hover,
 .annap-arrival.is-live .annap-arrival__menu:focus-visible {
-    opacity: 0.72;
-}
-
-.annap-arrival.is-live .annap-arrival__hint {
     opacity: 1;
-    transition: opacity 800ms var(--arr-ease) 3.1s;
 }
 
-.annap-arrival.is-live .annap-arrival__logo {
-    opacity: 1;
-    transition: opacity 800ms var(--arr-ease) 3.2s;
-}
-
-.annap-arrival.is-live .annap-arrival__contact {
-    animation: arr-shadow 24s ease-in-out 1s infinite alternate;
-}
-
-@keyframes arr-breathe {
-    from { opacity: 0.82; transform: translate3d(0, 0, 0); }
-    to { opacity: 1; transform: translate3d(0.4%, 0.2%, 0); }
-}
-
-@keyframes arr-drift {
-    from { opacity: 0.78; transform: translate3d(0, 0, 0); }
-    to { opacity: 1; transform: translate3d(0.55%, 0.25%, 0); }
-}
-
-@keyframes arr-steam-a {
-    0% { opacity: 0; transform: translate3d(0, 4px, 0); }
-    30% { opacity: 0.22; }
-    70% { opacity: 0.06; }
-    100% { opacity: 0; transform: translate3d(2px, -18px, 0); }
-}
-
-@keyframes arr-steam-b {
-    0% { opacity: 0; transform: translate3d(0, 5px, 0); }
-    28% { opacity: 0.16; }
-    68% { opacity: 0.05; }
-    100% { opacity: 0; transform: translate3d(-1.5px, -20px, 0); }
-}
-
-@keyframes arr-steam-c {
-    0% { opacity: 0; transform: translate3d(0, 3px, 0); }
-    32% { opacity: 0.12; }
-    70% { opacity: 0.04; }
-    100% { opacity: 0; transform: translate3d(2.5px, -16px, 0); }
-}
-
-@keyframes arr-steam-d {
-    0% { opacity: 0; transform: translate3d(0, 4px, 0); }
-    34% { opacity: 0.1; }
-    72% { opacity: 0.03; }
-    100% { opacity: 0; transform: translate3d(-2px, -19px, 0); }
-}
-
-@keyframes arr-dust {
-    from { transform: translate3d(0, 0, 0); opacity: 0.06; }
-    to { transform: translate3d(2.5px, -4px, 0); opacity: 0.18; }
-}
-
-@keyframes arr-shadow {
-    from { opacity: 0.85; transform: translate3d(0, 0, 0); }
-    to { opacity: 1; transform: translate3d(2px, 0, 0); }
-}
+/* ── Chrome while arrival is active ── */
 
 html.annap-arrival-active,
 html.annap-arrival-active body {
@@ -1096,7 +272,6 @@ html.annap-arrival-active body {
     overflow-x: clip;
 }
 
-html.annap-arrival-active .guest-header,
 html.annap-arrival-active .annap-root-surface > footer,
 html.annap-arrival-active .order-tray-root {
     opacity: 0 !important;
@@ -1104,95 +279,262 @@ html.annap-arrival-active .order-tray-root {
     pointer-events: none !important;
 }
 
-@media (max-width: 640px) {
-    .annap-arrival__window {
-        left: 2.5%;
-        top: 5%;
-        width: 36vw;
-        height: 42vh;
-    }
-
-    .annap-arrival__still {
-        left: 9%;
-        bottom: 23%;
-        width: 6.1rem;
-        height: 6.35rem;
-    }
-
-    .annap-arrival__copy {
-        right: 1.15rem;
-        top: 24%;
-        width: auto;
-        max-width: 58vw;
-    }
-
-    .annap-arrival__name { font-size: 2.85rem; }
-    .annap-arrival__sub { font-size: 1.4rem; }
-    .annap-arrival__actions { margin-top: 2.5rem; gap: 1.1rem; }
-    .annap-arrival__invite { font-size: 1.2rem; }
-    .annap-arrival__menu { font-size: 0.9rem; }
-    .annap-arrival__hint-text { font-size: 0.625rem; }
+/* Lang + prefs only — top-right, above logo sign */
+html.annap-arrival-active .guest-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: auto;
+    z-index: 110;
+    width: auto;
+    max-width: min(14rem, 48vw);
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: none;
+    background: transparent;
+    padding-top: max(0.45rem, env(safe-area-inset-top, 0px));
+    padding-right: max(0.55rem, env(safe-area-inset-right, 0px));
 }
 
-@media (min-width: 1100px) {
-    .annap-arrival__name { font-size: 4.85rem; }
-    .annap-arrival__sub { font-size: 2.15rem; }
+html.annap-arrival-active .guest-header .mx-auto,
+html.annap-arrival-active .guest-masthead__sheet {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    overflow: visible;
+    border-radius: 0;
+}
+
+html.annap-arrival-active .guest-masthead__sheet > .px-4,
+html.annap-arrival-active .guest-masthead__sheet > div:last-child {
+    padding: 0 !important;
+}
+
+html.annap-arrival-active .postal-airmail-edge,
+html.annap-arrival-active .guest-masthead__mark,
+html.annap-arrival-active .guest-masthead__nav > a,
+html.annap-arrival-active .guest-masthead__nav > span[data-i18n="langSwitcher.label"] {
+    display: none !important;
+}
+
+html.annap-arrival-active .guest-masthead__nav {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.35rem;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0;
+}
+
+html.annap-arrival-active .guest-lang-register,
+html.annap-arrival-active .annap-lang-switch,
+html.annap-arrival-active .annap-if-prefs {
+    pointer-events: auto;
+    border-color: rgba(247, 241, 230, 0.28) !important;
+    background: rgba(0, 0, 0, 0.32) !important;
+    color: #f7f1e6;
+    backdrop-filter: none;
+}
+
+html.annap-arrival-active .guest-lang-register button,
+html.annap-arrival-active .annap-if-pref {
+    color: rgba(247, 241, 230, 0.9) !important;
+}
+
+/* ── Tablet ── */
+
+@media (max-width: 1024px) and (min-width: 641px) {
+    .annap-arrival {
+        --arr-gate-x: 6%;
+        --arr-gate-y: 44%;
+        --arr-actions-y: 56%;
+    }
+
+    .annap-arrival__photo {
+        object-position: 36% 42%;
+    }
+
+    .annap-arrival__gate {
+        width: min(18rem, 40vw);
+        max-width: calc(100% - 11rem);
+    }
+}
+
+/* Tablet → 1280: park CTAs in courtyard gap, left of vertical annap sign (~72–92%) */
+@media (min-width: 641px) and (max-width: 1280px) {
+    .annap-arrival {
+        --arr-actions-y: 64%;
+    }
+
+    .annap-arrival__actions {
+        right: max(var(--arr-safe-right), 30%);
+        width: min(11rem, 22vw);
+        max-width: 24vw;
+    }
+}
+
+/* ── Phone portrait: gate on arch, CTAs bottom-center ── */
+
+@media (max-width: 640px) {
+    .annap-arrival {
+        --arr-gate-x: 5%;
+        --arr-gate-y: 42%;
+    }
+
+    .annap-arrival__photo {
+        object-position: 34% 40%;
+    }
+
+    .annap-arrival__gate {
+        width: min(17rem, 72vw);
+        max-width: calc(100% - 2rem);
+        transform: translateY(-55%);
+    }
+
+    .annap-arrival__table {
+        font-size: clamp(2rem, 10vw, 2.65rem);
+        letter-spacing: 0.05em;
+    }
+
+    .annap-arrival__welcome {
+        font-size: clamp(0.98rem, 4vw, 1.15rem);
+    }
+
+    .annap-arrival__actions {
+        left: 50%;
+        right: auto;
+        top: auto;
+        bottom: var(--arr-safe-bottom);
+        transform: translateX(-50%);
+        align-items: center;
+        width: min(17rem, calc(100% - 2 * var(--arr-safe-left)));
+        max-width: none;
+        gap: 0.25rem;
+        padding-bottom: 0.25rem;
+    }
+
+    .annap-arrival__invite,
+    .annap-arrival__menu {
+        justify-content: center;
+        width: 100%;
+        padding: 0.65rem 0.4rem;
+    }
+}
+
+/* Landscape phones / short viewports */
+@media (max-height: 480px) and (orientation: landscape) {
+    .annap-arrival {
+        --arr-gate-x: 4%;
+        --arr-gate-y: 48%;
+        --arr-actions-y: 52%;
+    }
+
+    .annap-arrival__photo {
+        object-position: 32% 45%;
+    }
+
+    .annap-arrival__gate {
+        width: min(16rem, 42vw);
+        max-width: 46vw;
+    }
+
+    .annap-arrival__table {
+        font-size: clamp(1.45rem, 5vh, 2.1rem);
+    }
+
+    .annap-arrival__welcome {
+        font-size: clamp(0.85rem, 3vh, 1.05rem);
+    }
+
+    .annap-arrival__actions {
+        left: auto;
+        right: max(var(--arr-safe-right), 3%);
+        top: var(--arr-actions-y);
+        bottom: auto;
+        transform: translateY(-50%);
+        align-items: flex-end;
+        width: min(11rem, 28vw);
+        gap: 0.2rem;
+    }
+
+    .annap-arrival__invite,
+    .annap-arrival__menu {
+        justify-content: flex-end;
+        width: auto;
+        min-height: 40px;
+        padding: 0.3rem 0.05rem;
+    }
+}
+
+/* Wide desktop — keep entrance; park CTAs clear of logo column */
+@media (min-width: 1281px) {
+    .annap-arrival {
+        --arr-gate-x: 10%;
+        --arr-gate-y: 47%;
+        --arr-actions-y: 60%;
+    }
+
+    .annap-arrival__photo {
+        object-position: 40% 40%;
+    }
+
+    .annap-arrival__gate {
+        width: min(22rem, 32vw);
+    }
+
+    .annap-arrival__actions {
+        right: max(var(--arr-safe-right), 6%);
+        width: min(12rem, 15vw);
+        max-width: 16vw;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .annap-arrival.is-live .annap-arrival__bg-lit,
-    .annap-arrival.is-live .annap-arrival__plaster,
-    .annap-arrival.is-live .annap-arrival__paper,
-    .annap-arrival.is-live .annap-arrival__foliage,
+    .annap-arrival.is-live .annap-arrival__photo,
+    .annap-arrival.is-live .annap-arrival__overlay,
     .annap-arrival.is-live .annap-arrival__table,
-    .annap-arrival.is-live .annap-arrival__window,
-    .annap-arrival.is-live .annap-arrival__window-bleed,
-    .annap-arrival.is-live .annap-arrival__window-cast,
-    .annap-arrival.is-live .annap-arrival__bloom,
-    .annap-arrival.is-live .annap-arrival__haze,
-    .annap-arrival.is-live .annap-arrival__shafts,
-    .annap-arrival.is-live .annap-arrival__wall-shade,
-    .annap-arrival.is-live .annap-arrival__still,
-    .annap-arrival.is-live .annap-arrival__steam,
-    .annap-arrival.is-live .annap-arrival__dust,
-    .annap-arrival.is-live .annap-arrival__vignette,
-    .annap-arrival.is-live .annap-arrival__name,
-    .annap-arrival.is-live .annap-arrival__sub,
+    .annap-arrival.is-live .annap-arrival__welcome,
     .annap-arrival.is-live .annap-arrival__invite,
     .annap-arrival.is-live .annap-arrival__menu,
-    .annap-arrival.is-live .annap-arrival__hint,
-    .annap-arrival.is-live .annap-arrival__logo,
     .annap-arrival.is-leaving {
         transition: none !important;
         animation: none !important;
         opacity: 1 !important;
-    }
-
-    .annap-arrival.is-live .annap-arrival__table {
-        transform: perspective(900px) rotateX(3.5deg) !important;
-    }
-
-    .annap-arrival.is-live .annap-arrival__still {
-        transform: rotate(1deg) !important;
-    }
-
-    .annap-arrival.is-live .annap-arrival__name,
-    .annap-arrival.is-live .annap-arrival__sub,
-    .annap-arrival.is-live .annap-arrival__invite,
-    .annap-arrival.is-live .annap-arrival__menu {
         transform: none !important;
     }
 
-    .annap-arrival.is-live .annap-arrival__steam-path,
-    .annap-arrival.is-live .annap-arrival__dust i,
-    .annap-arrival.is-live .annap-arrival__bloom,
-    .annap-arrival.is-live .annap-arrival__haze,
-    .annap-arrival.is-live .annap-arrival__shafts,
-    .annap-arrival.is-live .annap-arrival__contact {
-        animation: none !important;
+    .annap-arrival.is-live .annap-arrival__menu {
+        opacity: 0.88 !important;
     }
 
-    .annap-arrival.is-live .annap-arrival__steam-path { opacity: 0.12 !important; }
-    .annap-arrival.is-live .annap-arrival__menu { opacity: 0.4 !important; }
-    .annap-arrival.is-leaving { opacity: 0 !important; }
+    .annap-arrival.is-leaving {
+        opacity: 0 !important;
+    }
+
+    .annap-arrival__gate,
+    .annap-arrival__actions {
+        transform: none;
+    }
+
+    @media (max-width: 640px) {
+        .annap-arrival__actions {
+            transform: translateX(-50%);
+        }
+    }
+}
+
+html.annap-guest-no-motion .annap-arrival.is-live .annap-arrival__photo,
+html.annap-guest-no-motion .annap-arrival.is-live .annap-arrival__overlay,
+html.annap-guest-no-motion .annap-arrival.is-live .annap-arrival__table,
+html.annap-guest-no-motion .annap-arrival.is-live .annap-arrival__welcome,
+html.annap-guest-no-motion .annap-arrival.is-live .annap-arrival__invite,
+html.annap-guest-no-motion .annap-arrival.is-live .annap-arrival__menu {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
 }

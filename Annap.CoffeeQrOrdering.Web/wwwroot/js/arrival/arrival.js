@@ -2,8 +2,28 @@
     "use strict";
 
     var EXIT_MS = 480;
-    var READY_MS = 3000;
+    var READY_MS = 1100;
+    var SETTLE_MS = 1000;
     var STORAGE_KEY = "annap_arrival_done";
+    var focusTimer = null;
+    var settleTimer = null;
+
+    function clearFocusTimer() {
+        if (focusTimer == null) return;
+        window.clearTimeout(focusTimer);
+        focusTimer = null;
+    }
+
+    function clearSettleTimer() {
+        if (settleTimer == null) return;
+        window.clearTimeout(settleTimer);
+        settleTimer = null;
+    }
+
+    function clearArrivalTimers() {
+        clearFocusTimer();
+        clearSettleTimer();
+    }
 
     function reducedMotion() {
         try {
@@ -40,12 +60,12 @@
 
     function paintCopy(root) {
         var en = langIsEn();
-        var name = root.querySelector("#annap-arrival-name");
-        var sub = root.querySelector("#annap-arrival-sub");
-        var title = root.getAttribute(en ? "data-title-en" : "data-title-vi");
-        var sentence = root.getAttribute(en ? "data-sub-en" : "data-sub-vi");
-        if (name && title) name.textContent = title;
-        if (sub && sentence) sub.textContent = sentence;
+        var table = root.querySelector("#annap-arrival-table");
+        var welcome = root.querySelector("#annap-arrival-welcome");
+        var tableLine = root.getAttribute(en ? "data-table-en" : "data-table-vi");
+        var sentence = root.getAttribute(en ? "data-welcome-en" : "data-welcome-vi");
+        if (table && tableLine) table.textContent = tableLine;
+        if (welcome && sentence) welcome.textContent = sentence;
         try {
             if (window.LuxuryI18n && typeof window.LuxuryI18n.applyDom === "function") {
                 window.LuxuryI18n.applyDom(root);
@@ -58,6 +78,7 @@
     }
 
     function finish(root, enter) {
+        clearArrivalTimers();
         root.classList.add("is-done");
         root.hidden = true;
         root.setAttribute("aria-hidden", "true");
@@ -73,6 +94,7 @@
     function leave(root, enter) {
         if (root.getAttribute("data-leaving") === "1") return;
         root.setAttribute("data-leaving", "1");
+        clearArrivalTimers();
         var invite = root.querySelector("#annap-arrival-invite");
         if (invite) invite.disabled = true;
         if (reducedMotion()) {
@@ -88,6 +110,7 @@
         paintCopy(root);
         root.hidden = false;
         root.removeAttribute("aria-hidden");
+        root.classList.remove("is-settled");
 
         var invite = root.querySelector("#annap-arrival-invite");
         if (invite) {
@@ -100,6 +123,7 @@
         var menu = root.querySelector("#annap-arrival-menu");
         if (menu) {
             menu.addEventListener("click", function () {
+                clearArrivalTimers();
                 markDone();
                 setActive(false);
             });
@@ -108,9 +132,16 @@
         void root.offsetWidth;
         window.requestAnimationFrame(function () {
             root.classList.add("is-live");
-            window.setTimeout(function () {
+            var quiet = reducedMotion();
+            clearArrivalTimers();
+            focusTimer = window.setTimeout(function () {
+                focusTimer = null;
                 try { if (invite) invite.focus(); } catch (_) {}
-            }, reducedMotion() ? 0 : READY_MS);
+            }, quiet ? 0 : READY_MS);
+            settleTimer = window.setTimeout(function () {
+                settleTimer = null;
+                try { root.classList.add("is-settled"); } catch (_) {}
+            }, quiet ? 0 : SETTLE_MS);
         });
     }
 
@@ -143,13 +174,29 @@
 
     window.addEventListener("pageshow", function (ev) {
         if (!ev.persisted) return;
-        setActive(false);
+        clearArrivalTimers();
         var root = document.getElementById("annap-arrival");
+        var done = false;
+        try { done = sessionStorage.getItem(STORAGE_KEY) === "1"; } catch (_) {}
+
+        if (!done) {
+            // Incomplete Arrival restored from bfcache — keep the scene interactive.
+            if (root && !root.classList.contains("is-done")) setActive(true);
+            return;
+        }
+
+        setActive(false);
         if (root) {
             root.classList.add("is-done");
             root.hidden = true;
             root.setAttribute("aria-hidden", "true");
         }
+        // Menu / prior dismiss: re-signal so Sommelier can open after Back restore.
+        try {
+            window.dispatchEvent(new CustomEvent("annap-arrival-complete", {
+                detail: { enter: false, bfcache: true }
+            }));
+        } catch (_) {}
     });
 
     document.addEventListener("luxury:i18n-changed", function () {

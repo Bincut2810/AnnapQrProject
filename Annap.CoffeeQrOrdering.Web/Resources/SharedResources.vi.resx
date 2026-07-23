@@ -128,6 +128,7 @@
   <data name="ge.arrival.curatedEmptyTitle" xml:space="preserve"><value>Trải nghiệm đang được sắp đặt.</value></data>
   <data name="ge.arrival.inviteIn" xml:space="preserve"><value>Mời bạn</value></data>
   <data name="ge.arrival.menuWord" xml:space="preserve"><value>Thực đơn</value></data>
+  <data name="ge.arrival.welcomeWord" xml:space="preserve"><value>Sẵn sàng phục vụ</value></data>
   <data name="ge.arrival.secondaryDiscovery" xml:space="preserve"><value>Bất ngờ có niêm phong</value></data>
   <data name="ge.arrival.secondaryGroup" xml:space="preserve"><value>Đặt theo nhóm</value></data>
   <data name="ge.arrival.secondaryMenu" xml:space="preserve"><value>Thực đơn</value></data>
