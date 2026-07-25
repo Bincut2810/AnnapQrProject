@@ -76,13 +76,10 @@ public static class GuidedSommelierRecommendationEngine
                 raw += BeverageIntelligence.SpecialtyScore(profile, beverageIntent) * 0.56;
                 if (IsSpecialtyCoffeePath(selectedAnswers))
                 {
-                    var moodKey = selectedAnswers
-                        .FirstOrDefault(o => o.OptionId.StartsWith("q_sp_tried_", StringComparison.OrdinalIgnoreCase))
-                        ?.MoodKey
-                        ?? selectedAnswers.FirstOrDefault(o => !string.IsNullOrWhiteSpace(o.MoodKey))?.MoodKey;
+                    var todayKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_today:");
                     var flavorKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_flavor:");
-                    var experienceKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_experience:");
-                    raw += SpecialtyCoffeeMoodAffinity.Score(m.Name, null, moodKey, flavorKey, experienceKey);
+                    var habitKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_habit:");
+                    raw += SpecialtyCoffeeMoodAffinity.Score(m.Name, null, todayKey, flavorKey, habitKey);
                 }
 
                 if (boost.TryGetValue(m.Id, out var w) && w > 0)
@@ -213,26 +210,44 @@ public static class GuidedSommelierRecommendationEngine
 
     public static GuestLocalizedText ComposeSpecialtyNamingLine(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
     {
-        var profileVi = FragVi(selectedAnswers.FirstOrDefault(o =>
-            o.OptionId.StartsWith("q_sp_profile_", StringComparison.OrdinalIgnoreCase)));
-        var profileEn = FragEn(selectedAnswers.FirstOrDefault(o =>
-            o.OptionId.StartsWith("q_sp_profile_", StringComparison.OrdinalIgnoreCase)));
-        var adventureVi = FragVi(selectedAnswers.FirstOrDefault(o =>
-            o.OptionId.StartsWith("q_sp_adventure_", StringComparison.OrdinalIgnoreCase)));
-        var adventureEn = FragEn(selectedAnswers.FirstOrDefault(o =>
-            o.OptionId.StartsWith("q_sp_adventure_", StringComparison.OrdinalIgnoreCase)));
+        var flavorKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_flavor:")
+            ?.Trim().ToLowerInvariant() ?? "";
+        var todayKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_today:")
+            ?.Trim().ToLowerInvariant() ?? "";
 
-        if (profileVi.Length > 0 && adventureVi.Length > 0)
-            return GuestLocalizedText.Of(
-                $"Với hướng {profileVi} và mức {adventureVi} — quầy mở một nguồn cho bàn bạn.",
-                $"With a {profileEn} direction and {adventureEn} curiosity — the bar opens an origin for your table.");
-        if (profileVi.Length > 0)
-            return GuestLocalizedText.Of(
-                $"Với hướng {profileVi} — quầy gọi tên nguồn này cho bàn bạn.",
-                $"With a {profileEn} direction — the bar names this origin for your table.");
-        return GuestLocalizedText.Of(
-            "Quầy gọi tên nguồn này cho bàn bạn hôm nay.",
-            "The bar names this origin for your table today.");
+        return (flavorKey, todayKey) switch
+        {
+            ("tea", "gentle") or ("tea", _) => GuestLocalizedText.Of(
+                "Vì bạn đang tìm một ly thanh, thanh lịch với vị ngọt nhẹ…",
+                "Because you were looking for a clean, elegant cup with gentle sweetness…"),
+            ("peach", "bright") => GuestLocalizedText.Of(
+                "Vì bạn muốn một ly sáng, ngọt mọng như trái mùa hè…",
+                "Because you wanted a bright, juicy cup like summer fruit…"),
+            ("peach", _) => GuestLocalizedText.Of(
+                "Vì bạn nghiêng về vị đào và mật ong — ngọt, thân thiện…",
+                "Because you leaned toward peach and honey — sweet and friendly…"),
+            ("chocolate", "rich") or ("chocolate", _) => GuestLocalizedText.Of(
+                "Vì bạn muốn một ly đậm, ấm với socola và hạt…",
+                "Because you wanted a rich, comforting cup with chocolate and nuts…"),
+            ("berry", "fruity") or ("berry", _) => GuestLocalizedText.Of(
+                "Vì bạn muốn vị quả mọng nhiều lớp, kết thúc dài…",
+                "Because you wanted layered berry sweetness with a long finish…"),
+            (_, "gentle") => GuestLocalizedText.Of(
+                "Vì hôm nay bạn muốn một ly nhẹ nhàng và thanh lịch…",
+                "Because today you wanted something gentle and elegant…"),
+            (_, "bright") => GuestLocalizedText.Of(
+                "Vì hôm nay bạn muốn một ly sáng và sảng khoái…",
+                "Because today you wanted something bright and refreshing…"),
+            (_, "rich") => GuestLocalizedText.Of(
+                "Vì hôm nay bạn muốn một ly đậm và ấm áp…",
+                "Because today you wanted something rich and comforting…"),
+            (_, "fruity") => GuestLocalizedText.Of(
+                "Vì hôm nay bạn muốn một ly trái cây và thú vị…",
+                "Because today you wanted something fruity and exciting…"),
+            _ => GuestLocalizedText.Of(
+                "Quầy chọn nguồn này theo khẩu vị bạn vừa chia sẻ.",
+                "The bar chose this origin from the tastes you just shared.")
+        };
     }
 
     public static GuestLocalizedText ComposePersonalityReflection(IReadOnlyList<GuidedOptionSeed> selectedAnswers)

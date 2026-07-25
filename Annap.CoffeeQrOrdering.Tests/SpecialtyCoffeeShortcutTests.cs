@@ -11,15 +11,15 @@ public class SpecialtyCoffeeShortcutTests
         GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.AllQuestions);
 
     private static string[] SpecialtyDiscoveryIds(
-        string triedOptionId = "q_sp_tried_first",
-        string flavorOptionId = "q_sp_profile_floral",
-        string experienceOptionId = "q_sp_adventure_safe",
+        string habitOptionId = "q_sp_habit_guide",
+        string todayOptionId = "q_sp_today_gentle",
+        string tasteOptionId = "q_sp_taste_tea",
         string formatOptionId = "q_sp_format_one") =>
     [
         GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId,
-        triedOptionId,
-        flavorOptionId,
-        experienceOptionId,
+        habitOptionId,
+        todayOptionId,
+        tasteOptionId,
         formatOptionId
     ];
 
@@ -67,12 +67,13 @@ public class SpecialtyCoffeeShortcutTests
         Assert.Null(error);
         Assert.Equal(5, resolved.Count);
         Assert.Equal(GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId, resolved[0].OptionId);
-        Assert.Equal("q_sp_tried_first", resolved[1].OptionId);
-        Assert.Equal("q_sp_profile_floral", resolved[2].OptionId);
-        Assert.Equal("q_sp_adventure_safe", resolved[3].OptionId);
+        Assert.Equal("q_sp_habit_guide", resolved[1].OptionId);
+        Assert.Equal("q_sp_today_gentle", resolved[2].OptionId);
+        Assert.Equal("q_sp_taste_tea", resolved[3].OptionId);
         Assert.Equal("q_sp_format_one", resolved[4].OptionId);
-        Assert.Equal("sc_flavor:floral", resolved[2].RefinementKey);
-        Assert.Equal("sc_experience:soft", resolved[3].RefinementKey);
+        Assert.Equal("sc_habit:guide", resolved[1].RefinementKey);
+        Assert.Equal("sc_today:gentle", resolved[2].RefinementKey);
+        Assert.Equal("sc_flavor:tea", resolved[3].RefinementKey);
     }
 
     [Fact]

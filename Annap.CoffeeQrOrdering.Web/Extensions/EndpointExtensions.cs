@@ -1305,11 +1305,11 @@ public static class EndpointExtensions
             ids?.FirstOrDefault(id => matches(id)) ?? "";
 
         logger.LogWarning(
-            "Guided sommelier recommend rejected: {Reason}. Q1={Q1}, Q2={Q2}, Flavor={Flavor}, Experience={Experience}",
+            "Guided sommelier recommend rejected: {Reason}. Q1={Q1}, Q2={Q2}, Taste={Taste}, Today={Today}",
             reason,
             Pick(optionIds, id => id.StartsWith("q1_", StringComparison.OrdinalIgnoreCase)),
             Pick(optionIds, id => id.StartsWith("q2_", StringComparison.OrdinalIgnoreCase)),
-            Pick(optionIds, id => id.StartsWith("q_sc_flavor", StringComparison.OrdinalIgnoreCase)),
-            Pick(optionIds, id => id.StartsWith("q_sc_experience", StringComparison.OrdinalIgnoreCase)));
+            Pick(optionIds, id => id.StartsWith("q_sp_taste_", StringComparison.OrdinalIgnoreCase)),
+            Pick(optionIds, id => id.StartsWith("q_sp_today_", StringComparison.OrdinalIgnoreCase)));
     }
 }

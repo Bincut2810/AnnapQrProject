@@ -14,8 +14,10 @@ namespace Annap.CoffeeQrOrdering.Web.Services;
 public static class GuidedSommelierExperienceCatalog
 {
     public const string SpecialtyCoffeeOptionId = "q0_specialty";
-    public const string SpecialtyFlavorQuestionId = "q_sp_profile";
-    public const string SpecialtyExperienceQuestionId = "q_sp_adventure";
+    public const string SpecialtyHabitQuestionId = "q_sp_habit";
+    public const string SpecialtyTodayQuestionId = "q_sp_today";
+    public const string SpecialtyTasteQuestionId = "q_sp_taste";
+    public const string SpecialtyFormatQuestionId = "q_sp_format";
 
     public sealed record SpecialtyShortcutExpansion(
         IReadOnlyList<string> OptionIds,
@@ -33,8 +35,10 @@ public static class GuidedSommelierExperienceCatalog
 
         var expected = GuidedSommelierCatalog.QuestionsForBranch(GuidedSommelierCatalog.BranchSpecialty);
         return optionIds.Count == expected.Count
-            && optionIds.Any(id => id.StartsWith("q_sp_profile_", StringComparison.OrdinalIgnoreCase))
-            && optionIds.Any(id => id.StartsWith("q_sp_adventure_", StringComparison.OrdinalIgnoreCase));
+            && optionIds.Any(id => id.StartsWith("q_sp_habit_", StringComparison.OrdinalIgnoreCase))
+            && optionIds.Any(id => id.StartsWith("q_sp_today_", StringComparison.OrdinalIgnoreCase))
+            && optionIds.Any(id => id.StartsWith("q_sp_taste_", StringComparison.OrdinalIgnoreCase))
+            && optionIds.Any(id => id.StartsWith("q_sp_format_", StringComparison.OrdinalIgnoreCase));
     }
 
     public static SpecialtyShortcutExpansion ExpandSpecialtyCoffeeShortcut(

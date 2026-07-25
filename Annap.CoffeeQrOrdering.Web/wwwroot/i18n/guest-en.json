@@ -1,7 +1,16 @@
 {
   "lang": "en",
-  "nav": { "menu": "Menu", "staff": "Staff", "privacy": "Privacy", "siteAria": "Site" },
-  "langSwitcher": { "en": "EN", "vi": "VI", "label": "Language" },
+  "nav": {
+    "menu": "Menu",
+    "staff": "Staff",
+    "privacy": "Privacy",
+    "siteAria": "Site"
+  },
+  "langSwitcher": {
+    "en": "EN",
+    "vi": "VI",
+    "label": "Language"
+  },
   "home": {
     "brand": "Annap Coffee Atelier",
     "postalFrom": "From Kinini Village, Rwanda",
@@ -185,37 +194,25 @@
             "question": "How do you like the cup to feel?"
           },
           "cards": {
-            "q_sc_flavor_floral": {
-              "title": "Floral",
-              "note1": "Jasmine",
-              "note2": "Citrus"
-            },
-            "q_sc_flavor_fruit": {
-              "title": "Stone Fruit",
-              "note1": "Peach",
-              "note2": "Lemon curd"
-            },
-            "q_sc_flavor_wine": {
-              "title": "Cocoa & Dark Fruit",
-              "note1": "Cocoa",
-              "note2": "Dark fruit"
-            },
-            "q_sc_flavor_blueberry": {
-              "title": "Berry & Honey",
-              "note1": "Blueberry",
+            "q_sp_taste_tea": {
+              "title": "Tea-like freshness",
+              "note1": "Tea",
               "note2": "Honey"
             },
-            "q_sc_experience_soft": {
-              "title": "Tea-like"
+            "q_sp_taste_peach": {
+              "title": "Peach & honey",
+              "note1": "Peach",
+              "note2": "Honey"
             },
-            "q_sc_experience_balanced": {
-              "title": "Round"
+            "q_sp_taste_chocolate": {
+              "title": "Chocolate & nuts",
+              "note1": "Chocolate",
+              "note2": "Nuts"
             },
-            "q_sc_experience_complex": {
-              "title": "Syrupy"
-            },
-            "q_sc_experience_surprising": {
-              "title": "Juicy"
+            "q_sp_taste_berry": {
+              "title": "Berry sweetness",
+              "note1": "Blueberry",
+              "note2": "Honey"
             }
           }
         },
@@ -328,15 +325,7 @@
         "q4_none": "No caffeine — understood.",
         "q4_low": "Just a little lift.",
         "q4_medium": "Enough lift for tonight.",
-        "q4_strong": "Bold — I've noted it.",
-        "q_sc_flavor_floral": "Floral — noted.",
-        "q_sc_flavor_fruit": "Stone fruit — noted.",
-        "q_sc_flavor_wine": "Cocoa & dark fruit — noted.",
-        "q_sc_flavor_blueberry": "Berry & honey — noted.",
-        "q_sc_experience_soft": "Tea-like — noted.",
-        "q_sc_experience_balanced": "Round — noted.",
-        "q_sc_experience_complex": "Syrupy — noted.",
-        "q_sc_experience_surprising": "Juicy — noted."
+        "q4_strong": "Bold — I've noted it."
       }
     }
   },
@@ -540,18 +529,73 @@
     "pairingNeighbor": "A softer neighbor on the tray"
   },
   "moods": {
-    "bright": { "kicker": "Lifted", "title": "Bright & citrusy", "line": "Sunlit acidity, clean glass, a little electricity.", "caption": "Morning through glass—lifted, legible, almost audible.", "tastingDirection": "We tilt the room toward light: citrus oils on porcelain, a cool rim, electricity held politely.", "prompt": "bright citrusy lifted crystalline yuzu refreshing luminous", "glimpse": "You seem drawn to clarity and lift — cups that ring clean rather than sit heavy." },
-    "slow": { "kicker": "Held", "title": "Slow & comforting", "line": "Round sweetness, hush, something to linger inside.", "caption": "Weight you can lean into; sweetness that doesn't hurry.", "tastingDirection": "We let the air thicken gently—roundness, hush, the kind of warmth that gathers instead of announces.", "prompt": "slow comforting warm cozy sweet gentle velvet round", "glimpse": "A slower, softer arc suits you today — sweetness that stays in the room after the sip." },
-    "floral": { "kicker": "Soft", "title": "Floral & delicate", "line": "Perfumed air, whispered sugar, porcelain calm.", "caption": "Perfume first, sugar in a whisper.", "tastingDirection": "We draw the curtain toward petals and cool linen—soft lift, porcelain stillness, a finish that lingers kindly.", "prompt": "floral delicate jasmine honeysuckle blossom perfume", "glimpse": "Delicacy reads as your line — perfume held in restraint, not decoration." },
-    "adventurous": { "kicker": "Brave", "title": "Adventurous", "line": "Layers that shift; spice, shadow, and return.", "caption": "Spice, fruit, shadow—cups that change their mind mid-sip.", "tastingDirection": "We invite a braver silhouette—layers that trade places, a little theatre without raising the voice.", "prompt": "adventurous bold daring spice unexpected layered", "glimpse": "You leave room for a turn in the cup — structure, then something unscripted." },
-    "focus": { "kicker": "Still", "title": "Quiet focus", "line": "Tea-like clarity for reading, thinking, or rain.", "caption": "Tea-like clarity for concentration, rain, or both.", "tastingDirection": "We compose for still minds—transparent lines, rain on glass, room for thought between sips.", "prompt": "quiet focus contemplative tea clean transparent filter pen", "glimpse": "Stillness and transparency matter — a pour for reading the page as much as the flavor." }
+    "bright": {
+      "kicker": "Lifted",
+      "title": "Bright & citrusy",
+      "line": "Sunlit acidity, clean glass, a little electricity.",
+      "caption": "Morning through glass—lifted, legible, almost audible.",
+      "tastingDirection": "We tilt the room toward light: citrus oils on porcelain, a cool rim, electricity held politely.",
+      "prompt": "bright citrusy lifted crystalline yuzu refreshing luminous",
+      "glimpse": "You seem drawn to clarity and lift — cups that ring clean rather than sit heavy."
+    },
+    "slow": {
+      "kicker": "Held",
+      "title": "Slow & comforting",
+      "line": "Round sweetness, hush, something to linger inside.",
+      "caption": "Weight you can lean into; sweetness that doesn't hurry.",
+      "tastingDirection": "We let the air thicken gently—roundness, hush, the kind of warmth that gathers instead of announces.",
+      "prompt": "slow comforting warm cozy sweet gentle velvet round",
+      "glimpse": "A slower, softer arc suits you today — sweetness that stays in the room after the sip."
+    },
+    "floral": {
+      "kicker": "Soft",
+      "title": "Floral & delicate",
+      "line": "Perfumed air, whispered sugar, porcelain calm.",
+      "caption": "Perfume first, sugar in a whisper.",
+      "tastingDirection": "We draw the curtain toward petals and cool linen—soft lift, porcelain stillness, a finish that lingers kindly.",
+      "prompt": "floral delicate jasmine honeysuckle blossom perfume",
+      "glimpse": "Delicacy reads as your line — perfume held in restraint, not decoration."
+    },
+    "adventurous": {
+      "kicker": "Brave",
+      "title": "Adventurous",
+      "line": "Layers that shift; spice, shadow, and return.",
+      "caption": "Spice, fruit, shadow—cups that change their mind mid-sip.",
+      "tastingDirection": "We invite a braver silhouette—layers that trade places, a little theatre without raising the voice.",
+      "prompt": "adventurous bold daring spice unexpected layered",
+      "glimpse": "You leave room for a turn in the cup — structure, then something unscripted."
+    },
+    "focus": {
+      "kicker": "Still",
+      "title": "Quiet focus",
+      "line": "Tea-like clarity for reading, thinking, or rain.",
+      "caption": "Tea-like clarity for concentration, rain, or both.",
+      "tastingDirection": "We compose for still minds—transparent lines, rain on glass, room for thought between sips.",
+      "prompt": "quiet focus contemplative tea clean transparent filter pen",
+      "glimpse": "Stillness and transparency matter — a pour for reading the page as much as the flavor."
+    }
   },
   "refine": {
-    "softer": { "label": "Softer texture", "snippet": "guest whispers for a softer, rounder mouthfeel—velvet, less edge, hush between sips" },
-    "brighter": { "label": "Brighter acidity", "snippet": "guest asks the line to lift—brighter acidity, air, glass-bright clarity" },
-    "less_sweet": { "label": "Drier finish", "snippet": "guest prefers a drier arc—restrained sweetness, transparent finish" },
-    "more_adventurous": { "label": "Push further", "snippet": "guest invites the tray to wander further—bolder layers, curiosity, shadow" },
-    "low_caffeine": { "label": "Lower caffeine", "snippet": "guest wishes a gentler arc of caffeine—soft evening, steady hand" }
+    "softer": {
+      "label": "Softer texture",
+      "snippet": "guest whispers for a softer, rounder mouthfeel—velvet, less edge, hush between sips"
+    },
+    "brighter": {
+      "label": "Brighter acidity",
+      "snippet": "guest asks the line to lift—brighter acidity, air, glass-bright clarity"
+    },
+    "less_sweet": {
+      "label": "Drier finish",
+      "snippet": "guest prefers a drier arc—restrained sweetness, transparent finish"
+    },
+    "more_adventurous": {
+      "label": "Push further",
+      "snippet": "guest invites the tray to wander further—bolder layers, curiosity, shadow"
+    },
+    "low_caffeine": {
+      "label": "Lower caffeine",
+      "snippet": "guest wishes a gentler arc of caffeine—soft evening, steady hand"
+    }
   },
   "errors": {
     "sommelierEmptyPrompt": "Please share a few words about how you would like to feel.",

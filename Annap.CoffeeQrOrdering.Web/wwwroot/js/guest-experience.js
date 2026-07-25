@@ -1349,15 +1349,19 @@
                           }
                       })()
                     : "";
-            var whisperLine = "";
-            if (isSpecialty) {
-                whisperLine =
-                    (hero.shortStory && String(hero.shortStory).trim()) ||
-                    (hero.tastingNotes && String(hero.tastingNotes).trim()) ||
-                    "";
-            }
             var taste = geCupMomentTastingLine(hero);
             var notes = geCupMomentNotesLine(hero);
+            var foodLine = "";
+            var storyLine = "";
+            if (isSpecialty) {
+                foodLine =
+                    (hero.tastingNotes && String(hero.tastingNotes).trim()) ||
+                    taste ||
+                    notes ||
+                    "";
+                storyLine =
+                    (hero.shortStory && String(hero.shortStory).trim()) || "";
+            }
             var defaultReason = geHouseT(
                 "ge.host.serveLine",
                 "Annap chọn cho bạn.",
@@ -1369,7 +1373,7 @@
                     : config.serveLine || defaultReason;
             var tasteLine = "";
             if (isSpecialty) {
-                tasteLine = whisperLine;
+                tasteLine = foodLine;
             } else if (notes && notes !== reasonText) {
                 tasteLine = notes;
             } else if (taste && taste !== reasonText) {
@@ -1454,7 +1458,7 @@
                     geEsc(displayName) +
                     "</h2>"
             );
-            if (reasonText && !isSpecialty) {
+            if (reasonText) {
                 parts.push(
                     '<p class="ge-rec-card__reason ge-rec-card__reason--held">' +
                         geEsc(reasonText) +
@@ -1465,6 +1469,13 @@
                 parts.push(
                     '<p class="ge-rec-card__taste ge-cup-moment__taste ge-cup-moment__notes--held">' +
                         geEsc(tasteLine) +
+                        "</p>"
+                );
+            }
+            if (isSpecialty && storyLine && storyLine !== tasteLine) {
+                parts.push(
+                    '<p class="ge-rec-card__story ge-cup-moment__story ge-cup-moment__notes--held">' +
+                        geEsc(storyLine) +
                         "</p>"
                 );
             }
@@ -1785,25 +1796,32 @@
                     "Direction"
                 );
             }
-            if (qid.indexOf("q_sp_tried") === 0) {
+            if (qid.indexOf("q_sp_habit") === 0) {
                 return geFlowT(
-                    "ge.sommelier.tasting.note.mood",
-                    "Trải nghiệm",
-                    "Experience"
+                    "ge.sommelier.tasting.note.habit",
+                    "Ly quen",
+                    "Usual cup"
                 );
             }
-            if (qid.indexOf("q_sp_profile") === 0) {
+            if (qid.indexOf("q_sp_today") === 0) {
+                return geFlowT(
+                    "ge.sommelier.tasting.note.today",
+                    "Hôm nay",
+                    "Today"
+                );
+            }
+            if (qid.indexOf("q_sp_taste") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.flavor",
-                    "Hồ sơ",
-                    "Profile"
+                    "Hương vị",
+                    "Flavors"
                 );
             }
-            if (qid.indexOf("q_sp_adventure") === 0) {
+            if (qid.indexOf("q_sp_format") === 0) {
                 return geFlowT(
-                    "ge.sommelier.tasting.note.experience",
-                    "Mạo hiểm",
-                    "Adventure"
+                    "ge.sommelier.tasting.note.format",
+                    "Cách nhận",
+                    "Format"
                 );
             }
             if (qid.indexOf("q_cf_style") === 0 || qid.indexOf("q_ma_style") === 0) {
@@ -2313,18 +2331,14 @@
         function sommFlavorBranchKey(optionId) {
             var oid = String(optionId || "");
             if (
-                oid === "q_sp_profile_floral" ||
-                oid === "q_sp_profile_fruit" ||
-                oid === "q_sc_flavor_floral" ||
-                oid === "q_sc_flavor_fruit"
+                oid === "q_sp_taste_tea" ||
+                oid === "q_sp_taste_peach"
             ) {
                 return "rwanda";
             }
             if (
-                oid === "q_sp_profile_chocolate" ||
-                oid === "q_sp_profile_surprise" ||
-                oid === "q_sc_flavor_wine" ||
-                oid === "q_sc_flavor_blueberry"
+                oid === "q_sp_taste_chocolate" ||
+                oid === "q_sp_taste_berry"
             ) {
                 return "natural";
             }
@@ -2338,95 +2352,29 @@
         function sommCalibrationCardCopy(optionId) {
             var base = "ge.sommelier.tasting.calibration.cards." + optionId;
             var fallbacks = {
-                q_sp_profile_floral: [
-                    "Hoa nhài & cam quýt",
-                    ["Hoa nhài", "Cam quýt"],
-                    "Floral",
-                    ["Jasmine", "Citrus"]
+                q_sp_taste_tea: [
+                    "Tươi như trà",
+                    ["Trà", "Mật ong"],
+                    "Tea-like freshness",
+                    ["Tea", "Honey"]
                 ],
-                q_sp_profile_fruit: [
-                    "Trái mọng",
-                    ["Đào", "Sốt chanh"],
-                    "Stone Fruit",
-                    ["Peach", "Lemon curd"]
+                q_sp_taste_peach: [
+                    "Đào & mật ong",
+                    ["Đào", "Mật ong"],
+                    "Peach & honey",
+                    ["Peach", "Honey"]
                 ],
-                q_sp_profile_chocolate: [
-                    "Cacao & trái đen",
-                    ["Cacao", "Trái đen"],
-                    "Cocoa & Dark Fruit",
-                    ["Cocoa", "Dark fruit"]
+                q_sp_taste_chocolate: [
+                    "Socola & hạt",
+                    ["Socola", "Hạt"],
+                    "Chocolate & nuts",
+                    ["Chocolate", "Nuts"]
                 ],
-                q_sp_profile_surprise: [
-                    "Quả mọng & mật ong",
+                q_sp_taste_berry: [
+                    "Ngọt như quả mọng",
                     ["Việt quất", "Mật ong"],
-                    "Berry & Honey",
+                    "Berry sweetness",
                     ["Blueberry", "Honey"]
-                ],
-                q_sp_adventure_safe: [
-                    "Thanh như trà",
-                    [],
-                    "Tea-like",
-                    []
-                ],
-                q_sp_adventure_balanced: [
-                    "Tròn đều",
-                    [],
-                    "Round",
-                    []
-                ],
-                q_sp_adventure_experimental: [
-                    "Mở dần",
-                    [],
-                    "Layered",
-                    []
-                ],
-                q_sc_flavor_floral: [
-                    "Hoa nhài & cam quýt",
-                    ["Hoa nhài", "Cam quýt"],
-                    "Floral",
-                    ["Jasmine", "Citrus"]
-                ],
-                q_sc_flavor_fruit: [
-                    "Trái mọng",
-                    ["Đào", "Sốt chanh"],
-                    "Stone Fruit",
-                    ["Peach", "Lemon curd"]
-                ],
-                q_sc_flavor_wine: [
-                    "Cacao & trái đen",
-                    ["Cacao", "Trái đen"],
-                    "Cocoa & Dark Fruit",
-                    ["Cocoa", "Dark fruit"]
-                ],
-                q_sc_flavor_blueberry: [
-                    "Quả mọng & mật ong",
-                    ["Việt quất", "Mật ong"],
-                    "Berry & Honey",
-                    ["Blueberry", "Honey"]
-                ],
-                q_sc_experience_soft: [
-                    "Thanh như trà",
-                    [],
-                    "Tea-like",
-                    []
-                ],
-                q_sc_experience_balanced: [
-                    "Tròn đều",
-                    [],
-                    "Round",
-                    []
-                ],
-                q_sc_experience_complex: [
-                    "Đậm đặc",
-                    [],
-                    "Syrupy",
-                    []
-                ],
-                q_sc_experience_surprising: [
-                    "Mọng nước",
-                    [],
-                    "Juicy",
-                    []
                 ]
             };
             var fb = fallbacks[optionId];
@@ -2455,12 +2403,9 @@
 
         function sommRenderCalibration(q, depthIdx) {
             if (!sommStepHost || !q) return;
-            var isFlavor =
-                q.questionId === "q_sp_profile" || q.questionId === "q_sc_flavor";
+            var isFlavor = q.questionId === "q_sp_taste";
             var question = geQuestionPrompt(q) || geFlowT(
-                isFlavor
-                    ? "ge.sommelier.tasting.calibration.flavor.question"
-                    : "ge.sommelier.tasting.calibration.feel.question"
+                "ge.sommelier.tasting.calibration.flavor.question"
             );
             var parts = [];
             parts.push(
@@ -2550,10 +2495,7 @@
             if (
                 sommSpecialtyPath &&
                 q &&
-                (q.questionId === "q_sp_profile" ||
-                    q.questionId === "q_sp_adventure" ||
-                    q.questionId === "q_sc_flavor" ||
-                    q.questionId === "q_sc_experience")
+                q.questionId === "q_sp_taste"
             ) {
                 sommSetCalibrationPanel(true);
                 sommRenderCalibration(q, stepIdx);
@@ -2758,11 +2700,10 @@
                 var leadExplain = geLocalize(
                     lead.emotionalExplanation || lead.EmotionalExplanation || ""
                 );
-                var reasonText = isSpecialtyResult
-                    ? ""
-                    : leadExplain ||
-                      reflection ||
-                      geHouseT("ge.host.serveLine");
+                var reasonText =
+                    reflection ||
+                    leadExplain ||
+                    geHouseT("ge.host.serveLine");
                 parts.push(
                     geBuildCupMomentHtml({
                         hero: res[0],

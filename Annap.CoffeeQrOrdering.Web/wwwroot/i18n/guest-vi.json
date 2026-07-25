@@ -1,7 +1,16 @@
 {
   "lang": "vi",
-  "nav": { "menu": "Thực đơn", "staff": "Đội phục vụ", "privacy": "Riêng tư", "siteAria": "Điều hướng trang" },
-  "langSwitcher": { "en": "EN", "vi": "VI", "label": "Ngôn ngữ" },
+  "nav": {
+    "menu": "Thực đơn",
+    "staff": "Đội phục vụ",
+    "privacy": "Riêng tư",
+    "siteAria": "Điều hướng trang"
+  },
+  "langSwitcher": {
+    "en": "EN",
+    "vi": "VI",
+    "label": "Ngôn ngữ"
+  },
   "home": {
     "brand": "Annap Coffee Atelier",
     "postalFrom": "Từ Kinini Village, Rwanda",
@@ -185,37 +194,25 @@
             "question": "Bạn thích cảm giác ly cà phê thế nào?"
           },
           "cards": {
-            "q_sc_flavor_floral": {
-              "title": "Hoa nhài & cam quýt",
-              "note1": "Hoa nhài",
-              "note2": "Cam quýt"
-            },
-            "q_sc_flavor_fruit": {
-              "title": "Trái mọng",
-              "note1": "Đào",
-              "note2": "Sốt chanh"
-            },
-            "q_sc_flavor_wine": {
-              "title": "Cacao & trái đen",
-              "note1": "Cacao",
-              "note2": "Trái đen"
-            },
-            "q_sc_flavor_blueberry": {
-              "title": "Quả mọng & mật ong",
-              "note1": "Việt quất",
+            "q_sp_taste_tea": {
+              "title": "Tươi như trà",
+              "note1": "Trà",
               "note2": "Mật ong"
             },
-            "q_sc_experience_soft": {
-              "title": "Thanh như trà"
+            "q_sp_taste_peach": {
+              "title": "Đào & mật ong",
+              "note1": "Đào",
+              "note2": "Mật ong"
             },
-            "q_sc_experience_balanced": {
-              "title": "Tròn đều"
+            "q_sp_taste_chocolate": {
+              "title": "Socola & hạt",
+              "note1": "Socola",
+              "note2": "Hạt"
             },
-            "q_sc_experience_complex": {
-              "title": "Đậm đặc"
-            },
-            "q_sc_experience_surprising": {
-              "title": "Mọng nước"
+            "q_sp_taste_berry": {
+              "title": "Ngọt như quả mọng",
+              "note1": "Việt quất",
+              "note2": "Mật ong"
             }
           }
         },
@@ -328,15 +325,7 @@
         "q4_none": "Không cần caffeine — mình hiểu.",
         "q4_low": "Một chút tỉnh thôi.",
         "q4_medium": "Vừa đủ tỉnh cho tối nay.",
-        "q4_strong": "Mạnh — mình ghi nhận.",
-        "q_sc_flavor_floral": "Floral — được.",
-        "q_sc_flavor_fruit": "Stone fruit — được.",
-        "q_sc_flavor_wine": "Cocoa & dark fruit — được.",
-        "q_sc_flavor_blueberry": "Berry & honey — được.",
-        "q_sc_experience_soft": "Tea-like — được.",
-        "q_sc_experience_balanced": "Round — được.",
-        "q_sc_experience_complex": "Syrupy — được.",
-        "q_sc_experience_surprising": "Juicy — được."
+        "q4_strong": "Mạnh — mình ghi nhận."
       }
     }
   },

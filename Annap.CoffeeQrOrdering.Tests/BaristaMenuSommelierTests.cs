@@ -71,18 +71,18 @@ public class BaristaMenuSommelierTests
     }
 
     [Fact]
-    public void Specialty_path_length_and_option_ids_unchanged()
+    public void Specialty_path_is_habit_today_taste_format()
     {
         Assert.Equal(
-            ["q_sp_tried", "q_sp_profile", "q_sp_adventure", "q_sp_format"],
+            ["q_sp_habit", "q_sp_today", "q_sp_taste", "q_sp_format"],
             GuidedSommelierCatalog.Branches[GuidedSommelierCatalog.BranchSpecialty]);
 
         Assert.True(GuidedSommelierCatalog.TryResolveBranchPath(
             [
                 "q0_specialty",
-                "q_sp_tried_first",
-                "q_sp_profile_floral",
-                "q_sp_adventure_safe",
+                "q_sp_habit_guide",
+                "q_sp_today_gentle",
+                "q_sp_taste_tea",
                 "q_sp_format_one"
             ],
             out var resolved,

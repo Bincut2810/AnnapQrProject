@@ -131,6 +131,7 @@ public sealed class IndexModel(
         await HomepageExperienceBootstrapper.EnsureDefaultsAsync(db, cancellationToken);
         await HomepageExperienceBootstrapper.EnsureDevelopmentRitualFlagsAsync(db, env.IsDevelopment(), cancellationToken);
         await ExperienceCatalogBootstrapper.EnsureGuidedAndDiscoveryAsync(db, cancellationToken);
+        await ExperienceCatalogBootstrapper.EnsureSpecialtyCoffeeDiscoveryQuestionsAsync(db, cancellationToken);
         await ExperienceCatalogBootstrapper.EnsureNativeEnglishCopyAsync(db, cancellationToken);
         await ExperienceCatalogBootstrapper.SyncGuidedDisplayCopyInDevelopmentAsync(db, env.IsDevelopment(), cancellationToken);
 

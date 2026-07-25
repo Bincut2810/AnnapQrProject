@@ -87,12 +87,107 @@ public static class ExperienceCatalogBootstrapper
         IApplicationDbContext db,
         CancellationToken cancellationToken = default)
     {
-        // atelier_v6 seeds specialty questions with AllQuestions in EnsureGuidedAndDiscoveryAsync.
+        await EnsureGuidedAndDiscoveryAsync(db, cancellationToken);
+
         var setKey = GuidedSommelierCatalog.QuestionSetId;
-        if (await db.ExperienceGuidedQuestions.AnyAsync(q => q.SetKey == setKey && q.ExternalKey == "q_sp_profile", cancellationToken))
+        var desired = GuidedSommelierCatalog.SpecialtyCoffeeDiscoveryQuestions;
+        var desiredIds = desired
+            .Select(q => q.QuestionId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var existingSpecialty = await db.ExperienceGuidedQuestions
+            .Where(q => q.SetKey == setKey && q.ExternalKey.StartsWith("q_sp_"))
+            .ToListAsync(cancellationToken);
+
+        var obsolete = existingSpecialty
+            .Where(q => !desiredIds.Contains(q.ExternalKey))
+            .ToList();
+        if (obsolete.Count > 0)
+        {
+            var obsoleteQuestionIds = obsolete.Select(q => q.Id).ToList();
+            var obsoleteOptions = await db.ExperienceGuidedOptions
+                .Where(o => obsoleteQuestionIds.Contains(o.QuestionId))
+                .ToListAsync(cancellationToken);
+            db.ExperienceGuidedOptions.RemoveRange(obsoleteOptions);
+            db.ExperienceGuidedQuestions.RemoveRange(obsolete);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        var presentKeys = await db.ExperienceGuidedQuestions
+            .Where(q => q.SetKey == setKey && q.ExternalKey.StartsWith("q_sp_"))
+            .Select(q => q.ExternalKey)
+            .ToListAsync(cancellationToken);
+        var present = presentKeys.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        if (desiredIds.All(present.Contains))
             return;
 
-        await EnsureGuidedAndDiscoveryAsync(db, cancellationToken);
+        var now = DateTimeOffset.UtcNow;
+        var maxSort = await db.ExperienceGuidedQuestions
+            .Where(q => q.SetKey == setKey)
+            .Select(q => (int?)q.SortOrder)
+            .MaxAsync(cancellationToken) ?? -1;
+        var sort = maxSort + 1;
+
+        foreach (var q in desired)
+        {
+            if (present.Contains(q.QuestionId))
+                continue;
+
+            db.ExperienceGuidedQuestions.Add(new ExperienceGuidedQuestion
+            {
+                ExternalKey = q.QuestionId,
+                SetKey = setKey,
+                Prompt = q.Prompt,
+                PromptEn = string.IsNullOrWhiteSpace(q.PromptEn) ? null : q.PromptEn.Trim(),
+                Description = string.IsNullOrWhiteSpace(q.Description) ? null : q.Description.Trim(),
+                DescriptionEn = string.IsNullOrWhiteSpace(q.DescriptionEn) ? null : q.DescriptionEn.Trim(),
+                SortOrder = sort++,
+                IsOptional = true,
+                IsEnabled = true,
+                CreatedAtUtc = now
+            });
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        var qMap = await db.ExperienceGuidedQuestions
+            .Where(q => q.SetKey == setKey && q.ExternalKey.StartsWith("q_sp_"))
+            .ToDictionaryAsync(x => x.ExternalKey, x => x.Id, StringComparer.OrdinalIgnoreCase, cancellationToken);
+
+        foreach (var q in desired)
+        {
+            if (!qMap.TryGetValue(q.QuestionId, out var qid))
+                continue;
+            if (await db.ExperienceGuidedOptions.AnyAsync(o => o.QuestionId == qid, cancellationToken))
+                continue;
+
+            var oSort = 0;
+            foreach (var o in q.Options)
+            {
+                var sensoryJson = JsonSerializer.Serialize(o.SensoryHints, JsonOpts);
+                db.ExperienceGuidedOptions.Add(new ExperienceGuidedOption
+                {
+                    QuestionId = qid,
+                    ExternalKey = o.OptionId,
+                    Label = o.Label,
+                    LabelEn = string.IsNullOrWhiteSpace(o.LabelEn) ? null : o.LabelEn.Trim(),
+                    Description = string.IsNullOrWhiteSpace(o.GuestReflection) ? null : o.GuestReflection.Trim(),
+                    DescriptionEn = string.IsNullOrWhiteSpace(o.GuestReflectionEn) ? null : o.GuestReflectionEn.Trim(),
+                    Subline = o.EmotionalFragment,
+                    SublineEn = string.IsNullOrWhiteSpace(o.EmotionalFragmentEn) ? null : o.EmotionalFragmentEn.Trim(),
+                    SortOrder = oSort++,
+                    IsEnabled = true,
+                    MoodKey = string.IsNullOrWhiteSpace(o.MoodKey) ? null : o.MoodKey.Trim(),
+                    RefinementKey = string.IsNullOrWhiteSpace(o.RefinementKey) ? null : o.RefinementKey.Trim(),
+                    FlavorTagsJson = string.IsNullOrWhiteSpace(o.FlavorTagsJson) ? null : o.FlavorTagsJson.Trim(),
+                    WeightMultiplier = o.WeightMultiplier <= 0 ? 1m : o.WeightMultiplier,
+                    SensoryProfileJson = string.IsNullOrWhiteSpace(sensoryJson) ? "{}" : sensoryJson,
+                    CreatedAtUtc = now
+                });
+            }
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     /// <summary>
