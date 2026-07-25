@@ -375,12 +375,12 @@ public sealed class GoLiveVerificationService(
         var setKey = GuidedSommelierCatalog.QuestionSetId;
         var specialtyQuestions = await db.ExperienceGuidedQuestions
             .AsNoTracking()
-            .Where(q => q.SetKey == setKey && (q.ExternalKey == "q0" || q.ExternalKey == "q_sp_habit" || q.ExternalKey == "q_sp_taste"))
+            .Where(q => q.SetKey == setKey && (q.ExternalKey == "q0" || q.ExternalKey == "q_sp_body" || q.ExternalKey == "q_sp_flavor"))
             .Select(q => q.ExternalKey)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
-        var missingQuestions = new[] { "q0", "q_sp_habit", "q_sp_taste" }
+        var missingQuestions = new[] { "q0", "q_sp_body", "q_sp_flavor" }
             .Where(key => !specialtyQuestions.Contains(key, StringComparer.OrdinalIgnoreCase))
             .ToList();
 

@@ -1453,31 +1453,53 @@
                 parts.push("</div>");
             }
             parts.push('<div class="ge-rec-card__body ge-cup-moment__body">');
-            parts.push(
-                '<h2 class="ge-rec-card__name ge-cup-moment__name ge-cup-moment__name--held">' +
-                    geEsc(displayName) +
-                    "</h2>"
-            );
-            if (reasonText) {
+            if (isSpecialty) {
+                if (tasteLine) {
+                    parts.push(
+                        '<p class="ge-rec-card__taste ge-cup-moment__taste ge-cup-moment__notes--held">' +
+                            geEsc(tasteLine) +
+                            "</p>"
+                    );
+                }
+                if (reasonText) {
+                    parts.push(
+                        '<p class="ge-rec-card__reason ge-rec-card__reason--held">' +
+                            geEsc(reasonText) +
+                            "</p>"
+                    );
+                }
                 parts.push(
-                    '<p class="ge-rec-card__reason ge-rec-card__reason--held">' +
-                        geEsc(reasonText) +
-                        "</p>"
+                    '<h2 class="ge-rec-card__name ge-cup-moment__name ge-cup-moment__name--held">' +
+                        geEsc(displayName) +
+                        "</h2>"
                 );
-            }
-            if (tasteLine) {
+                if (storyLine && storyLine !== tasteLine) {
+                    parts.push(
+                        '<p class="ge-rec-card__story ge-cup-moment__story ge-cup-moment__notes--held">' +
+                            geEsc(storyLine) +
+                            "</p>"
+                    );
+                }
+            } else {
                 parts.push(
-                    '<p class="ge-rec-card__taste ge-cup-moment__taste ge-cup-moment__notes--held">' +
-                        geEsc(tasteLine) +
-                        "</p>"
+                    '<h2 class="ge-rec-card__name ge-cup-moment__name ge-cup-moment__name--held">' +
+                        geEsc(displayName) +
+                        "</h2>"
                 );
-            }
-            if (isSpecialty && storyLine && storyLine !== tasteLine) {
-                parts.push(
-                    '<p class="ge-rec-card__story ge-cup-moment__story ge-cup-moment__notes--held">' +
-                        geEsc(storyLine) +
-                        "</p>"
-                );
+                if (reasonText) {
+                    parts.push(
+                        '<p class="ge-rec-card__reason ge-rec-card__reason--held">' +
+                            geEsc(reasonText) +
+                            "</p>"
+                    );
+                }
+                if (tasteLine) {
+                    parts.push(
+                        '<p class="ge-rec-card__taste ge-cup-moment__taste ge-cup-moment__notes--held">' +
+                            geEsc(tasteLine) +
+                            "</p>"
+                    );
+                }
             }
             if (isSpecialty) {
                 parts.push(
@@ -1796,32 +1818,25 @@
                     "Direction"
                 );
             }
-            if (qid.indexOf("q_sp_habit") === 0) {
+            if (qid.indexOf("q_sp_body") === 0) {
                 return geFlowT(
-                    "ge.sommelier.tasting.note.habit",
-                    "Ly quen",
-                    "Usual cup"
+                    "ge.sommelier.tasting.note.body",
+                    "Kiểu ly",
+                    "Cup style"
                 );
             }
-            if (qid.indexOf("q_sp_today") === 0) {
-                return geFlowT(
-                    "ge.sommelier.tasting.note.today",
-                    "Hôm nay",
-                    "Today"
-                );
-            }
-            if (qid.indexOf("q_sp_taste") === 0) {
+            if (qid.indexOf("q_sp_flavor") === 0) {
                 return geFlowT(
                     "ge.sommelier.tasting.note.flavor",
                     "Hương vị",
-                    "Flavors"
+                    "Flavor"
                 );
             }
-            if (qid.indexOf("q_sp_format") === 0) {
+            if (qid.indexOf("q_sp_explore") === 0) {
                 return geFlowT(
-                    "ge.sommelier.tasting.note.format",
-                    "Cách nhận",
-                    "Format"
+                    "ge.sommelier.tasting.note.explore",
+                    "Cách mở vị",
+                    "Cup path"
                 );
             }
             if (qid.indexOf("q_cf_style") === 0 || qid.indexOf("q_ma_style") === 0) {
@@ -2331,14 +2346,14 @@
         function sommFlavorBranchKey(optionId) {
             var oid = String(optionId || "");
             if (
-                oid === "q_sp_taste_tea" ||
-                oid === "q_sp_taste_peach"
+                oid === "q_sp_flavor_floral" ||
+                oid === "q_sp_flavor_fruit"
             ) {
                 return "rwanda";
             }
             if (
-                oid === "q_sp_taste_chocolate" ||
-                oid === "q_sp_taste_berry"
+                oid === "q_sp_flavor_chocolate" ||
+                oid === "q_sp_flavor_berry"
             ) {
                 return "natural";
             }
@@ -2352,28 +2367,28 @@
         function sommCalibrationCardCopy(optionId) {
             var base = "ge.sommelier.tasting.calibration.cards." + optionId;
             var fallbacks = {
-                q_sp_taste_tea: [
-                    "Tươi như trà",
-                    ["Trà", "Mật ong"],
-                    "Tea-like freshness",
-                    ["Tea", "Honey"]
+                q_sp_flavor_floral: [
+                    "Hoa và trà",
+                    ["Hoa nhài", "Trà"],
+                    "Florals and tea",
+                    ["Jasmine", "Tea"]
                 ],
-                q_sp_taste_peach: [
-                    "Đào & mật ong",
+                q_sp_flavor_fruit: [
+                    "Trái cây ngọt",
                     ["Đào", "Mật ong"],
-                    "Peach & honey",
+                    "Sweet fruit",
                     ["Peach", "Honey"]
                 ],
-                q_sp_taste_chocolate: [
-                    "Socola & hạt",
+                q_sp_flavor_chocolate: [
+                    "Socola và vị sâu",
                     ["Socola", "Hạt"],
-                    "Chocolate & nuts",
+                    "Chocolate and depth",
                     ["Chocolate", "Nuts"]
                 ],
-                q_sp_taste_berry: [
-                    "Ngọt như quả mọng",
+                q_sp_flavor_berry: [
+                    "Quả mọng nổi bật",
                     ["Việt quất", "Mật ong"],
-                    "Berry sweetness",
+                    "Bright berries",
                     ["Blueberry", "Honey"]
                 ]
             };
@@ -2403,7 +2418,7 @@
 
         function sommRenderCalibration(q, depthIdx) {
             if (!sommStepHost || !q) return;
-            var isFlavor = q.questionId === "q_sp_taste";
+            var isFlavor = q.questionId === "q_sp_flavor";
             var question = geQuestionPrompt(q) || geFlowT(
                 "ge.sommelier.tasting.calibration.flavor.question"
             );
@@ -2495,7 +2510,7 @@
             if (
                 sommSpecialtyPath &&
                 q &&
-                q.questionId === "q_sp_taste"
+                q.questionId === "q_sp_flavor"
             ) {
                 sommSetCalibrationPanel(true);
                 sommRenderCalibration(q, stepIdx);

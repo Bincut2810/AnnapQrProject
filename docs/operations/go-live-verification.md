@@ -40,7 +40,7 @@ AppUrl__PublicBaseUrl=https://order.example.com
 | **Signature Integrity** | No other coffee-family items (`Espresso`, `Cold Brew`, `Vietnamese Coffee`, `Coffee`, `Specialty Coffee`) have `IsSignature=true` |
 | **Pool Size** | Specialty recommendation pool count matches production engine logic; **expected `specialty_pool_count = 4`** |
 | **Editorial Content** | `Origin`, `ShortStory`, and `ProducerStory` populated for all four flagship coffees |
-| **Bootstrap** | Specialty catalog rows plus guided discovery questions `q_sp_habit` and `q_sp_taste` present |
+| **Bootstrap** | Specialty catalog rows plus guided discovery questions `q_sp_body` and `q_sp_flavor` present |
 | **Health** | EF health checks, database connectivity, and `GET /health` |
 | **OpenAI (advisory)** | Reports `Sommelier:ApiKey` presence; **does not block** specialty go-live |
 

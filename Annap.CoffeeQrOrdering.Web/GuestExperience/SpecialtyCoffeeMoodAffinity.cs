@@ -4,29 +4,29 @@ namespace Annap.CoffeeQrOrdering.Web.GuestExperience;
 
 /// <summary>
 /// Internal specialty discovery affinity for ranking only — not exposed to guests.
-/// Primary: food-taste archetype · Secondary: today's cup mood · Tertiary: everyday habit.
+/// Primary: flavor (~60%) · Secondary: body (~25%) · Tertiary: exploration (~15%).
 /// </summary>
 internal static class SpecialtyCoffeeMoodAffinity
 {
-    private const double FlavorMultiplier = 16.0;
-    private const double TodayMultiplier = 6.0;
-    private const double HabitMultiplier = 4.0;
+    // 12 + 5 + 3 = 20 → 60% / 25% / 15%
+    private const double FlavorMultiplier = 12.0;
+    private const double BodyMultiplier = 5.0;
+    private const double ExploreMultiplier = 3.0;
 
     public static double Score(
         string? drinkName,
         string? catalogKey,
-        string? todayKey,
-        string? flavorArchetypeKey,
-        string? habitKey)
+        string? bodyKey,
+        string? flavorKey,
+        string? exploreKey)
     {
         var product = ResolveProductKey(drinkName, catalogKey);
         if (product is null)
             return 0;
 
-        var flavor = FlavorAffinity(product, flavorArchetypeKey) * FlavorMultiplier;
-        var today = TodayAffinity(product, todayKey) * TodayMultiplier;
-        var habit = HabitAffinity(product, habitKey) * HabitMultiplier;
-        return flavor + today + habit;
+        return FlavorAffinity(product, flavorKey) * FlavorMultiplier
+            + BodyAffinity(product, bodyKey) * BodyMultiplier
+            + ExploreAffinity(product, exploreKey) * ExploreMultiplier;
     }
 
     public static string? ParseRefinementKey(IReadOnlyList<GuidedOptionSeed> selectedAnswers, string prefix)
@@ -42,10 +42,10 @@ internal static class SpecialtyCoffeeMoodAffinity
         return null;
     }
 
-    private static double FlavorAffinity(string product, string? flavorArchetypeKey) =>
-        (flavorArchetypeKey ?? "").Trim().ToLowerInvariant() switch
+    private static double FlavorAffinity(string product, string? flavorKey) =>
+        (flavorKey ?? "").Trim().ToLowerInvariant() switch
         {
-            "tea" => product switch
+            "floral_tea" or "floral" or "tea" => product switch
             {
                 "dufatanye" => 1.0,
                 "abateranankunga" => 0.45,
@@ -53,7 +53,7 @@ internal static class SpecialtyCoffeeMoodAffinity
                 "nigussie" => 0.20,
                 _ => 0
             },
-            "peach" => product switch
+            "stone_fruit" or "peach" => product switch
             {
                 "abateranankunga" => 1.0,
                 "dufatanye" => 0.50,
@@ -80,63 +80,9 @@ internal static class SpecialtyCoffeeMoodAffinity
             _ => 0
         };
 
-    private static double TodayAffinity(string product, string? todayKey) =>
-        (todayKey ?? "").Trim().ToLowerInvariant() switch
+    private static double BodyAffinity(string product, string? bodyKey) =>
+        (bodyKey ?? "").Trim().ToLowerInvariant() switch
         {
-            "gentle" => product switch
-            {
-                "dufatanye" => 1.0,
-                "abateranankunga" => 0.45,
-                "rift_valley" => 0.15,
-                "nigussie" => 0.20,
-                _ => 0
-            },
-            "bright" => product switch
-            {
-                "abateranankunga" => 1.0,
-                "dufatanye" => 0.55,
-                "nigussie" => 0.35,
-                "rift_valley" => 0.25,
-                _ => 0
-            },
-            "rich" => product switch
-            {
-                "rift_valley" => 1.0,
-                "nigussie" => 0.70,
-                "abateranankunga" => 0.30,
-                "dufatanye" => 0.20,
-                _ => 0
-            },
-            "fruity" => product switch
-            {
-                "nigussie" => 1.0,
-                "abateranankunga" => 0.85,
-                "rift_valley" => 0.40,
-                "dufatanye" => 0.25,
-                _ => 0
-            },
-            _ => 0
-        };
-
-    private static double HabitAffinity(string product, string? habitKey) =>
-        (habitKey ?? "").Trim().ToLowerInvariant() switch
-        {
-            "bold" => product switch
-            {
-                "rift_valley" => 1.0,
-                "nigussie" => 0.70,
-                "abateranankunga" => 0.30,
-                "dufatanye" => 0.20,
-                _ => 0
-            },
-            "sweet" => product switch
-            {
-                "abateranankunga" => 1.0,
-                "nigussie" => 0.65,
-                "dufatanye" => 0.45,
-                "rift_valley" => 0.30,
-                _ => 0
-            },
             "light" => product switch
             {
                 "dufatanye" => 1.0,
@@ -145,20 +91,66 @@ internal static class SpecialtyCoffeeMoodAffinity
                 "rift_valley" => 0.15,
                 _ => 0
             },
-            "milk" => product switch
+            "balanced" => product switch
+            {
+                "abateranankunga" => 1.0,
+                "dufatanye" => 0.85,
+                "nigussie" => 0.55,
+                "rift_valley" => 0.40,
+                _ => 0
+            },
+            "bold" => product switch
+            {
+                "rift_valley" => 1.0,
+                "nigussie" => 0.75,
+                "abateranankunga" => 0.30,
+                "dufatanye" => 0.15,
+                _ => 0
+            },
+            _ => 0
+        };
+
+    /// <summary>
+    /// Cup-structure exploration — distinct from Flavor (what tastes of) and Body (weight).
+    /// Vectors intentionally differ from flavor/body so options do not echo other axes.
+    /// </summary>
+    private static double ExploreAffinity(string product, string? exploreKey) =>
+        (exploreKey ?? "").Trim().ToLowerInvariant() switch
+        {
+            // Clear single line, tea-like path through the cup → Dufatanye
+            "linear" => product switch
             {
                 "dufatanye" => 1.0,
-                "abateranankunga" => 0.80,
-                "nigussie" => 0.30,
+                "abateranankunga" => 0.40,
+                "nigussie" => 0.25,
+                "rift_valley" => 0.10,
+                _ => 0
+            },
+            // Ripe sweetness that wraps the whole sip → Abateranankunga
+            "juicy" => product switch
+            {
+                "abateranankunga" => 1.0,
+                "nigussie" => 0.45,
+                "dufatanye" => 0.35,
                 "rift_valley" => 0.20,
                 _ => 0
             },
-            "guide" => product switch
+            // Builds deeper toward the back of the cup → Rift Valley
+            "deepening" => product switch
             {
-                "dufatanye" => 0.85,
-                "abateranankunga" => 0.90,
-                "nigussie" => 0.55,
-                "rift_valley" => 0.40,
+                "rift_valley" => 1.0,
+                "nigussie" => 0.40,
+                "abateranankunga" => 0.25,
+                "dufatanye" => 0.10,
+                _ => 0
+            },
+            // Layers that shift as the cup cools → Nigussie
+            "layered" => product switch
+            {
+                "nigussie" => 1.0,
+                "abateranankunga" => 0.40,
+                "rift_valley" => 0.30,
+                "dufatanye" => 0.15,
                 _ => 0
             },
             _ => 0

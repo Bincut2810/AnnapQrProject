@@ -11,16 +11,14 @@ public class SpecialtyCoffeeShortcutTests
         GuidedSommelierCatalog.MergeClientCatalogQuestions(GuidedSommelierCatalog.AllQuestions);
 
     private static string[] SpecialtyDiscoveryIds(
-        string habitOptionId = "q_sp_habit_guide",
-        string todayOptionId = "q_sp_today_gentle",
-        string tasteOptionId = "q_sp_taste_tea",
-        string formatOptionId = "q_sp_format_one") =>
+        string bodyOptionId = "q_sp_body_light",
+        string flavorOptionId = "q_sp_flavor_floral",
+        string exploreOptionId = "q_sp_explore_linear") =>
     [
         GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId,
-        habitOptionId,
-        todayOptionId,
-        tasteOptionId,
-        formatOptionId
+        bodyOptionId,
+        flavorOptionId,
+        exploreOptionId
     ];
 
     [Fact]
@@ -39,17 +37,15 @@ public class SpecialtyCoffeeShortcutTests
     [Fact]
     public void HasCompleteSpecialtyDiscovery_true_when_full_specialty_branch()
     {
-        var ids = SpecialtyDiscoveryIds();
-
-        Assert.True(GuidedSommelierExperienceCatalog.HasCompleteSpecialtyDiscovery(ids));
+        Assert.True(GuidedSommelierExperienceCatalog.HasCompleteSpecialtyDiscovery(SpecialtyDiscoveryIds()));
     }
 
     [Fact]
     public void HasCompleteSpecialtyDiscovery_false_when_only_entry()
     {
-        var ids = new[] { GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId };
-
-        Assert.False(GuidedSommelierExperienceCatalog.HasCompleteSpecialtyDiscovery(ids));
+        Assert.False(
+            GuidedSommelierExperienceCatalog.HasCompleteSpecialtyDiscovery(
+                [GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId]));
     }
 
     [Fact]
@@ -65,27 +61,23 @@ public class SpecialtyCoffeeShortcutTests
                 out var resolved,
                 out var error));
         Assert.Null(error);
-        Assert.Equal(5, resolved.Count);
+        Assert.Equal(4, resolved.Count);
         Assert.Equal(GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId, resolved[0].OptionId);
-        Assert.Equal("q_sp_habit_guide", resolved[1].OptionId);
-        Assert.Equal("q_sp_today_gentle", resolved[2].OptionId);
-        Assert.Equal("q_sp_taste_tea", resolved[3].OptionId);
-        Assert.Equal("q_sp_format_one", resolved[4].OptionId);
-        Assert.Equal("sc_habit:guide", resolved[1].RefinementKey);
-        Assert.Equal("sc_today:gentle", resolved[2].RefinementKey);
-        Assert.Equal("sc_flavor:tea", resolved[3].RefinementKey);
+        Assert.Equal("q_sp_body_light", resolved[1].OptionId);
+        Assert.Equal("q_sp_flavor_floral", resolved[2].OptionId);
+        Assert.Equal("q_sp_explore_linear", resolved[3].OptionId);
+        Assert.Equal("sc_body:light", resolved[1].RefinementKey);
+        Assert.Equal("sc_flavor:floral_tea", resolved[2].RefinementKey);
+        Assert.Equal("sc_explore:linear", resolved[3].RefinementKey);
     }
 
     [Fact]
     public void TryResolveSommelierAnswers_fails_when_specialty_incomplete()
     {
-        var questions = AllQuestions();
-        var ids = new[] { GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId };
-
         Assert.False(
             GuidedSommelierExperienceCatalog.TryResolveSommelierAnswers(
-                questions,
-                ids,
+                AllQuestions(),
+                [GuidedSommelierExperienceCatalog.SpecialtyCoffeeOptionId],
                 out _,
                 out var error));
         Assert.NotNull(error);
@@ -163,16 +155,16 @@ public class SpecialtyCoffeeShortcutTests
     }
 
     [Fact]
-    public void Specialty_compare_two_flag_detected()
+    public void Specialty_compare_two_flag_always_false()
     {
         Assert.True(
             GuidedSommelierExperienceCatalog.TryResolveSommelierAnswers(
                 AllQuestions(),
-                SpecialtyDiscoveryIds(formatOptionId: "q_sp_format_compare"),
+                SpecialtyDiscoveryIds(),
                 out var resolved,
                 out _));
 
-        Assert.True(GuidedSommelierRecommendationEngine.WantsCompareTwo(resolved));
+        Assert.False(GuidedSommelierRecommendationEngine.WantsCompareTwo(resolved));
     }
 
     private static MenuItemScoringRow Row(

@@ -48,7 +48,7 @@ public static class GuidedSommelierCatalog
     public static IReadOnlyDictionary<string, IReadOnlyList<string>> Branches { get; } =
         new Dictionary<string, IReadOnlyList<string>>(StringComparer.OrdinalIgnoreCase)
         {
-            [BranchSpecialty] = ["q_sp_habit", "q_sp_today", "q_sp_taste", "q_sp_format"],
+            [BranchSpecialty] = ["q_sp_body", "q_sp_flavor", "q_sp_explore"],
             [BranchSignature] = ["q_sg_feel"],
             [BranchEspresso] = ["q_es_body", "q_es_detail"],
             [BranchTea] = ["q_te_pick"],
@@ -140,19 +140,22 @@ public static class GuidedSommelierCatalog
     }
 
     /// <summary>
-    /// Full Specialty V2 replacement: drop any pre-V2 specialty questions still present in CMS loads.
+    /// Specialty conversation replacement: drop any pre-current specialty questions still present in CMS loads.
     /// </summary>
     private static IReadOnlyList<GuidedQuestionSeed> ReplaceObsoleteSpecialtyConversation(
         IReadOnlyList<GuidedQuestionSeed> loaded)
     {
-        var hasObsolete = loaded.Any(q =>
-            string.Equals(q.QuestionId, "q_sp_tried", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(q.QuestionId, "q_sp_profile", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(q.QuestionId, "q_sp_adventure", StringComparison.OrdinalIgnoreCase));
-        var hasV2 = loaded.Any(q =>
-            string.Equals(q.QuestionId, "q_sp_habit", StringComparison.OrdinalIgnoreCase)
-            && loaded.Any(x => string.Equals(x.QuestionId, "q_sp_taste", StringComparison.OrdinalIgnoreCase)));
-        if (!hasObsolete && hasV2)
+        var desiredIds = SpecialtyCoffeeDiscoveryQuestions
+            .Select(q => q.QuestionId)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var specialtyLoaded = loaded
+            .Where(q => q.QuestionId.StartsWith("q_sp_", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        var hasCurrent = desiredIds.Count > 0
+            && desiredIds.All(id => specialtyLoaded.Any(q =>
+                string.Equals(q.QuestionId, id, StringComparison.OrdinalIgnoreCase)));
+        var hasExtra = specialtyLoaded.Any(q => !desiredIds.Contains(q.QuestionId));
+        if (hasCurrent && !hasExtra)
             return loaded;
 
         var withoutSpecialty = loaded
@@ -440,77 +443,59 @@ public static class GuidedSommelierCatalog
             "Chọn đúng nhóm trên menu — barista hỏi ngắn rồi gọi tên ly.",
             "Pick a real menu family — a short barista chat, then a cup.");
 
-    /// <summary>Specialty Coffee — barista taste consultation (habit → today → food taste → format).</summary>
+    /// <summary>Specialty Coffee — three-step taste consultation (body → flavor → exploration).</summary>
     private static IReadOnlyList<GuidedQuestionSeed> BuildSpecialtyQuestions() =>
     [
         Q(
-            "q_sp_habit",
-            "Bạn thường uống cà phê kiểu gì?",
-            "What kind of coffee do you usually enjoy?",
+            "q_sp_body",
+            "Bạn thường thích cà phê kiểu nào?",
+            "What kind of coffee do you usually prefer?",
             [
-                Opt("q_sp_habit_bold", "Đậm và mạnh", "Strong and bold", "đậm mạnh", "strong and bold", null, null,
-                    new DrinkSensoryProfile { Body = "syrupy", Energy = "intense", Finish = "linger" },
-                    RefinementKey: "sc_habit:bold"),
-                Opt("q_sp_habit_sweet", "Ngọt và mượt", "Sweet and smooth", "ngọt mượt", "sweet and smooth", null, null,
-                    new DrinkSensoryProfile { Sweetness = "rounded", Texture = "satin", Body = "round" },
-                    RefinementKey: "sc_habit:sweet"),
-                Opt("q_sp_habit_light", "Nhẹ và thơm", "Light and aromatic", "nhẹ thơm", "light and aromatic", null, null,
-                    new DrinkSensoryProfile { Body = "tea_like", AromaFamily = "floral", Finish = "clean" },
-                    RefinementKey: "sc_habit:light"),
-                Opt("q_sp_habit_milk", "Thường uống cà phê sữa", "I usually drink milk coffee", "cà phê sữa", "milk coffee", null, null,
-                    new DrinkSensoryProfile { Texture = "velvet", Sweetness = "luscious", Body = "round" },
-                    RefinementKey: "sc_habit:milk"),
-                Opt("q_sp_habit_guide", "Chưa rõ, để quán gợi ý", "I don't know — recommend for me", "để quán gợi ý", "recommend for me", null, null,
-                    new DrinkSensoryProfile { Energy = "still", SocialMood = "gathered" },
-                    RefinementKey: "sc_habit:guide")
+                Opt("q_sp_body_light", "Nhẹ, dễ uống", "Light and easy", "nhẹ dễ uống", "light and easy", null, null,
+                    new DrinkSensoryProfile { Body = "tea_like", Texture = "satin", Finish = "clean", Energy = "still" },
+                    RefinementKey: "sc_body:light", FlavorTagsJson: "Light,Tea,CleanFinish"),
+                Opt("q_sp_body_balanced", "Cân bằng", "Balanced", "cân bằng", "balanced", null, null,
+                    new DrinkSensoryProfile { Body = "round", Sweetness = "rounded", Acidity = "balanced" },
+                    RefinementKey: "sc_body:balanced", FlavorTagsJson: "Balanced,Honey,StoneFruit"),
+                Opt("q_sp_body_bold", "Đậm và nhiều hương", "Bold and aromatic", "đậm hương", "bold and aromatic", null, null,
+                    new DrinkSensoryProfile { Body = "syrupy", Energy = "intense", Finish = "linger", AromaFamily = "cocoa" },
+                    RefinementKey: "sc_body:bold", FlavorTagsJson: "Bold,Chocolate,ComplexFinish")
             ]),
         Q(
-            "q_sp_today",
-            "Hôm nay bạn muốn một ly…",
-            "I feel like something…",
+            "q_sp_flavor",
+            "Nếu chọn một hương vị để bắt đầu, bạn thích gì nhất?",
+            "If you pick one flavor to start with, what do you like most?",
             [
-                Opt("q_sp_today_bright", "Sáng và sảng khoái", "Bright and refreshing", "sảng khoái", "bright and refreshing", null, null,
-                    new DrinkSensoryProfile { Energy = "lifted", Acidity = "lifted", Finish = "clean" },
-                    MoodKey: "bright", RefinementKey: "sc_today:bright"),
-                Opt("q_sp_today_rich", "Đậm và ấm áp", "Rich and comforting", "ấm áp", "rich and comforting", null, null,
-                    new DrinkSensoryProfile { Body = "syrupy", Energy = "warming", Finish = "linger" },
-                    MoodKey: "comfort", RefinementKey: "sc_today:rich"),
-                Opt("q_sp_today_fruity", "Trái cây và thú vị", "Fruity and exciting", "trái cây", "fruity and exciting", null, null,
-                    new DrinkSensoryProfile { AromaFamily = "stone_fruit", Energy = "playful", Acidity = "crystalline" },
-                    MoodKey: "bright", RefinementKey: "sc_today:fruity"),
-                Opt("q_sp_today_gentle", "Nhẹ nhàng và thanh lịch", "Gentle and elegant", "thanh lịch", "gentle and elegant", null, null,
-                    new DrinkSensoryProfile { Energy = "still", Texture = "satin", Finish = "clean" },
-                    MoodKey: "calm", RefinementKey: "sc_today:gentle")
-            ]),
-        Q(
-            "q_sp_taste",
-            "Hương vị nào nghe ngon trong ly?",
-            "Which flavors sound good in the cup?",
-            [
-                Opt("q_sp_taste_tea", "Tươi như trà", "Tea-like freshness", "như trà", "tea-like freshness", null, null,
-                    new DrinkSensoryProfile { AromaFamily = "floral", Acidity = "quiet", Body = "tea_like", Finish = "clean" },
-                    RefinementKey: "sc_flavor:tea", FlavorTagsJson: "tea,honey,jasmine,gentle"),
-                Opt("q_sp_taste_peach", "Đào & mật ong", "Peach & honey", "đào mật ong", "peach and honey", null, null,
+                Opt("q_sp_flavor_floral", "Hoa và trà", "Florals and tea", "hoa và trà", "florals and tea", null, null,
+                    new DrinkSensoryProfile { AromaFamily = "floral", Body = "tea_like", Acidity = "quiet", Finish = "clean" },
+                    RefinementKey: "sc_flavor:floral_tea", FlavorTagsJson: "Floral,Tea,Honey,CleanFinish"),
+                Opt("q_sp_flavor_fruit", "Trái cây ngọt", "Sweet fruit", "trái cây ngọt", "sweet fruit", null, null,
                     new DrinkSensoryProfile { AromaFamily = "stone_fruit", Sweetness = "rounded", Energy = "playful" },
-                    RefinementKey: "sc_flavor:peach", FlavorTagsJson: "peach,honey,summer,fruit"),
-                Opt("q_sp_taste_chocolate", "Socola & hạt", "Chocolate & nuts", "socola hạt", "chocolate and nuts", null, null,
+                    RefinementKey: "sc_flavor:stone_fruit", FlavorTagsJson: "StoneFruit,Honey,SweetFinish"),
+                Opt("q_sp_flavor_chocolate", "Socola và vị sâu", "Chocolate and depth", "socola sâu", "chocolate and depth", null, null,
                     new DrinkSensoryProfile { AromaFamily = "cocoa", Body = "syrupy", Finish = "linger" },
-                    RefinementKey: "sc_flavor:chocolate", FlavorTagsJson: "chocolate,nuts,cocoa,depth"),
-                Opt("q_sp_taste_berry", "Ngọt như quả mọng", "Berry sweetness", "quả mọng", "berry sweetness", null, null,
-                    new DrinkSensoryProfile { Energy = "playful", Finish = "linger", Acidity = "crystalline" },
-                    RefinementKey: "sc_flavor:berry", FlavorTagsJson: "blueberry,berry,honey,layered")
+                    RefinementKey: "sc_flavor:chocolate", FlavorTagsJson: "Chocolate,Bold,ComplexFinish"),
+                Opt("q_sp_flavor_berry", "Quả mọng nổi bật", "Bright berries", "quả mọng", "bright berries", null, null,
+                    new DrinkSensoryProfile { Energy = "playful", Finish = "linger", Acidity = "crystalline", AromaFamily = "floral" },
+                    RefinementKey: "sc_flavor:berry", FlavorTagsJson: "Berry,Honey,SweetFinish,ComplexFinish")
             ]),
         Q(
-            "q_sp_format",
-            "Bạn muốn một gợi ý, hay so sánh hai nguồn?",
-            "One clear recommendation, or compare two?",
+            "q_sp_explore",
+            "Bạn muốn ly cà phê hôm nay mở ra thế nào trong miệng?",
+            "How should today's cup unfold on the palate?",
             [
-                Opt("q_sp_format_one", "Một gợi ý rõ ràng", "One clear recommendation", "một gợi ý", "one recommendation", null, null,
-                    new DrinkSensoryProfile { Energy = "focused" },
-                    RefinementKey: "sc_format:one"),
-                Opt("q_sp_format_compare", "Để tôi so sánh hai nguồn", "Let me compare two", "so sánh hai", "compare two", null, null,
-                    new DrinkSensoryProfile { Energy = "playful", SocialMood = "gathered" },
-                    RefinementKey: "sc_format:compare")
+                Opt("q_sp_explore_linear", "Một dòng vị rõ ràng, sạch", "One clear, clean line", "dòng vị sạch", "clear clean line", null, null,
+                    new DrinkSensoryProfile { Body = "tea_like", Finish = "clean", Acidity = "quiet", Texture = "satin" },
+                    RefinementKey: "sc_explore:linear", FlavorTagsJson: "Tea,Floral,CleanFinish,Linear"),
+                Opt("q_sp_explore_juicy", "Ngọt bao quanh cả ngụm", "Sweetness wrapping the sip", "ngọt bao quanh", "wrapping sweetness", null, null,
+                    new DrinkSensoryProfile { Sweetness = "rounded", Texture = "satin", AromaFamily = "stone_fruit", Body = "round" },
+                    RefinementKey: "sc_explore:juicy", FlavorTagsJson: "StoneFruit,Honey,SweetFinish,Juicy"),
+                Opt("q_sp_explore_deepening", "Đậm dần về phía hậu vị", "Getting deeper toward the finish", "đậm dần", "deepening finish", null, null,
+                    new DrinkSensoryProfile { Body = "syrupy", Finish = "linger", AromaFamily = "cocoa", Energy = "focused" },
+                    RefinementKey: "sc_explore:deepening", FlavorTagsJson: "Chocolate,Bold,ComplexFinish,Deepening"),
+                Opt("q_sp_explore_layered", "Nhiều lớp, đổi nhẹ khi nguội", "Layers that shift as it cools", "nhiều lớp", "shifting layers", null, null,
+                    new DrinkSensoryProfile { Finish = "linger", Energy = "playful", Acidity = "crystalline", Body = "round" },
+                    RefinementKey: "sc_explore:layered", FlavorTagsJson: "Berry,Honey,ComplexFinish,Layered")
             ])
     ];
 

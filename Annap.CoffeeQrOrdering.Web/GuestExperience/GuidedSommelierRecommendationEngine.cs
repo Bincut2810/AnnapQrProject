@@ -76,10 +76,10 @@ public static class GuidedSommelierRecommendationEngine
                 raw += BeverageIntelligence.SpecialtyScore(profile, beverageIntent) * 0.56;
                 if (IsSpecialtyCoffeePath(selectedAnswers))
                 {
-                    var todayKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_today:");
+                    var bodyKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_body:");
                     var flavorKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_flavor:");
-                    var habitKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_habit:");
-                    raw += SpecialtyCoffeeMoodAffinity.Score(m.Name, null, todayKey, flavorKey, habitKey);
+                    var exploreKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_explore:");
+                    raw += SpecialtyCoffeeMoodAffinity.Score(m.Name, null, bodyKey, flavorKey, exploreKey);
                 }
 
                 if (boost.TryGetValue(m.Id, out var w) && w > 0)
@@ -170,10 +170,12 @@ public static class GuidedSommelierRecommendationEngine
         || selectedAnswers.Any(o =>
             string.Equals(o.OptionId, "q0_specialty", StringComparison.OrdinalIgnoreCase));
 
-    public static bool WantsCompareTwo(IReadOnlyList<GuidedOptionSeed> selectedAnswers) =>
-        selectedAnswers.Any(o =>
-            string.Equals(o.OptionId, "q_sp_format_compare", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(o.RefinementKey, "sc_format:compare", StringComparison.OrdinalIgnoreCase));
+    /// <summary>Compare-two is no longer offered in the specialty guided flow.</summary>
+    public static bool WantsCompareTwo(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
+    {
+        _ = selectedAnswers;
+        return false;
+    }
 
     public static bool IsClassicCoffeePath(IReadOnlyList<GuidedOptionSeed> selectedAnswers)
     {
@@ -212,41 +214,43 @@ public static class GuidedSommelierRecommendationEngine
     {
         var flavorKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_flavor:")
             ?.Trim().ToLowerInvariant() ?? "";
-        var todayKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_today:")
+        var bodyKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_body:")
+            ?.Trim().ToLowerInvariant() ?? "";
+        var exploreKey = SpecialtyCoffeeMoodAffinity.ParseRefinementKey(selectedAnswers, "sc_explore:")
             ?.Trim().ToLowerInvariant() ?? "";
 
-        return (flavorKey, todayKey) switch
+        return (flavorKey, bodyKey, exploreKey) switch
         {
-            ("tea", "gentle") or ("tea", _) => GuestLocalizedText.Of(
-                "Vì bạn đang tìm một ly thanh, thanh lịch với vị ngọt nhẹ…",
-                "Because you were looking for a clean, elegant cup with gentle sweetness…"),
-            ("peach", "bright") => GuestLocalizedText.Of(
-                "Vì bạn muốn một ly sáng, ngọt mọng như trái mùa hè…",
-                "Because you wanted a bright, juicy cup like summer fruit…"),
-            ("peach", _) => GuestLocalizedText.Of(
-                "Vì bạn nghiêng về vị đào và mật ong — ngọt, thân thiện…",
-                "Because you leaned toward peach and honey — sweet and friendly…"),
-            ("chocolate", "rich") or ("chocolate", _) => GuestLocalizedText.Of(
-                "Vì bạn muốn một ly đậm, ấm với socola và hạt…",
-                "Because you wanted a rich, comforting cup with chocolate and nuts…"),
-            ("berry", "fruity") or ("berry", _) => GuestLocalizedText.Of(
-                "Vì bạn muốn vị quả mọng nhiều lớp, kết thúc dài…",
-                "Because you wanted layered berry sweetness with a long finish…"),
-            (_, "gentle") => GuestLocalizedText.Of(
-                "Vì hôm nay bạn muốn một ly nhẹ nhàng và thanh lịch…",
-                "Because today you wanted something gentle and elegant…"),
-            (_, "bright") => GuestLocalizedText.Of(
-                "Vì hôm nay bạn muốn một ly sáng và sảng khoái…",
-                "Because today you wanted something bright and refreshing…"),
-            (_, "rich") => GuestLocalizedText.Of(
-                "Vì hôm nay bạn muốn một ly đậm và ấm áp…",
-                "Because today you wanted something rich and comforting…"),
-            (_, "fruity") => GuestLocalizedText.Of(
-                "Vì hôm nay bạn muốn một ly trái cây và thú vị…",
-                "Because today you wanted something fruity and exciting…"),
+            ("floral_tea", "light", _) or ("floral_tea", _, "linear") => GuestLocalizedText.Of(
+                "Bạn thích vị nhẹ, sạch và thơm nên chúng tôi chọn lô này.",
+                "You prefer a light, clean, aromatic cup — so we chose this lot."),
+            ("floral_tea", _, _) => GuestLocalizedText.Of(
+                "Bạn nghiêng về hoa và trà — chúng tôi chọn một ly thanh, thanh lịch.",
+                "You leaned toward florals and tea — we chose a clean, elegant cup."),
+            ("stone_fruit", _, "juicy") or ("stone_fruit", "balanced", _) => GuestLocalizedText.Of(
+                "Bạn thích trái cây ngọt bao quanh cả ngụm — chúng tôi chọn lô này.",
+                "You like sweet fruit wrapping the sip — so we chose this lot."),
+            ("stone_fruit", _, _) => GuestLocalizedText.Of(
+                "Bạn muốn vị trái cây ngọt — chúng tôi chọn một ly thân thiện, mọng nước.",
+                "You wanted sweet fruit — we chose a friendly, juicy cup."),
+            ("chocolate", "bold", _) or ("chocolate", _, "deepening") => GuestLocalizedText.Of(
+                "Bạn thích đậm dần về hậu vị — chúng tôi chọn lô socola nhiều tầng.",
+                "You wanted a cup that deepens toward the finish — we chose this chocolatey lot."),
+            ("chocolate", _, _) => GuestLocalizedText.Of(
+                "Bạn nghiêng về socola và vị sâu — chúng tôi chọn lô này.",
+                "You leaned toward chocolate and depth — so we chose this lot."),
+            ("berry", _, "layered") or ("berry", _, _) => GuestLocalizedText.Of(
+                "Bạn muốn quả mọng nhiều lớp — chúng tôi chọn một ly đổi nhẹ khi nguội.",
+                "You wanted layered berries — we chose a cup that shifts as it cools."),
+            (_, "light", "linear") => GuestLocalizedText.Of(
+                "Bạn thích một dòng vị rõ ràng, sạch nên chúng tôi chọn lô này.",
+                "You prefer one clear, clean line — so we chose this lot."),
+            (_, "bold", _) => GuestLocalizedText.Of(
+                "Bạn muốn một ly đậm hương — chúng tôi chọn lô phù hợp nhất.",
+                "You wanted a bold, aromatic cup — we chose the best match."),
             _ => GuestLocalizedText.Of(
-                "Quầy chọn nguồn này theo khẩu vị bạn vừa chia sẻ.",
-                "The bar chose this origin from the tastes you just shared.")
+                "Chúng tôi chọn lô này theo khẩu vị bạn vừa chia sẻ.",
+                "We chose this lot from the tastes you just shared.")
         };
     }
 

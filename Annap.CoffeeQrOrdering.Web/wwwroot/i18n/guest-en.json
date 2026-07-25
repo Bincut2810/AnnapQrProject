@@ -194,23 +194,23 @@
             "question": "How do you like the cup to feel?"
           },
           "cards": {
-            "q_sp_taste_tea": {
-              "title": "Tea-like freshness",
-              "note1": "Tea",
-              "note2": "Honey"
+            "q_sp_flavor_floral": {
+              "title": "Florals and tea",
+              "note1": "Jasmine",
+              "note2": "Tea"
             },
-            "q_sp_taste_peach": {
-              "title": "Peach & honey",
+            "q_sp_flavor_fruit": {
+              "title": "Sweet fruit",
               "note1": "Peach",
               "note2": "Honey"
             },
-            "q_sp_taste_chocolate": {
-              "title": "Chocolate & nuts",
+            "q_sp_flavor_chocolate": {
+              "title": "Chocolate and depth",
               "note1": "Chocolate",
               "note2": "Nuts"
             },
-            "q_sp_taste_berry": {
-              "title": "Berry sweetness",
+            "q_sp_flavor_berry": {
+              "title": "Bright berries",
               "note1": "Blueberry",
               "note2": "Honey"
             }

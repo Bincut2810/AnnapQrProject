@@ -1309,7 +1309,7 @@ public static class EndpointExtensions
             reason,
             Pick(optionIds, id => id.StartsWith("q1_", StringComparison.OrdinalIgnoreCase)),
             Pick(optionIds, id => id.StartsWith("q2_", StringComparison.OrdinalIgnoreCase)),
-            Pick(optionIds, id => id.StartsWith("q_sp_taste_", StringComparison.OrdinalIgnoreCase)),
-            Pick(optionIds, id => id.StartsWith("q_sp_today_", StringComparison.OrdinalIgnoreCase)));
+            Pick(optionIds, id => id.StartsWith("q_sp_flavor_", StringComparison.OrdinalIgnoreCase)),
+            Pick(optionIds, id => id.StartsWith("q_sp_body_", StringComparison.OrdinalIgnoreCase)));
     }
 }

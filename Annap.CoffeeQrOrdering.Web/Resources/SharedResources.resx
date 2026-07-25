@@ -274,18 +274,18 @@
   <data name="ge.sommelier.question.reading" xml:space="preserve"><value>Reading your taste</value></data>
   <data name="ge.sommelier.question.step" xml:space="preserve"><value>Step {n} / {total}</value></data>
   <data name="ge.sommelier.readCup" xml:space="preserve"><value>Read the origin letter</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_tea.note1" xml:space="preserve"><value>Tea</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_tea.note2" xml:space="preserve"><value>Honey</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_tea.title" xml:space="preserve"><value>Tea-like freshness</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_peach.note1" xml:space="preserve"><value>Peach</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_peach.note2" xml:space="preserve"><value>Honey</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_peach.title" xml:space="preserve"><value>Peach &amp; honey</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_chocolate.note1" xml:space="preserve"><value>Chocolate</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_chocolate.note2" xml:space="preserve"><value>Nuts</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_chocolate.title" xml:space="preserve"><value>Chocolate &amp; nuts</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_berry.note1" xml:space="preserve"><value>Blueberry</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_berry.note2" xml:space="preserve"><value>Honey</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_berry.title" xml:space="preserve"><value>Berry sweetness</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_floral.note1" xml:space="preserve"><value>Jasmine</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_floral.note2" xml:space="preserve"><value>Tea</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_floral.title" xml:space="preserve"><value>Florals and tea</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_fruit.note1" xml:space="preserve"><value>Peach</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_fruit.note2" xml:space="preserve"><value>Honey</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_fruit.title" xml:space="preserve"><value>Sweet fruit</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_chocolate.note1" xml:space="preserve"><value>Chocolate</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_chocolate.note2" xml:space="preserve"><value>Nuts</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_chocolate.title" xml:space="preserve"><value>Chocolate and depth</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_berry.note1" xml:space="preserve"><value>Blueberry</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_berry.note2" xml:space="preserve"><value>Honey</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_berry.title" xml:space="preserve"><value>Bright berries</value></data>
   <data name="ge.sommelier.tasting.calibration.feel.question" xml:space="preserve"><value>How do you like the cup to feel?</value></data>
   <data name="ge.sommelier.tasting.calibration.flavor.question" xml:space="preserve"><value>What should lead in the cup?</value></data>
   <data name="ge.sommelier.tasting.error" xml:space="preserve"><value>The house could not name an origin just now.</value></data>

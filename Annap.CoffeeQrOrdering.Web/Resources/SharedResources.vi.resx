@@ -274,18 +274,18 @@
   <data name="ge.sommelier.question.reading" xml:space="preserve"><value>Đang đọc khẩu vị</value></data>
   <data name="ge.sommelier.question.step" xml:space="preserve"><value>Bước {n} / {total}</value></data>
   <data name="ge.sommelier.readCup" xml:space="preserve"><value>Đọc lá thư nguồn gốc</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_tea.note1" xml:space="preserve"><value>Trà</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_tea.note2" xml:space="preserve"><value>Mật ong</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_tea.title" xml:space="preserve"><value>Tươi như trà</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_peach.note1" xml:space="preserve"><value>Đào</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_peach.note2" xml:space="preserve"><value>Mật ong</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_peach.title" xml:space="preserve"><value>Đào &amp; mật ong</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_chocolate.note1" xml:space="preserve"><value>Socola</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_chocolate.note2" xml:space="preserve"><value>Hạt</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_chocolate.title" xml:space="preserve"><value>Socola &amp; hạt</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_berry.note1" xml:space="preserve"><value>Việt quất</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_berry.note2" xml:space="preserve"><value>Mật ong</value></data>
-  <data name="ge.sommelier.tasting.calibration.cards.q_sp_taste_berry.title" xml:space="preserve"><value>Ngọt như quả mọng</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_floral.note1" xml:space="preserve"><value>Hoa nhài</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_floral.note2" xml:space="preserve"><value>Trà</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_floral.title" xml:space="preserve"><value>Hoa và trà</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_fruit.note1" xml:space="preserve"><value>Đào</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_fruit.note2" xml:space="preserve"><value>Mật ong</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_fruit.title" xml:space="preserve"><value>Trái cây ngọt</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_chocolate.note1" xml:space="preserve"><value>Socola</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_chocolate.note2" xml:space="preserve"><value>Hạt</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_chocolate.title" xml:space="preserve"><value>Socola và vị sâu</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_berry.note1" xml:space="preserve"><value>Việt quất</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_berry.note2" xml:space="preserve"><value>Mật ong</value></data>
+  <data name="ge.sommelier.tasting.calibration.cards.q_sp_flavor_berry.title" xml:space="preserve"><value>Quả mọng nổi bật</value></data>
   <data name="ge.sommelier.tasting.calibration.feel.question" xml:space="preserve"><value>Bạn thích cảm giác ly cà phê thế nào?</value></data>
   <data name="ge.sommelier.tasting.calibration.flavor.question" xml:space="preserve"><value>Điều gì nên dẫn đầu trong ly?</value></data>
   <data name="ge.sommelier.tasting.error" xml:space="preserve"><value>Quán chưa gọi tên được lúc này.</value></data>

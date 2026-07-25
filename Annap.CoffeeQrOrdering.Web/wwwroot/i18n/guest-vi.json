@@ -194,23 +194,23 @@
             "question": "Bạn thích cảm giác ly cà phê thế nào?"
           },
           "cards": {
-            "q_sp_taste_tea": {
-              "title": "Tươi như trà",
-              "note1": "Trà",
-              "note2": "Mật ong"
+            "q_sp_flavor_floral": {
+              "title": "Hoa và trà",
+              "note1": "Hoa nhài",
+              "note2": "Trà"
             },
-            "q_sp_taste_peach": {
-              "title": "Đào & mật ong",
+            "q_sp_flavor_fruit": {
+              "title": "Trái cây ngọt",
               "note1": "Đào",
               "note2": "Mật ong"
             },
-            "q_sp_taste_chocolate": {
-              "title": "Socola & hạt",
+            "q_sp_flavor_chocolate": {
+              "title": "Socola và vị sâu",
               "note1": "Socola",
               "note2": "Hạt"
             },
-            "q_sp_taste_berry": {
-              "title": "Ngọt như quả mọng",
+            "q_sp_flavor_berry": {
+              "title": "Quả mọng nổi bật",
               "note1": "Việt quất",
               "note2": "Mật ong"
             }
