@@ -8,7 +8,7 @@
         "preferSignaturesFirst": true,
         "allowRerolls": false,
         "adventureTone": 2,
-        "courierMoodCopy": "The room is still quiet — we will keep discovery gentle and close to the cup."
+        "courierMoodCopy": "Focus on balanced, easy-to-choose recommendations."
       }
     },
     "signature-night": {
@@ -19,7 +19,7 @@
         "preferSignaturesFirst": true,
         "allowRerolls": true,
         "adventureTone": 4,
-        "courierMoodCopy": "Tonight we lead with house signatures, then let curiosity wander one step at a time."
+        "courierMoodCopy": "Prioritize signature drinks first, then show alternatives."
       }
     },
     "bright-fruit-season": {
@@ -30,7 +30,7 @@
         "preferSignaturesFirst": false,
         "allowRerolls": true,
         "adventureTone": 4,
-        "courierMoodCopy": "Seasonal cups only — bright fruit, lifted aromatics, and a little sunlight in the glass."
+        "courierMoodCopy": "Show seasonal drinks only, prioritizing bright fruit profiles."
       }
     },
     "slow-espresso-ritual": {
@@ -41,7 +41,7 @@
         "preferSignaturesFirst": true,
         "allowRerolls": false,
         "adventureTone": 1,
-        "courierMoodCopy": "A slower envelope — fewer rerolls, no seasonal detour, just the deepest lines on the menu."
+        "courierMoodCopy": "Limit rerolls and focus on core espresso-style options."
       }
     }
   }

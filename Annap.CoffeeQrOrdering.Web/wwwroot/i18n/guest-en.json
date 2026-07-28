@@ -92,17 +92,17 @@
       "deskHint": "Unhurried. One pour. No menu yet.",
       "deskCta": "Let the house choose",
       "deskNudge": "Unhurried — one cup, chosen for this table.",
-      "r1Dim": "The mail duck is crossing the sky…",
-      "r1Letter": "A letter drops — listen for the landing.",
-      "r1Open": "The fold opens toward your table.",
-      "r2Dim": "Another pass — the duck circles once more.",
-      "r2Letter": "A second envelope drops, lighter this time.",
-      "r2Open": "Paper argues gently; we keep the quieter truth.",
-      "r3Dim": "Last delivery — slower wings, surer hands.",
-      "r3Letter": "If doubt lingers, the room votes with warmth, not noise.",
-      "r3Open": "What remains is the line that would not leave the margin.",
-      "reducedLine": "The house is choosing…",
-      "blockedTitle": "Oh no — the duck is out of letters.",
+      "r1Dim": "Preparing recommendation...",
+      "r1Letter": "Checking the first option.",
+      "r1Open": "Saved an option for this table.",
+      "r2Dim": "Checking another option...",
+      "r2Letter": "Comparing the second option.",
+      "r2Open": "Keeping the better match.",
+      "r3Dim": "Final review in progress...",
+      "r3Letter": "Finalizing the best option for this table.",
+      "r3Open": "Recommendation is ready.",
+      "reducedLine": "Preparing recommendation...",
+      "blockedTitle": "No more changes for this round.",
       "blockedBody": "This round has used every reroll. The house stands by the last pour.",
       "blockedOwner": "The house keeps the final recommendation.",
       "blockedDismiss": "Understood",
@@ -142,7 +142,7 @@
     },
     "sommelier": {
       "entry": {
-        "invite": "We'll keep tonight unhurried."
+        "invite": "Answer a few questions to get a recommendation."
       },
       "question": {
         "step": "Step {n} / {total}",
@@ -220,10 +220,10 @@
         "offline": "The house could not name an origin just now.",
         "retry": "Try again"
       },
-      "whisper1": "Take your time — there is no wrong answer.",
-      "whisper2": "We are listening for texture, not labels.",
-      "whisper3": "Sweetness is a mood, not a setting.",
-      "whisper4": "Lift can be quiet or decisive."
+      "whisper1": "Answer based on your taste.",
+      "whisper2": "No coffee terms needed.",
+      "whisper3": "You can choose your sweetness level.",
+      "whisper4": "You can choose your caffeine level."
     },
     "cupMoment": {
       "namingKicker": "Annap chooses for you",
@@ -332,7 +332,7 @@
   "menu": {
     "browseEyebrow": "ANNAP",
     "browseTitle": "The house selection",
-    "browseIntro": "Each cup is curated for this room — scroll unhurriedly; the bar reads your pace.",
+    "browseIntro": "",
     "categoriesNavAria": "Menu categories",
     "categorySeasonalNote": "Seasonal rotation. Ask the barista for today's microlot.",
     "stillLifeBadge": "Still life",
@@ -388,10 +388,10 @@
     "altAdd": "Choose this cup",
     "rerollFirst": "Not quite tonight?",
     "rerollSecond": "One last change",
-    "rerollSealed": "The house stands by this recommendation — too many changes spoil the ritual.",
-    "rerollWait": "Give the ink a breath before another pass.",
+    "rerollSealed": "We are keeping this recommendation for consistency.",
+    "rerollWait": "Please wait a moment and try again.",
     "rerollBlocked": "The house stands by this recommendation.",
-    "afterAdd": "When it lands, ask what would follow nicely — a slower cup or something from the pastry page.",
+    "afterAdd": "You can add another drink or choose a pastry.",
     "fitReference": "for reference"
   },
   "letterRoom": {
@@ -441,7 +441,7 @@
     "itemNotePreview": "Note:",
     "eachSuffix": "each",
     "emptyBody": "Add a cup from a suggestion or the menu — it will appear here.",
-    "emptyGuestSection": "This place is still quiet.",
+    "emptyGuestSection": "",
     "emptyGuest": "This guest has not chosen yet — tap a cup when ready.",
     "lineDescriptor": "Curated at 106/1",
     "modalUnavailable": "This cup is resting for now.",
@@ -493,16 +493,16 @@
     "statusPaid": "Preparing",
     "statusComplete": "Complete",
     "err404": "We could not find this order.",
-    "errSoft": "A quiet moment—connection is soft. We'll try again shortly.",
+    "errSoft": "Connection is weak. We'll try again shortly.",
     "cancelledFallback": "This order is no longer active."
   },
   "ritual": {
     "kicker": "House tasting",
-    "heading": "Arrive by feeling; we'll meet you in the room.",
-    "intro": "Moods are doorways—not switches. Your host reads the air, sets the tray in kind, and lets language settle the way a private tasting does: unhurried, editorial, never a catalogue.",
+    "heading": "Choose a taste profile to get a matching recommendation.",
+    "intro": "Answer a few short questions so we can suggest a drink that fits your preference.",
     "moodAria": "How you wish to arrive",
     "shroudKicker": "House guide",
-    "shroudBody": "Setting the room and drawing language from tonight's parchment—no prompts, no chatter.",
+    "shroudBody": "Analyzing your choices to suggest a drink.",
     "flavorPath": "Flavor path",
     "tastingDirection": "Tasting direction",
     "beginWith": "We'd begin with",
@@ -513,7 +513,7 @@
     "refinementGroupAria": "Fine adjustments to the line",
     "secondGesture": "A second gesture",
     "otherDirections": "Other directions",
-    "otherDirectionsHint": "Should you wish another line on the tray.",
+    "otherDirectionsHint": "Choose another option if needed.",
     "readCup": "Read the cup",
     "placeTray": "Place on your tray",
     "cupsInLight": "Cups in this light",
@@ -522,87 +522,87 @@
     "hold": "Hold",
     "reserve": "Reserve",
     "catalogErr": "The parchment did not reach us; the tasting will return when the room steadies.",
-    "catalogOffline": "The room is quiet — we are holding yesterday's list until the line steadies.",
-    "sommelierFallbackOpen": "The letter did not arrive—but the room still holds you. The cups at right were set to echo how you entered.",
+    "catalogOffline": "Using the latest saved menu while connection is unstable.",
+    "sommelierFallbackOpen": "Automatic recommendation is unavailable. You can pick directly from the list on the right.",
     "sommelierFallbackTasting": "Choose the line that speaks first; your host will return when the connection steadies.",
     "sommelierFallbackTone": "Patient · Unhurried",
     "sommelierFallbackReason": "We keep the tray composed until the line returns.",
-    "sommelierDefaultOpening": "We take a breath, then offer {name}—drawn from tonight's list with the same care as the bar.",
-    "readingRite1": "Interpreting your palate in this light…",
-    "readingRite2": "Comparing texture against tonight's parchment…",
-    "readingRite3": "Setting cups beside the mood you chose…",
+    "sommelierDefaultOpening": "Current recommendation: {name}.",
+    "readingRite1": "Analyzing your choices...",
+    "readingRite2": "Matching suitable drinks...",
+    "readingRite3": "Finalizing recommendation...",
     "pairingClose": "Exceptionally close in this light",
-    "pairingEcho": "A natural echo of your mood",
-    "pairingLine": "Still on your line — worth reading",
+    "pairingEcho": "Similar profile",
+    "pairingLine": "Close to your selected profile",
     "pairingNeighbor": "A softer neighbor on the tray"
   },
   "moods": {
     "bright": {
       "kicker": "Lifted",
       "title": "Bright & citrusy",
-      "line": "Sunlit acidity, clean glass, a little electricity.",
-      "caption": "Morning through glass—lifted, legible, almost audible.",
-      "tastingDirection": "We tilt the room toward light: citrus oils on porcelain, a cool rim, electricity held politely.",
+      "line": "Bright acidity with a clean finish.",
+      "caption": "Good when you want a fresh and clear taste.",
+      "tastingDirection": "Prioritizes citrus notes and lively acidity.",
       "prompt": "bright citrusy lifted crystalline yuzu refreshing luminous",
-      "glimpse": "You seem drawn to clarity and lift — cups that ring clean rather than sit heavy."
+      "glimpse": "For guests who prefer light, crisp drinks."
     },
     "slow": {
       "kicker": "Held",
       "title": "Slow & comforting",
-      "line": "Round sweetness, hush, something to linger inside.",
-      "caption": "Weight you can lean into; sweetness that doesn't hurry.",
-      "tastingDirection": "We let the air thicken gently—roundness, hush, the kind of warmth that gathers instead of announces.",
+      "line": "Gentle sweetness with a round body.",
+      "caption": "Good when you want a smooth, easy cup.",
+      "tastingDirection": "Prioritizes soft texture and mellow finish.",
       "prompt": "slow comforting warm cozy sweet gentle velvet round",
-      "glimpse": "A slower, softer arc suits you today — sweetness that stays in the room after the sip."
+      "glimpse": "For guests who prefer low harshness and a softer taste."
     },
     "floral": {
       "kicker": "Soft",
       "title": "Floral & delicate",
-      "line": "Perfumed air, whispered sugar, porcelain calm.",
-      "caption": "Perfume first, sugar in a whisper.",
-      "tastingDirection": "We draw the curtain toward petals and cool linen—soft lift, porcelain stillness, a finish that lingers kindly.",
+      "line": "Light floral aroma with a clean taste.",
+      "caption": "Good when you want aroma-forward but gentle drinks.",
+      "tastingDirection": "Prioritizes floral notes and clean finish.",
       "prompt": "floral delicate jasmine honeysuckle blossom perfume",
-      "glimpse": "Delicacy reads as your line — perfume held in restraint, not decoration."
+      "glimpse": "For guests who like subtle aroma without high sweetness."
     },
     "adventurous": {
       "kicker": "Brave",
       "title": "Adventurous",
-      "line": "Layers that shift; spice, shadow, and return.",
-      "caption": "Spice, fruit, shadow—cups that change their mind mid-sip.",
-      "tastingDirection": "We invite a braver silhouette—layers that trade places, a little theatre without raising the voice.",
+      "line": "More layered flavor with stronger intensity.",
+      "caption": "Good when you want bolder drinks with clear character.",
+      "tastingDirection": "Prioritizes intensity and distinct flavor layers.",
       "prompt": "adventurous bold daring spice unexpected layered",
-      "glimpse": "You leave room for a turn in the cup — structure, then something unscripted."
+      "glimpse": "For guests who want to try stronger or less familiar flavors."
     },
     "focus": {
       "kicker": "Still",
       "title": "Quiet focus",
-      "line": "Tea-like clarity for reading, thinking, or rain.",
-      "caption": "Tea-like clarity for concentration, rain, or both.",
-      "tastingDirection": "We compose for still minds—transparent lines, rain on glass, room for thought between sips.",
+      "line": "Clean, light profile that is easy to focus with.",
+      "caption": "Good when you want a gentle drink with low heaviness.",
+      "tastingDirection": "Prioritizes clarity and short, clean finish.",
       "prompt": "quiet focus contemplative tea clean transparent filter pen",
-      "glimpse": "Stillness and transparency matter — a pour for reading the page as much as the flavor."
+      "glimpse": "For guests who prefer light drinks they can sip for longer."
     }
   },
   "refine": {
     "softer": {
       "label": "Softer texture",
-      "snippet": "guest whispers for a softer, rounder mouthfeel—velvet, less edge, hush between sips"
+      "snippet": "wants a softer cup with lower harshness"
     },
     "brighter": {
       "label": "Brighter acidity",
-      "snippet": "guest asks the line to lift—brighter acidity, air, glass-bright clarity"
+      "snippet": "wants brighter acidity and a fresher taste"
     },
     "less_sweet": {
       "label": "Drier finish",
-      "snippet": "guest prefers a drier arc—restrained sweetness, transparent finish"
+      "snippet": "wants less sweetness and a cleaner finish"
     },
     "more_adventurous": {
       "label": "Push further",
-      "snippet": "guest invites the tray to wander further—bolder layers, curiosity, shadow"
+      "snippet": "wants stronger flavor and more complexity"
     },
     "low_caffeine": {
       "label": "Lower caffeine",
-      "snippet": "guest wishes a gentler arc of caffeine—soft evening, steady hand"
+      "snippet": "wants lower caffeine"
     }
   },
   "errors": {

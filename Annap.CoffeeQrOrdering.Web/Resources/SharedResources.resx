@@ -145,23 +145,23 @@
   <data name="ge.duckPost.blockedDismissAria" xml:space="preserve"><value>Close</value></data>
   <data name="ge.duckPost.blockedDismissHint" xml:space="preserve"><value>Swipe down on this card once, tap the dimmed edge, or press Escape.</value></data>
   <data name="ge.duckPost.blockedOwner" xml:space="preserve"><value>The house keeps the final recommendation.</value></data>
-  <data name="ge.duckPost.blockedTitle" xml:space="preserve"><value>Oh no — the duck is out of letters.</value></data>
+  <data name="ge.duckPost.blockedTitle" xml:space="preserve"><value>No more changes for this round.</value></data>
   <data name="ge.duckPost.deskCta" xml:space="preserve"><value>Let the house choose</value></data>
   <data name="ge.duckPost.deskEyebrow" xml:space="preserve"><value>Your host is listening</value></data>
   <data name="ge.duckPost.deskHint" xml:space="preserve"><value>Unhurried. One pour. No menu yet.</value></data>
   <data name="ge.duckPost.deskNudge" xml:space="preserve"><value>Unhurried — one cup, chosen for this table.</value></data>
   <data name="ge.duckPost.deskTitle" xml:space="preserve"><value>We will name one cup for this table.</value></data>
   <data name="ge.duckPost.panelKicker" xml:space="preserve"><value>Tonight&apos;s tasting</value></data>
-  <data name="ge.duckPost.r1Dim" xml:space="preserve"><value>The mail duck is crossing the sky…</value></data>
-  <data name="ge.duckPost.r1Letter" xml:space="preserve"><value>A letter drops — listen for the landing.</value></data>
-  <data name="ge.duckPost.r1Open" xml:space="preserve"><value>The fold opens toward your table.</value></data>
-  <data name="ge.duckPost.r2Dim" xml:space="preserve"><value>Another pass — the duck circles once more.</value></data>
-  <data name="ge.duckPost.r2Letter" xml:space="preserve"><value>A second envelope drops, lighter this time.</value></data>
-  <data name="ge.duckPost.r2Open" xml:space="preserve"><value>Paper argues gently; we keep the quieter truth.</value></data>
-  <data name="ge.duckPost.r3Dim" xml:space="preserve"><value>Last delivery — slower wings, surer hands.</value></data>
-  <data name="ge.duckPost.r3Letter" xml:space="preserve"><value>If doubt lingers, the room votes with warmth, not noise.</value></data>
-  <data name="ge.duckPost.r3Open" xml:space="preserve"><value>What remains is the line that would not leave the margin.</value></data>
-  <data name="ge.duckPost.reducedLine" xml:space="preserve"><value>The house is choosing…</value></data>
+  <data name="ge.duckPost.r1Dim" xml:space="preserve"><value>Preparing recommendation...</value></data>
+  <data name="ge.duckPost.r1Letter" xml:space="preserve"><value>Checking the first option.</value></data>
+  <data name="ge.duckPost.r1Open" xml:space="preserve"><value>Saved an option for this table.</value></data>
+  <data name="ge.duckPost.r2Dim" xml:space="preserve"><value>Checking another option...</value></data>
+  <data name="ge.duckPost.r2Letter" xml:space="preserve"><value>Comparing the second option.</value></data>
+  <data name="ge.duckPost.r2Open" xml:space="preserve"><value>Keeping the better match.</value></data>
+  <data name="ge.duckPost.r3Dim" xml:space="preserve"><value>Final review in progress...</value></data>
+  <data name="ge.duckPost.r3Letter" xml:space="preserve"><value>Finalizing the best option for this table.</value></data>
+  <data name="ge.duckPost.r3Open" xml:space="preserve"><value>Recommendation is ready.</value></data>
+  <data name="ge.duckPost.reducedLine" xml:space="preserve"><value>Preparing recommendation...</value></data>
   <data name="ge.group.backAria" xml:space="preserve"><value>Back to arrival</value></data>
   <data name="ge.group.backToGuests" xml:space="preserve"><value>Back to guests</value></data>
   <data name="ge.group.countPromptFallback" xml:space="preserve"><value>How many guests?</value></data>
@@ -268,7 +268,7 @@
   <data name="ge.sommelier.addToTray" xml:space="preserve"><value>Add to tray</value></data>
   <data name="ge.sommelier.beginAgain" xml:space="preserve"><value>Rewrite my taste</value></data>
   <data name="ge.sommelier.connectErr" xml:space="preserve"><value>The room softened for a moment. You may try again shortly.</value></data>
-  <data name="ge.sommelier.entry.invite" xml:space="preserve"><value>We&apos;ll keep tonight unhurried.</value></data>
+  <data name="ge.sommelier.entry.invite" xml:space="preserve"><value>Answer a few questions to get a recommendation.</value></data>
   <data name="ge.sommelier.hostPause" xml:space="preserve"><value>One moment — choosing a cup for you.</value></data>
   <data name="ge.sommelier.kicker" xml:space="preserve"><value>What feeling should your cup carry today?</value></data>
   <data name="ge.sommelier.question.reading" xml:space="preserve"><value>Reading your taste</value></data>
@@ -318,10 +318,10 @@
   <data name="ge.sommelier.tasting.supportWait" xml:space="preserve"><value>One moment — Annap is choosing your cup.</value></data>
   <data name="ge.sommelier.tasting.title" xml:space="preserve"><value>Balancing the cup for you</value></data>
   <data name="ge.sommelier.tasting.titleRitual" xml:space="preserve"><value>The bar is preparing something just for you</value></data>
-  <data name="ge.sommelier.whisper1" xml:space="preserve"><value>Take your time — there is no wrong answer.</value></data>
-  <data name="ge.sommelier.whisper2" xml:space="preserve"><value>We are listening for texture, not labels.</value></data>
-  <data name="ge.sommelier.whisper3" xml:space="preserve"><value>Sweetness is a mood, not a setting.</value></data>
-  <data name="ge.sommelier.whisper4" xml:space="preserve"><value>Lift can be quiet or decisive.</value></data>
+  <data name="ge.sommelier.whisper1" xml:space="preserve"><value>Answer based on your taste.</value></data>
+  <data name="ge.sommelier.whisper2" xml:space="preserve"><value>No coffee terms needed.</value></data>
+  <data name="ge.sommelier.whisper3" xml:space="preserve"><value>You can choose your sweetness level.</value></data>
+  <data name="ge.sommelier.whisper4" xml:space="preserve"><value>You can choose your caffeine level.</value></data>
   <data name="guest.sommelierLite.added" xml:space="preserve"><value>Added</value></data>
   <data name="guest.sommelierLite.addToTray" xml:space="preserve"><value>Add to tray</value></data>
   <data name="guest.sommelierLite.caffeineLegend" xml:space="preserve"><value>Caffeine</value></data>
@@ -376,7 +376,7 @@
   <data name="home.statServiceValue" xml:space="preserve"><value>Quiet • precise</value></data>
   <data name="home.tapBrowse" xml:space="preserve"><value>Tap to browse</value></data>
   <data name="home.unseatedHint" xml:space="preserve"><value>To order and follow your tray, please scan the QR at your table. For a quiet preview of the room, you may still browse the menu.</value></data>
-  <data name="houseSelection.afterAdd" xml:space="preserve"><value>When it lands, ask what would follow nicely — a slower cup or something from the pastry page.</value></data>
+  <data name="houseSelection.afterAdd" xml:space="preserve"><value>You can add another drink or choose a pastry.</value></data>
   <data name="houseSelection.altAdd" xml:space="preserve"><value>Choose this cup</value></data>
   <data name="houseSelection.altKicker" xml:space="preserve"><value>Other options</value></data>
   <data name="houseSelection.ambientListen" xml:space="preserve"><value>One moment — choosing a cup for you.</value></data>
@@ -385,9 +385,9 @@
   <data name="houseSelection.readCup" xml:space="preserve"><value>Cup details</value></data>
   <data name="houseSelection.rerollBlocked" xml:space="preserve"><value>The house stands by this recommendation.</value></data>
   <data name="houseSelection.rerollFirst" xml:space="preserve"><value>Not quite tonight?</value></data>
-  <data name="houseSelection.rerollSealed" xml:space="preserve"><value>The house stands by this recommendation — too many changes spoil the ritual.</value></data>
+  <data name="houseSelection.rerollSealed" xml:space="preserve"><value>We are keeping this recommendation for consistency.</value></data>
   <data name="houseSelection.rerollSecond" xml:space="preserve"><value>One last change</value></data>
-  <data name="houseSelection.rerollWait" xml:space="preserve"><value>Give the ink a breath before another pass.</value></data>
+  <data name="houseSelection.rerollWait" xml:space="preserve"><value>Please wait a moment and try again.</value></data>
   <data name="langSwitcher.en" xml:space="preserve"><value>EN</value></data>
   <data name="langSwitcher.label" xml:space="preserve"><value>Language</value></data>
   <data name="langSwitcher.vi" xml:space="preserve"><value>VI</value></data>
@@ -403,7 +403,7 @@
   <data name="menu.backHomeAria" xml:space="preserve"><value>Return to the home screen to pick one of the three paths</value></data>
   <data name="menu.backNav" xml:space="preserve"><value>← Menu</value></data>
   <data name="menu.browseEyebrow" xml:space="preserve"><value>ANNAP</value></data>
-  <data name="menu.browseIntro" xml:space="preserve"><value>Each cup is curated for this room — scroll unhurriedly; the bar reads your pace.</value></data>
+  <data name="menu.browseIntro" xml:space="preserve"><value></value></data>
   <data name="menu.browseTitle" xml:space="preserve"><value>The house selection</value></data>
   <data name="menu.categoriesNavAria" xml:space="preserve"><value>Menu categories</value></data>
   <data name="menu.categorySeasonalNote" xml:space="preserve"><value>Seasonal rotation. Ask the barista for today&apos;s microlot.</value></data>
@@ -471,7 +471,7 @@
   <data name="menuTray.eachSuffix" xml:space="preserve"><value>each</value></data>
   <data name="menuTray.emptyBody" xml:space="preserve"><value>Add a cup from a suggestion or the menu — it will appear here.</value></data>
   <data name="menuTray.emptyGuest" xml:space="preserve"><value>This guest has not chosen yet — tap a cup when ready.</value></data>
-  <data name="menuTray.emptyGuestSection" xml:space="preserve"><value>This place is still quiet.</value></data>
+  <data name="menuTray.emptyGuestSection" xml:space="preserve"><value></value></data>
   <data name="menuTray.guestKicker" xml:space="preserve"><value>Guest tray</value></data>
   <data name="menuTray.itemNoteAction" xml:space="preserve"><value>Note</value></data>
   <data name="menuTray.itemNotePlaceholder" xml:space="preserve"><value>e.g. less ice, less sugar...</value></data>
@@ -489,40 +489,40 @@
   <data name="menuTray.sheetTitleOne" xml:space="preserve"><value>Tray · 1 item</value></data>
   <data name="menuTray.subtotal" xml:space="preserve"><value>This tasting</value></data>
   <data name="menuTray.yourOrder" xml:space="preserve"><value>Your table selection</value></data>
-  <data name="moods.adventurous.caption" xml:space="preserve"><value>Spice, fruit, shadow—cups that change their mind mid-sip.</value></data>
-  <data name="moods.adventurous.glimpse" xml:space="preserve"><value>You leave room for a turn in the cup — structure, then something unscripted.</value></data>
+  <data name="moods.adventurous.caption" xml:space="preserve"><value>Good when you want bolder drinks with clear character.</value></data>
+  <data name="moods.adventurous.glimpse" xml:space="preserve"><value>For guests who want to try stronger or less familiar flavors.</value></data>
   <data name="moods.adventurous.kicker" xml:space="preserve"><value>Brave</value></data>
-  <data name="moods.adventurous.line" xml:space="preserve"><value>Layers that shift; spice, shadow, and return.</value></data>
+  <data name="moods.adventurous.line" xml:space="preserve"><value>More layered flavor with stronger intensity.</value></data>
   <data name="moods.adventurous.prompt" xml:space="preserve"><value>adventurous bold daring spice unexpected layered</value></data>
-  <data name="moods.adventurous.tastingDirection" xml:space="preserve"><value>We invite a braver silhouette—layers that trade places, a little theatre without raising the voice.</value></data>
+  <data name="moods.adventurous.tastingDirection" xml:space="preserve"><value>Prioritizes intensity and distinct flavor layers.</value></data>
   <data name="moods.adventurous.title" xml:space="preserve"><value>Adventurous</value></data>
-  <data name="moods.bright.caption" xml:space="preserve"><value>Morning through glass—lifted, legible, almost audible.</value></data>
-  <data name="moods.bright.glimpse" xml:space="preserve"><value>You seem drawn to clarity and lift — cups that ring clean rather than sit heavy.</value></data>
+  <data name="moods.bright.caption" xml:space="preserve"><value>Good when you want a fresh and clear taste.</value></data>
+  <data name="moods.bright.glimpse" xml:space="preserve"><value>For guests who prefer light, crisp drinks.</value></data>
   <data name="moods.bright.kicker" xml:space="preserve"><value>Lifted</value></data>
-  <data name="moods.bright.line" xml:space="preserve"><value>Sunlit acidity, clean glass, a little electricity.</value></data>
+  <data name="moods.bright.line" xml:space="preserve"><value>Bright acidity with a clean finish.</value></data>
   <data name="moods.bright.prompt" xml:space="preserve"><value>bright citrusy lifted crystalline yuzu refreshing luminous</value></data>
-  <data name="moods.bright.tastingDirection" xml:space="preserve"><value>We tilt the room toward light: citrus oils on porcelain, a cool rim, electricity held politely.</value></data>
+  <data name="moods.bright.tastingDirection" xml:space="preserve"><value>Prioritizes citrus notes and lively acidity.</value></data>
   <data name="moods.bright.title" xml:space="preserve"><value>Bright &amp; citrusy</value></data>
-  <data name="moods.floral.caption" xml:space="preserve"><value>Perfume first, sugar in a whisper.</value></data>
-  <data name="moods.floral.glimpse" xml:space="preserve"><value>Delicacy reads as your line — perfume held in restraint, not decoration.</value></data>
+  <data name="moods.floral.caption" xml:space="preserve"><value>Good when you want aroma-forward but gentle drinks.</value></data>
+  <data name="moods.floral.glimpse" xml:space="preserve"><value>For guests who like subtle aroma without high sweetness.</value></data>
   <data name="moods.floral.kicker" xml:space="preserve"><value>Soft</value></data>
-  <data name="moods.floral.line" xml:space="preserve"><value>Perfumed air, whispered sugar, porcelain calm.</value></data>
+  <data name="moods.floral.line" xml:space="preserve"><value>Light floral aroma with a clean taste.</value></data>
   <data name="moods.floral.prompt" xml:space="preserve"><value>floral delicate jasmine honeysuckle blossom perfume</value></data>
-  <data name="moods.floral.tastingDirection" xml:space="preserve"><value>We draw the curtain toward petals and cool linen—soft lift, porcelain stillness, a finish that lingers kindly.</value></data>
+  <data name="moods.floral.tastingDirection" xml:space="preserve"><value>Prioritizes floral notes and clean finish.</value></data>
   <data name="moods.floral.title" xml:space="preserve"><value>Floral &amp; delicate</value></data>
-  <data name="moods.focus.caption" xml:space="preserve"><value>Tea-like clarity for concentration, rain, or both.</value></data>
-  <data name="moods.focus.glimpse" xml:space="preserve"><value>Stillness and transparency matter — a pour for reading the page as much as the flavor.</value></data>
+  <data name="moods.focus.caption" xml:space="preserve"><value>Good when you want a gentle drink with low heaviness.</value></data>
+  <data name="moods.focus.glimpse" xml:space="preserve"><value>For guests who prefer light drinks they can sip for longer.</value></data>
   <data name="moods.focus.kicker" xml:space="preserve"><value>Still</value></data>
-  <data name="moods.focus.line" xml:space="preserve"><value>Tea-like clarity for reading, thinking, or rain.</value></data>
+  <data name="moods.focus.line" xml:space="preserve"><value>Clean, light profile that is easy to focus with.</value></data>
   <data name="moods.focus.prompt" xml:space="preserve"><value>quiet focus contemplative tea clean transparent filter pen</value></data>
-  <data name="moods.focus.tastingDirection" xml:space="preserve"><value>We compose for still minds—transparent lines, rain on glass, room for thought between sips.</value></data>
+  <data name="moods.focus.tastingDirection" xml:space="preserve"><value>Prioritizes clarity and short, clean finish.</value></data>
   <data name="moods.focus.title" xml:space="preserve"><value>Quiet focus</value></data>
-  <data name="moods.slow.caption" xml:space="preserve"><value>Weight you can lean into; sweetness that doesn&apos;t hurry.</value></data>
-  <data name="moods.slow.glimpse" xml:space="preserve"><value>A slower, softer arc suits you today — sweetness that stays in the room after the sip.</value></data>
+  <data name="moods.slow.caption" xml:space="preserve"><value>Good when you want a smooth, easy cup.</value></data>
+  <data name="moods.slow.glimpse" xml:space="preserve"><value>For guests who prefer low harshness and a softer taste.</value></data>
   <data name="moods.slow.kicker" xml:space="preserve"><value>Held</value></data>
-  <data name="moods.slow.line" xml:space="preserve"><value>Round sweetness, hush, something to linger inside.</value></data>
+  <data name="moods.slow.line" xml:space="preserve"><value>Gentle sweetness with a round body.</value></data>
   <data name="moods.slow.prompt" xml:space="preserve"><value>slow comforting warm cozy sweet gentle velvet round</value></data>
-  <data name="moods.slow.tastingDirection" xml:space="preserve"><value>We let the air thicken gently—roundness, hush, the kind of warmth that gathers instead of announces.</value></data>
+  <data name="moods.slow.tastingDirection" xml:space="preserve"><value>Prioritizes soft texture and mellow finish.</value></data>
   <data name="moods.slow.title" xml:space="preserve"><value>Slow &amp; comforting</value></data>
   <data name="nav.menu" xml:space="preserve"><value>Menu</value></data>
   <data name="nav.privacy" xml:space="preserve"><value>Privacy</value></data>
@@ -547,47 +547,47 @@
   <data name="order.submitting" xml:space="preserve"><value>Sending to the 106/1 bar…</value></data>
   <data name="order.tableUnavailable" xml:space="preserve"><value>This table is not available just now. A host can help you find a seat.</value></data>
   <data name="refine.brighter.label" xml:space="preserve"><value>Brighter acidity</value></data>
-  <data name="refine.brighter.snippet" xml:space="preserve"><value>guest asks the line to lift—brighter acidity, air, glass-bright clarity</value></data>
+  <data name="refine.brighter.snippet" xml:space="preserve"><value>wants brighter acidity and a fresher taste</value></data>
   <data name="refine.less_sweet.label" xml:space="preserve"><value>Drier finish</value></data>
-  <data name="refine.less_sweet.snippet" xml:space="preserve"><value>guest prefers a drier arc—restrained sweetness, transparent finish</value></data>
+  <data name="refine.less_sweet.snippet" xml:space="preserve"><value>wants less sweetness and a cleaner finish</value></data>
   <data name="refine.low_caffeine.label" xml:space="preserve"><value>Lower caffeine</value></data>
-  <data name="refine.low_caffeine.snippet" xml:space="preserve"><value>guest wishes a gentler arc of caffeine—soft evening, steady hand</value></data>
+  <data name="refine.low_caffeine.snippet" xml:space="preserve"><value>wants lower caffeine</value></data>
   <data name="refine.more_adventurous.label" xml:space="preserve"><value>Push further</value></data>
-  <data name="refine.more_adventurous.snippet" xml:space="preserve"><value>guest invites the tray to wander further—bolder layers, curiosity, shadow</value></data>
+  <data name="refine.more_adventurous.snippet" xml:space="preserve"><value>wants stronger flavor and more complexity</value></data>
   <data name="refine.softer.label" xml:space="preserve"><value>Softer texture</value></data>
-  <data name="refine.softer.snippet" xml:space="preserve"><value>guest whispers for a softer, rounder mouthfeel—velvet, less edge, hush between sips</value></data>
+  <data name="refine.softer.snippet" xml:space="preserve"><value>wants a softer cup with lower harshness</value></data>
   <data name="ritual.beginWith" xml:space="preserve"><value>We&apos;d begin with</value></data>
   <data name="ritual.catalogErr" xml:space="preserve"><value>The parchment did not reach us; the tasting will return when the room steadies.</value></data>
-  <data name="ritual.catalogOffline" xml:space="preserve"><value>The room is quiet — we are holding yesterday&apos;s list until the line steadies.</value></data>
+  <data name="ritual.catalogOffline" xml:space="preserve"><value>Using the latest saved menu while connection is unstable.</value></data>
   <data name="ritual.cupsInLight" xml:space="preserve"><value>Cups in this light</value></data>
   <data name="ritual.fineAdjustments" xml:space="preserve"><value>Fine adjustments</value></data>
   <data name="ritual.flavorPath" xml:space="preserve"><value>Flavor path</value></data>
   <data name="ritual.fullMenu" xml:space="preserve"><value>Full menu</value></data>
-  <data name="ritual.heading" xml:space="preserve"><value>Arrive by feeling; we&apos;ll meet you in the room.</value></data>
+  <data name="ritual.heading" xml:space="preserve"><value>Choose a taste profile to get a matching recommendation.</value></data>
   <data name="ritual.hold" xml:space="preserve"><value>Hold</value></data>
   <data name="ritual.inTheCup" xml:space="preserve"><value>In the cup</value></data>
-  <data name="ritual.intro" xml:space="preserve"><value>Moods are doorways—not switches. Your host reads the air, sets the tray in kind, and lets language settle the way a private tasting does: unhurried, editorial, never a catalogue.</value></data>
+  <data name="ritual.intro" xml:space="preserve"><value>Answer a few short questions so we can suggest a drink that fits your preference.</value></data>
   <data name="ritual.kicker" xml:space="preserve"><value>House tasting</value></data>
   <data name="ritual.moodAria" xml:space="preserve"><value>How you wish to arrive</value></data>
   <data name="ritual.otherDirections" xml:space="preserve"><value>Other directions</value></data>
-  <data name="ritual.otherDirectionsHint" xml:space="preserve"><value>Should you wish another line on the tray.</value></data>
+  <data name="ritual.otherDirectionsHint" xml:space="preserve"><value>Choose another option if needed.</value></data>
   <data name="ritual.pairingClose" xml:space="preserve"><value>Exceptionally close in this light</value></data>
-  <data name="ritual.pairingEcho" xml:space="preserve"><value>A natural echo of your mood</value></data>
-  <data name="ritual.pairingLine" xml:space="preserve"><value>Still on your line — worth reading</value></data>
+  <data name="ritual.pairingEcho" xml:space="preserve"><value>Similar profile</value></data>
+  <data name="ritual.pairingLine" xml:space="preserve"><value>Close to your selected profile</value></data>
   <data name="ritual.pairingNeighbor" xml:space="preserve"><value>A softer neighbor on the tray</value></data>
   <data name="ritual.placeTray" xml:space="preserve"><value>Place on your tray</value></data>
   <data name="ritual.readCup" xml:space="preserve"><value>Read the cup</value></data>
-  <data name="ritual.readingRite1" xml:space="preserve"><value>Interpreting your palate in this light…</value></data>
-  <data name="ritual.readingRite2" xml:space="preserve"><value>Comparing texture against tonight&apos;s parchment…</value></data>
-  <data name="ritual.readingRite3" xml:space="preserve"><value>Setting cups beside the mood you chose…</value></data>
+  <data name="ritual.readingRite1" xml:space="preserve"><value>Analyzing your choices...</value></data>
+  <data name="ritual.readingRite2" xml:space="preserve"><value>Matching suitable drinks...</value></data>
+  <data name="ritual.readingRite3" xml:space="preserve"><value>Finalizing recommendation...</value></data>
   <data name="ritual.refinementGroupAria" xml:space="preserve"><value>Fine adjustments to the line</value></data>
   <data name="ritual.reserve" xml:space="preserve"><value>Reserve</value></data>
   <data name="ritual.roomBriefly" xml:space="preserve"><value>The room, briefly</value></data>
   <data name="ritual.secondGesture" xml:space="preserve"><value>A second gesture</value></data>
-  <data name="ritual.shroudBody" xml:space="preserve"><value>Setting the room and drawing language from tonight&apos;s parchment—no prompts, no chatter.</value></data>
+  <data name="ritual.shroudBody" xml:space="preserve"><value>Analyzing your choices to suggest a drink.</value></data>
   <data name="ritual.shroudKicker" xml:space="preserve"><value>House guide</value></data>
-  <data name="ritual.sommelierDefaultOpening" xml:space="preserve"><value>We take a breath, then offer {name}—drawn from tonight&apos;s list with the same care as the bar.</value></data>
-  <data name="ritual.sommelierFallbackOpen" xml:space="preserve"><value>The letter did not arrive—but the room still holds you. The cups at right were set to echo how you entered.</value></data>
+  <data name="ritual.sommelierDefaultOpening" xml:space="preserve"><value>Current recommendation: {name}.</value></data>
+  <data name="ritual.sommelierFallbackOpen" xml:space="preserve"><value>Automatic recommendation is unavailable. You can pick directly from the list on the right.</value></data>
   <data name="ritual.sommelierFallbackReason" xml:space="preserve"><value>We keep the tray composed until the line returns.</value></data>
   <data name="ritual.sommelierFallbackTasting" xml:space="preserve"><value>Choose the line that speaks first; your host will return when the connection steadies.</value></data>
   <data name="ritual.sommelierFallbackTone" xml:space="preserve"><value>Patient · Unhurried</value></data>
@@ -616,7 +616,7 @@
   <data name="track.cancelledFallback" xml:space="preserve"><value>This order is no longer active.</value></data>
   <data name="track.detailsUnavailable" xml:space="preserve"><value>Details unavailable.</value></data>
   <data name="track.err404" xml:space="preserve"><value>We could not find this order.</value></data>
-  <data name="track.errSoft" xml:space="preserve"><value>A quiet moment—connection is soft. We&apos;ll try again shortly.</value></data>
+  <data name="track.errSoft" xml:space="preserve"><value>Connection is weak. We&apos;ll try again shortly.</value></data>
   <data name="track.footnote" xml:space="preserve"><value>This page updates as the bar processes your order.</value></data>
   <data name="track.keepOpenNote" xml:space="preserve"><value>You can keep this screen open to receive updates.</value></data>
   <data name="track.orderRefLabel" xml:space="preserve"><value>Order ref</value></data>

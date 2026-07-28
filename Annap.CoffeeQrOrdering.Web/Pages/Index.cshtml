@@ -244,10 +244,10 @@ else
         <div class="max-w-5xl">
             <p class="text-xs tracking-[0.32em] text-[rgb(var(--muted-2))] uppercase" data-i18n="ritual.kicker">House tasting</p>
             <h2 id="mood-heading" class="mt-5 font-display text-2xl sm:text-3xl font-normal tracking-tight text-[rgb(var(--fg))] leading-snug" data-i18n="ritual.heading">
-                Arrive by feeling; we’ll meet you in the room.
+                Choose a taste profile to get a matching recommendation.
             </h2>
             <p class="mt-4 max-w-2xl text-sm sm:text-base leading-relaxed text-[rgb(var(--muted))]" data-i18n="ritual.intro">
-                Moods are doorways—not switches. Your host reads the air, sets the tray in kind, and lets language settle the way a private tasting does: unhurried, editorial, never a catalogue.
+                Answer a few short questions so we can suggest a drink that fits your preference.
             </p>
 
             <div id="moodChoices"
@@ -263,7 +263,7 @@ else
                         onclick="selectMood('bright')">
                     <span class="mood-pill-kicker" data-i18n="moods.bright.kicker">Lifted</span>
                     <span class="mood-pill-title" data-i18n="moods.bright.title">Bright &amp; citrusy</span>
-                    <span class="mood-pill-line" data-i18n="moods.bright.line">Sunlit acidity, clean glass, a little electricity.</span>
+                    <span class="mood-pill-line" data-i18n="moods.bright.line">Bright acidity with a clean finish.</span>
                 </button>
                 <button type="button"
                         class="mood-pill group text-left"
@@ -273,7 +273,7 @@ else
                         onclick="selectMood('slow')">
                     <span class="mood-pill-kicker" data-i18n="moods.slow.kicker">Held</span>
                     <span class="mood-pill-title" data-i18n="moods.slow.title">Slow &amp; comforting</span>
-                    <span class="mood-pill-line" data-i18n="moods.slow.line">Round sweetness, hush, something to linger inside.</span>
+                    <span class="mood-pill-line" data-i18n="moods.slow.line">Gentle sweetness with a round body.</span>
                 </button>
                 <button type="button"
                         class="mood-pill group text-left"
@@ -283,7 +283,7 @@ else
                         onclick="selectMood('floral')">
                     <span class="mood-pill-kicker" data-i18n="moods.floral.kicker">Soft</span>
                     <span class="mood-pill-title" data-i18n="moods.floral.title">Floral &amp; delicate</span>
-                    <span class="mood-pill-line" data-i18n="moods.floral.line">Perfumed air, whispered sugar, porcelain calm.</span>
+                    <span class="mood-pill-line" data-i18n="moods.floral.line">Light floral aroma with a clean taste.</span>
                 </button>
                 <button type="button"
                         class="mood-pill group text-left"
@@ -293,7 +293,7 @@ else
                         onclick="selectMood('adventurous')">
                     <span class="mood-pill-kicker" data-i18n="moods.adventurous.kicker">Brave</span>
                     <span class="mood-pill-title" data-i18n="moods.adventurous.title">Adventurous</span>
-                    <span class="mood-pill-line" data-i18n="moods.adventurous.line">Layers that shift; spice, shadow, and return.</span>
+                    <span class="mood-pill-line" data-i18n="moods.adventurous.line">More layered flavor with stronger intensity.</span>
                 </button>
                 <button type="button"
                         class="mood-pill group text-left sm:col-span-2 lg:col-span-1 xl:col-span-1"
@@ -303,7 +303,7 @@ else
                         onclick="selectMood('focus')">
                     <span class="mood-pill-kicker" data-i18n="moods.focus.kicker">Still</span>
                     <span class="mood-pill-title" data-i18n="moods.focus.title">Quiet focus</span>
-                    <span class="mood-pill-line" data-i18n="moods.focus.line">Tea-like clarity for reading, thinking, or rain.</span>
+                    <span class="mood-pill-line" data-i18n="moods.focus.line">Clean, light profile that is easy to focus with.</span>
                 </button>
             </div>
 
@@ -319,7 +319,7 @@ else
                                  aria-busy="true">
                                 <p class="text-[10px] font-medium tracking-[0.32em] uppercase text-[rgb(var(--muted-2))]" data-i18n="ritual.shroudKicker">House guide</p>
                                 <div class="sommelier-quiet-line max-w-[14rem]" aria-hidden="true"></div>
-                                <p class="max-w-xs text-sm leading-relaxed text-[rgb(var(--muted))]" data-i18n="ritual.shroudBody">Setting the room and drawing language from tonight’s parchment—no prompts, no chatter.</p>
+                                <p class="max-w-xs text-sm leading-relaxed text-[rgb(var(--muted))]" data-i18n="ritual.shroudBody">Analyzing your choices to suggest a drink.</p>
                             </div>
                             <div id="moodSommelierInner" class="mood-sommelier-inner relative z-0">
                                 <div class="mood-ritual-block" style="--ritual-i:0">
@@ -360,7 +360,7 @@ else
                                 </div>
                                 <div id="moodAlternativesWrap" class="mood-ritual-block mt-8 hidden border-t border-[rgba(212,184,150,0.35)] pt-6" style="--ritual-i:9">
                                     <p class="text-[10px] font-medium tracking-[0.28em] uppercase text-[rgb(var(--muted-2))]" data-i18n="ritual.otherDirections">Other directions</p>
-                                    <p class="mt-1 text-xs leading-relaxed text-[rgb(var(--muted-2))]" data-i18n="ritual.otherDirectionsHint">Should you wish another line on the tray.</p>
+                                    <p class="mt-1 text-xs leading-relaxed text-[rgb(var(--muted-2))]" data-i18n="ritual.otherDirectionsHint">Choose another option if needed.</p>
                                     <div id="moodAlternatives" class="mt-4 flex flex-col gap-3"></div>
                                 </div>
                                 <div class="mood-ritual-block mt-8 flex flex-wrap items-center gap-3 border-t border-[rgba(212,184,150,0.35)] pt-6" style="--ritual-i:10">
@@ -569,7 +569,7 @@ else
                     box.setAttribute("style", "margin:12px;padding:12px;border:1px solid #666;border-radius:8px;background:#111;color:#eee;font:14px system-ui,sans-serif");
                     mount.insertBefore(box, mount.firstChild);
                 }
-                box.innerHTML = "<p>The menu is settling…</p>";
+                box.innerHTML = "<p>Loading menu...</p>";
                 fetch(typeof window.__annapApiUrl === "function" ? window.__annapApiUrl("/api/menu") : "/api/menu", { headers: { Accept: "application/json" }, cache: "no-store" })
                     .then(function (r) {
                         if (!r.ok) throw new Error("HTTP " + r.status);

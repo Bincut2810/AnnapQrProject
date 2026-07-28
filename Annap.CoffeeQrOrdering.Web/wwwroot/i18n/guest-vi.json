@@ -92,17 +92,17 @@
       "deskHint": "Không vội. Một ly. Chưa mở thực đơn.",
       "deskCta": "Để quán chọn",
       "deskNudge": "Không vội — một ly, chọn cho bàn này.",
-      "r1Dim": "Vịt bưu tá đang bay qua bầu trời…",
-      "r1Letter": "Thư rơi xuống — nghe nhịp chạm nhẹ.",
-      "r1Open": "Nếp thư mở ra phía bàn của bạn.",
-      "r2Dim": "Một vòng nữa — cánh vịt vẫy chậm hơn.",
-      "r2Letter": "Phong bì thứ hai rơi, nhẹ hơn lần trước.",
-      "r2Open": "Giấy tranh luận dịu; chúng tôi giữ điều chân thật hơn.",
-      "r3Dim": "Chuyến giao cuối — cánh chậm, tay chắc hơn.",
-      "r3Letter": "Nếu còn ngờ, phòng sẽ chọn bằng ấm áp, không bằng ồn ào.",
-      "r3Open": "Còn lại là dòng chữ không chịu rời mép giấy.",
-      "reducedLine": "Quán đang chọn…",
-      "blockedTitle": "Ôi không! Vịt đã giao hết thư rồi…",
+      "r1Dim": "Đang chuẩn bị gợi ý...",
+      "r1Letter": "Đang kiểm tra lựa chọn đầu tiên.",
+      "r1Open": "Đã ghi nhận lựa chọn cho bàn.",
+      "r2Dim": "Đang kiểm tra thêm lựa chọn...",
+      "r2Letter": "Đang so sánh lựa chọn thứ hai.",
+      "r2Open": "Đang giữ phương án phù hợp hơn.",
+      "r3Dim": "Đang kiểm tra lần cuối...",
+      "r3Letter": "Đang chốt lựa chọn cho bàn này.",
+      "r3Open": "Gợi ý đã sẵn sàng.",
+      "reducedLine": "Đang chuẩn bị gợi ý...",
+      "blockedTitle": "Đã hết lượt đổi cho vòng này.",
       "blockedBody": "Bạn đã dùng hết lượt đổi cho vòng này. Quán giữ đề xuất cuối.",
       "blockedOwner": "Quầy giữ tên cuối cùng cho bàn này.",
       "blockedDismiss": "Đã hiểu",
@@ -142,7 +142,7 @@
     },
     "sommelier": {
       "entry": {
-        "invite": "Chúng tôi sẽ giữ tối nay không vội."
+        "invite": "Trả lời vài câu hỏi để nhận gợi ý phù hợp."
       },
       "question": {
         "step": "Bước {n} / {total}",
@@ -220,10 +220,10 @@
         "offline": "Quán chưa gọi tên được lúc này.",
         "retry": "Thử lại"
       },
-      "whisper1": "Cứ từ từ — không có câu trả lời sai.",
-      "whisper2": "Chúng tôi lắng nghe vị giác, không phải nhãn mác.",
-      "whisper3": "Độ ngọt là tâm trạng, không phải cài đặt.",
-      "whisper4": "Độ tỉnh có thể nhẹ hoặc dứt khoát."
+      "whisper1": "Trả lời theo gu của bạn.",
+      "whisper2": "Không cần thuật ngữ chuyên môn.",
+      "whisper3": "Bạn có thể chọn mức độ ngọt.",
+      "whisper4": "Bạn có thể chọn mức caffeine phù hợp."
     },
     "cupMoment": {
       "namingKicker": "Annap chọn cho bạn",
@@ -332,7 +332,7 @@
   "menu": {
     "browseEyebrow": "ANNAP",
     "browseTitle": "Lựa chọn của quán",
-    "browseIntro": "Mỗi ly được chọn lọc cho không gian này — cuộn chậm thôi; quầy bar đọc nhịp của bạn.",
+    "browseIntro": "",
     "categoriesNavAria": "Danh mục thực đơn",
     "categorySeasonalNote": "Luân phiên theo mùa. Hỏi barista về microlot hôm nay nhé.",
     "stillLifeBadge": "Tĩnh vật",
@@ -388,10 +388,10 @@
     "altAdd": "Chọn ly này",
     "rerollFirst": "Chưa đúng tối nay?",
     "rerollSecond": "Một lần đổi cuối",
-    "rerollSealed": "Quán giữ đề xuất này — đổi quá nhiều sẽ làm mất nhịp nghi lễ.",
-    "rerollWait": "Để mực nghỉ một nhịp rồi mới xem tiếp.",
+    "rerollSealed": "Quán giữ đề xuất này để đảm bảo nhất quán.",
+    "rerollWait": "Đợi một chút rồi thử lại.",
     "rerollBlocked": "Quán tin đây là ly phù hợp tối nay.",
-    "afterAdd": "Khi ly tới, hỏi thử nên tiếp tục thế nào — một ly chậm hơn hay món bánh từ tủ kính.",
+    "afterAdd": "Bạn có thể thêm ly khác hoặc chọn bánh dùng kèm.",
     "fitReference": "tham khảo"
   },
   "letterRoom": {
@@ -441,7 +441,7 @@
     "itemNotePreview": "Ghi chú:",
     "eachSuffix": "mỗi ly",
     "emptyBody": "Thêm một ly từ gợi ý hoặc thực đơn — khay sẽ hiện tại đây.",
-    "emptyGuestSection": "Chỗ này vẫn đang yên.",
+    "emptyGuestSection": "",
     "emptyGuest": "Khách này chưa chọn ly nào — chạm một ly khi đã sẵn sàng.",
     "lineDescriptor": "Pha tại 106/1",
     "modalUnavailable": "Ly này hiện không có.",
@@ -493,16 +493,16 @@
     "statusPaid": "Đang chuẩn bị",
     "statusComplete": "Hoàn thành",
     "err404": "Chúng tôi không tìm thấy đơn này.",
-    "errSoft": "Kết nối đang yếu—chúng tôi sẽ thử lại sau ít phút.",
+    "errSoft": "Kết nối đang yếu. Chúng tôi sẽ thử lại sớm.",
     "cancelledFallback": "Đơn này không còn hiệu lực."
   },
   "ritual": {
     "kicker": "Nếm nhà",
-    "heading": "Bước vào theo cảm giác—chúng tôi chờ bạn trong không gian đó.",
-    "intro": "Mỗi tông là một cánh cửa, không phải nút bật. Chúng tôi đọc không khí, sắp khay cho vừa, và để lời vừa đủ như một buổi nếm riêng: không vội, có nhịp, không như catalogue.",
+    "heading": "Chọn gu vị để nhận gợi ý phù hợp.",
+    "intro": "Trả lời vài câu hỏi ngắn để quán gợi ý đồ uống phù hợp với bạn.",
     "moodAria": "Bạn muốn bước vào thế nào",
     "shroudKicker": "Người dẫn",
-    "shroudBody": "Chúng tôi đang dựng phòng và chọn lời từ thực đơn hôm nay—không máy móc, không ồn.",
+    "shroudBody": "Đang phân tích lựa chọn của bạn để đề xuất món.",
     "flavorPath": "Hướng vị",
     "tastingDirection": "Điều bạn sẽ cảm nhận",
     "beginWith": "Có lẽ nhịp này mở bằng",
@@ -513,7 +513,7 @@
     "refinementGroupAria": "Chỉnh nhẹ theo nhịp ly",
     "secondGesture": "Nhịp tiếp theo",
     "otherDirections": "Hướng khác",
-    "otherDirectionsHint": "Còn vài đường khác trong lựa chọn, nếu bạn muốn.",
+    "otherDirectionsHint": "Bạn có thể chọn phương án khác nếu cần.",
     "readCup": "Xem lá thư",
     "placeTray": "Thêm vào khay",
     "cupsInLight": "Những ly trong ánh này",
@@ -522,87 +522,87 @@
     "hold": "Giữ lại",
     "reserve": "Chọn",
     "catalogErr": "Chưa tải được thực đơn. Khi kết nối ổn, phần nếm sẽ trở lại.",
-    "sommelierFallbackOpen": "Lời gợi ý chưa về—không gian vẫn giữ bạn. Những ly bên phải được chọn để vang với cách bạn vừa bước vào.",
+    "sommelierFallbackOpen": "Chưa nhận được gợi ý tự động. Bạn có thể chọn trực tiếp từ danh sách bên phải.",
     "sommelierFallbackTasting": "Chọn một dòng trước; khi sóng ổn, người dẫn sẽ trở lại.",
     "sommelierFallbackTone": "Chậm · có chừng",
     "sommelierFallbackReason": "Chúng tôi giữ lựa chọn gọn cho đến khi tín hiệu trở lại.",
-    "sommelierDefaultOpening": "Khựng một nhịp, rồi mời {name}—từ thực đơn hôm nay, với cùng sự chăm như ở quầy.",
-    "catalogOffline": "Phòng đang yên lặng — chúng tôi giữ danh sách hôm qua cho đến khi đường truyền ổn định.",
-    "readingRite1": "Đang đọc khẩu vị của bạn trong ánh sáng này…",
-    "readingRite2": "Đang so sánh kết cấu với tập giấy đêm nay…",
-    "readingRite3": "Đặt những ly bên cạnh tâm trạng bạn chọn…",
+    "sommelierDefaultOpening": "Gợi ý hiện tại: {name}.",
+    "catalogOffline": "Đang dùng danh sách gần nhất do kết nối chưa ổn định.",
+    "readingRite1": "Đang phân tích lựa chọn của bạn...",
+    "readingRite2": "Đang đối chiếu các món phù hợp...",
+    "readingRite3": "Đang hoàn tất gợi ý...",
     "pairingClose": "Rất gần với ánh sáng này",
-    "pairingEcho": "Tiếng vang tự nhiên của tâm trạng bạn",
-    "pairingLine": "Vẫn trên dòng của bạn — đáng đọc",
+    "pairingEcho": "Món cùng hướng vị",
+    "pairingLine": "Món gần với gu bạn chọn",
     "pairingNeighbor": "Người hàng xóm dịu hơn trên khay"
   },
   "moods": {
     "bright": {
       "kicker": "Thanh",
       "title": "Sáng và chanh",
-      "line": "Nắng trong ly, vành mát, một chút điện nhẹ.",
-      "caption": "Buổi sáng xuyên qua ly—rõ, trong, gần như có âm.",
-      "tastingDirection": "Không gian nghiêng về ánh sáng: tinh dầu chanh trên sứ, vành ly mát, điện nhẹ mà vẫn lịch.",
+      "line": "Vị sáng, chua thanh, hậu sạch.",
+      "caption": "Phù hợp khi bạn muốn đồ uống tươi và rõ vị.",
+      "tastingDirection": "Ưu tiên hương citrus và độ chua rõ.",
       "prompt": "sáng chanh trong mát nắng yuzu ly nhẹ ánh",
-      "glimpse": "Bạn hướng đến sự trong sáng và nhẹ bổng — những ly vang trong, không nặng."
+      "glimpse": "Dành cho người thích vị chua thanh và cảm giác nhẹ."
     },
     "slow": {
       "kicker": "Ôm",
       "title": "Ấm và chậm",
-      "line": "Ngọt tròn, im, thứ để ở lại trong người.",
-      "caption": "Có thể dựa vào; ngọt không giục.",
-      "tastingDirection": "Không khí dày lên nhẹ—tròn, im, hơi ấm tự tụ lại thay vì vỗ tay.",
+      "line": "Vị ngọt dịu, tròn miệng.",
+      "caption": "Phù hợp khi bạn muốn ly êm và dễ uống.",
+      "tastingDirection": "Ưu tiên độ béo nhẹ và hậu vị mềm.",
       "prompt": "chậm ấm ôm ngọt nhẹ nhung êm an",
-      "glimpse": "Nhịp chậm và mềm hơn hợp với bạn hôm nay — ngọt ở lại trong phòng sau ngụm."
+      "glimpse": "Dành cho người thích vị mềm, ít gắt."
     },
     "floral": {
       "kicker": "Mềm",
       "title": "Hoa và nhẹ",
-      "line": "Hương như sương, đường kín, sứ tĩnh.",
-      "caption": "Hương trước, đường chỉ hé.",
-      "tastingDirection": "Rèm kéo về cánh hoa và lanh mát—nâng nhẹ, sứ lặng, hậu dễ chịu.",
+      "line": "Hương hoa nhẹ, vị thanh.",
+      "caption": "Phù hợp khi bạn muốn mùi hương rõ nhưng nhẹ vị.",
+      "tastingDirection": "Ưu tiên nốt hoa và hậu vị sạch.",
       "prompt": "hoa nhẹ hương jasmine sương porcelain êm",
-      "glimpse": "Sự tinh tế là dòng của bạn — hương được giữ trong kiềm chế, không phô."
+      "glimpse": "Dành cho người thích hương hoa nhẹ, không ngọt gắt."
     },
     "adventurous": {
       "kicker": "Dấn",
       "title": "Muốn dấn thêm",
-      "line": "Lớp đổi giữa chừng; gia vị, bóng, rồi quay về.",
-      "caption": "Gia vị, trái, bóng—những ly đổi ý giữa ngụm.",
-      "tastingDirection": "Mời một hình dáng táo bạo hơn—lớp thay nhau, một chút kịch mà vẫn nhỏ.",
+      "line": "Nhiều tầng vị, độ đậm cao hơn.",
+      "caption": "Phù hợp khi bạn muốn hương vị rõ và có điểm nhấn.",
+      "tastingDirection": "Ưu tiên độ đậm và lớp vị rõ ràng.",
       "prompt": "dấn táo bạo gia vị lớp sâu bất ngờ",
-      "glimpse": "Bạn để chỗ cho sự bất ngờ trong ly — cấu trúc rồi một điều không có kịch bản."
+      "glimpse": "Dành cho người muốn thử vị mới hoặc mạnh hơn."
     },
     "focus": {
       "kicker": "Lặng",
       "title": "Khoảng lặng để tập trung",
-      "line": "Trong như trà—để đọc, nghĩ, hoặc nghe mưa.",
-      "caption": "Trong như trà cho lúc tập trung, mưa, hoặc cả hai.",
-      "tastingDirection": "Cho đầu óc tĩnh—đường thẳng trong, mưa trên kính, khoảng trống giữa các ngụm.",
+      "line": "Vị sạch, nhẹ, dễ tập trung.",
+      "caption": "Phù hợp khi bạn cần đồ uống thanh và ít nặng bụng.",
+      "tastingDirection": "Ưu tiên độ trong, hậu vị ngắn và sạch.",
       "prompt": "lặng tập trung trà trong im suy tư mưa",
-      "glimpse": "Sự yên lặng và trong trẻo là điều quan trọng — một ly để đọc trang cũng như hương vị."
+      "glimpse": "Dành cho người thích ly nhẹ, dễ uống lâu."
     }
   },
   "refine": {
     "softer": {
       "label": "Miệng êm hơn",
-      "snippet": "miệng êm hơn, nhịp chậm; ít cạnh, nhiều khoảng lặng giữa các ngụm"
+      "snippet": "muốn ly êm hơn và ít gắt"
     },
     "brighter": {
       "label": "Vị thanh và mở",
-      "snippet": "vị mở và thanh hơn—không khí trong ly, ánh nhẹ như sứ mát"
+      "snippet": "muốn vị sáng và chua thanh hơn"
     },
     "less_sweet": {
       "label": "Gu khô và trong",
-      "snippet": "gu khô và trong hơn—ít ngọt, hậu sạch"
+      "snippet": "muốn giảm độ ngọt, hậu sạch"
     },
     "more_adventurous": {
       "label": "Dấn thêm một nhịp",
-      "snippet": "muốn lựa chọn dấn thêm một nhịp—lớp sâu hơn, tò mò có chừng"
+      "snippet": "muốn hương vị đậm và nhiều tầng hơn"
     },
     "low_caffeine": {
       "label": "Gu caffeine êm hơn",
-      "snippet": "cần gu caffeine êm hơn—chiều nhẹ trong người, tay vẫn ổn"
+      "snippet": "muốn ít caffeine hơn"
     }
   },
   "errors": {
