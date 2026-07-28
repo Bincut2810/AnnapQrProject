@@ -410,14 +410,22 @@
   <data name="menu.curatedCup" xml:space="preserve"><value>Ly được chọn</value></data>
   <data name="menu.detailActionsAria" xml:space="preserve"><value>Thao tác thẻ hương vị</value></data>
   <data name="menu.discover" xml:space="preserve"><value>Khám phá</value></data>
-  <data name="menu.editorialBlack" xml:space="preserve"><value>Cấu trúc sáng, trong trẻo lặng lẽ—những ly đáng uống chậm.</value></data>
-  <data name="menu.editorialDefault" xml:space="preserve"><value>Tuyển chọn theo mùa—chọn thong thả; quầy bar theo nhịp của bạn.</value></data>
-  <data name="menu.editorialFallback" xml:space="preserve"><value>Tuyển chọn cho chương này của thực đơn—hỏi barista nếu hai ly cùng gọi như nhau.</value></data>
-  <data name="menu.editorialMilk" xml:space="preserve"><value>Những ly sữa dịu dàng cho những ngụm thong thả và bàn dài.</value></data>
-  <data name="menu.editorialSeasonal" xml:space="preserve"><value>Một bức thư ngắn từ mùa—hiện diện trong một khoảng, rồi gấp lại.</value></data>
-  <data name="menu.editorialSignature" xml:space="preserve"><value>Những ly chúng tôi gọi tên to—vững chắc, tự tin, rõ ràng là của chúng tôi.</value></data>
-  <data name="menu.editorialSpark" xml:space="preserve"><value>Nhẹ bổng, thơm thoảng, sảng khoái—khi bạn muốn căn phòng rộng hơn.</value></data>
-  <data name="menu.editorialTea" xml:space="preserve"><value>Lá trà và bình yên nghiền mịn—caffeine nhẹ nhàng, hậu vị sạch.</value></data>
+  <data name="menu.editorialBakery" xml:space="preserve"><value>Bánh ngọt kèm cà phê hoặc trà. Chọn khi muốn ăn nhẹ cùng ly uống.</value></data>
+  <data name="menu.editorialBlack" xml:space="preserve"><value>Những ly cà phê đen pha máy. Đậm đà, cân bằng và dễ uống.</value></data>
+  <data name="menu.editorialCoffee" xml:space="preserve"><value>Cà phê pha máy hằng ngày. Đậm đà, cân bằng và dễ uống.</value></data>
+  <data name="menu.editorialColdBrew" xml:space="preserve"><value>Cà phê ủ lạnh chậm. Êm và ít đắng, uống mát cả ngày.</value></data>
+  <data name="menu.editorialDefault" xml:space="preserve"><value>Các món đang có trên quầy. Hỏi barista nếu bạn cần gợi ý.</value></data>
+  <data name="menu.editorialEspresso" xml:space="preserve"><value>Những ly espresso pha hằng ngày. Đậm đà, cân bằng và dễ uống.</value></data>
+  <data name="menu.editorialFallback" xml:space="preserve"><value>Các món trong nhóm này. Hỏi barista nếu bạn cần gợi ý.</value></data>
+  <data name="menu.editorialJuice" xml:space="preserve"><value>Nước ép trái cây tươi. Mát và thanh, chọn khi muốn giải khát nhanh.</value></data>
+  <data name="menu.editorialMilk" xml:space="preserve"><value>Cà phê pha cùng sữa. Êm và dễ uống, chọn khi muốn ly dịu hơn.</value></data>
+  <data name="menu.editorialSeasonal" xml:space="preserve"><value>Món theo mùa, có trong thời gian giới hạn. Hỏi barista món nào đang còn hôm nay.</value></data>
+  <data name="menu.editorialSignature" xml:space="preserve"><value>Những ly đặc trưng của quán. Công thức riêng, đậm vị và dễ nhận ra.</value></data>
+  <data name="menu.editorialSmoothie" xml:space="preserve"><value>Sinh tố trái cây xay cùng sữa. Dày mịn và ngọt tự nhiên, chọn khi muốn no nhẹ.</value></data>
+  <data name="menu.editorialSpark" xml:space="preserve"><value>Đồ uống trái cây mát lạnh. Chọn khi muốn giải khát và tỉnh táo.</value></data>
+  <data name="menu.editorialSpecialty" xml:space="preserve"><value>4 lô Specialty Coffee tuyển chọn. Mỗi lô mang một hương vị và câu chuyện riêng.</value></data>
+  <data name="menu.editorialTea" xml:space="preserve"><value>Trà nguyên lá pha theo từng ly. Nhẹ caffeine, hậu vị sạch.</value></data>
+  <data name="menu.editorialVietnamese" xml:space="preserve"><value>Cà phê Việt Nam pha phin. Đậm và ngọt sữa, quen thuộc và chắc chắn.</value></data>
   <data name="menu.pairingAdded" xml:space="preserve"><value>Đã thêm</value></data>
   <data name="menu.pairingReceipt" xml:space="preserve"><value>Đã thêm {name} vào khay</value></data>
   <data name="menu.pairingReceiptShort" xml:space="preserve"><value>Đã thêm vào khay</value></data>

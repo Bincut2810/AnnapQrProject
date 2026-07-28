@@ -410,14 +410,22 @@
   <data name="menu.curatedCup" xml:space="preserve"><value>Curated cup</value></data>
   <data name="menu.detailActionsAria" xml:space="preserve"><value>Drink detail actions</value></data>
   <data name="menu.discover" xml:space="preserve"><value>Discover</value></data>
-  <data name="menu.editorialBlack" xml:space="preserve"><value>Bright structure, quiet clarity—cups that reward a slower read.</value></data>
-  <data name="menu.editorialDefault" xml:space="preserve"><value>Curated for this season—choose slowly; the bar follows your pace.</value></data>
-  <data name="menu.editorialFallback" xml:space="preserve"><value>Curated for this chapter of the menu—ask the barista if two cups call equally.</value></data>
-  <data name="menu.editorialMilk" xml:space="preserve"><value>Comforting milk-forward cups for unhurried sips and long tables.</value></data>
-  <data name="menu.editorialSeasonal" xml:space="preserve"><value>A short letter from the season—here for a window, then folded away.</value></data>
-  <data name="menu.editorialSignature" xml:space="preserve"><value>The cups we name aloud—steady, confident, unmistakably ours.</value></data>
-  <data name="menu.editorialSpark" xml:space="preserve"><value>Lifted, aromatic, and brisk—when you want the room to widen.</value></data>
-  <data name="menu.editorialTea" xml:space="preserve"><value>Leaves and stone-ground calm—soft caffeine, clean finish.</value></data>
+  <data name="menu.editorialBakery" xml:space="preserve"><value>Pastries to go with coffee or tea. Pick one when you want a light bite.</value></data>
+  <data name="menu.editorialBlack" xml:space="preserve"><value>Black coffee from the machine. Bold, balanced, and easy to drink.</value></data>
+  <data name="menu.editorialCoffee" xml:space="preserve"><value>Machine-brewed coffee, made daily. Bold, balanced, and easy to drink.</value></data>
+  <data name="menu.editorialColdBrew" xml:space="preserve"><value>Slow cold-brewed coffee. Smooth and less bitter — good iced all day.</value></data>
+  <data name="menu.editorialDefault" xml:space="preserve"><value>What's on the bar right now. Ask a barista if you need a recommendation.</value></data>
+  <data name="menu.editorialEspresso" xml:space="preserve"><value>Everyday espresso drinks. Bold, balanced, and easy to drink.</value></data>
+  <data name="menu.editorialFallback" xml:space="preserve"><value>Drinks in this group. Ask a barista if you need a recommendation.</value></data>
+  <data name="menu.editorialJuice" xml:space="preserve"><value>Fresh-pressed juices. Bright and clean — pick one when you want a quick refresh.</value></data>
+  <data name="menu.editorialMilk" xml:space="preserve"><value>Coffee with milk. Smooth and easy — pick one when you want a softer cup.</value></data>
+  <data name="menu.editorialSeasonal" xml:space="preserve"><value>Seasonal items, available for a limited time. Ask a barista what's on today.</value></data>
+  <data name="menu.editorialSignature" xml:space="preserve"><value>House signature drinks. Our own recipes — bold and easy to recognize.</value></data>
+  <data name="menu.editorialSmoothie" xml:space="preserve"><value>Fruit smoothies blended with milk. Thick and naturally sweet — pick one when you want something filling.</value></data>
+  <data name="menu.editorialSpark" xml:space="preserve"><value>Chilled fruit drinks. Pick one when you want something refreshing and bright.</value></data>
+  <data name="menu.editorialSpecialty" xml:space="preserve"><value>4 specialty coffee lots, carefully selected. Each lot has its own flavor and story.</value></data>
+  <data name="menu.editorialTea" xml:space="preserve"><value>Whole-leaf tea, brewed by the cup. Soft caffeine, clean finish.</value></data>
+  <data name="menu.editorialVietnamese" xml:space="preserve"><value>Vietnamese phin coffee. Bold and sweet with condensed milk — familiar and reliable.</value></data>
   <data name="menu.pairingAdded" xml:space="preserve"><value>Added</value></data>
   <data name="menu.pairingReceipt" xml:space="preserve"><value>Added {name} to tray</value></data>
   <data name="menu.pairingReceiptShort" xml:space="preserve"><value>Added to tray</value></data>

@@ -9,29 +9,31 @@
     ViewData["IsSeatedPage"] = true;
     string ChapterEditorialKey(string categoryName) => categoryName.Trim() switch
     {
+        "Specialty Coffee" => "menu.editorialSpecialty",
         "Signature" => "menu.editorialSignature",
-        "Espresso" => "menu.editorialBlack",
-        "Coffee" => "menu.editorialBlack",
+        "Espresso" => "menu.editorialEspresso",
+        "Coffee" => "menu.editorialCoffee",
         "Tea" => "menu.editorialTea",
-        "Smoothie" => "menu.editorialSpark",
-        "Juice" => "menu.editorialSpark",
-        "Cold Brew" => "menu.editorialBlack",
-        "Vietnamese Coffee" => "menu.editorialDefault",
-        "Bánh" => "menu.editorialDefault",
+        "Smoothie" => "menu.editorialSmoothie",
+        "Juice" => "menu.editorialJuice",
+        "Cold Brew" => "menu.editorialColdBrew",
+        "Vietnamese Coffee" => "menu.editorialVietnamese",
+        "Bánh" => "menu.editorialBakery",
         _ => "menu.editorialFallback"
     };
     string ChapterEditorialDefault(string categoryName) => categoryName.Trim() switch
     {
-        "Signature" => "Những ly chúng tôi gọi tên to—vững chắc, tự tin, rõ ràng là của chúng tôi.",
-        "Espresso" => "Cấu trúc sáng, trong trẻo lặng lẽ—những ly đáng uống chậm.",
-        "Coffee" => "Cấu trúc sáng, trong trẻo lặng lẽ—những ly đáng uống chậm.",
-        "Tea" => "Lá trà và bình yên nghiền mịn—caffeine nhẹ nhàng, hậu vị sạch.",
-        "Smoothie" => "Nhẹ bổng, thơm thoảng, sảng khoái—khi bạn muốn căn phòng rộng hơn.",
-        "Juice" => "Nhẹ bổng, thơm thoảng, sảng khoái—khi bạn muốn căn phòng rộng hơn.",
-        "Cold Brew" => "Cấu trúc sáng, trong trẻo lặng lẽ—những ly đáng uống chậm.",
-        "Vietnamese Coffee" => "Tuyển chọn theo mùa—chọn thong thả; quầy bar theo nhịp của bạn.",
-        "Bánh" => "Tuyển chọn theo mùa—chọn thong thả; quầy bar theo nhịp của bạn.",
-        _ => "Tuyển chọn cho chương này của thực đơn—hỏi barista nếu hai ly cùng gọi như nhau."
+        "Specialty Coffee" => "4 lô Specialty Coffee tuyển chọn. Mỗi lô mang một hương vị và câu chuyện riêng.",
+        "Signature" => "Những ly đặc trưng của quán. Công thức riêng, đậm vị và dễ nhận ra.",
+        "Espresso" => "Những ly espresso pha hằng ngày. Đậm đà, cân bằng và dễ uống.",
+        "Coffee" => "Cà phê pha máy hằng ngày. Đậm đà, cân bằng và dễ uống.",
+        "Tea" => "Trà nguyên lá pha theo từng ly. Nhẹ caffeine, hậu vị sạch.",
+        "Smoothie" => "Sinh tố trái cây xay cùng sữa. Dày mịn và ngọt tự nhiên, chọn khi muốn no nhẹ.",
+        "Juice" => "Nước ép trái cây tươi. Mát và thanh, chọn khi muốn giải khát nhanh.",
+        "Cold Brew" => "Cà phê ủ lạnh chậm. Êm và ít đắng, uống mát cả ngày.",
+        "Vietnamese Coffee" => "Cà phê Việt Nam pha phin. Đậm và ngọt sữa, quen thuộc và chắc chắn.",
+        "Bánh" => "Bánh ngọt kèm cà phê hoặc trà. Chọn khi muốn ăn nhẹ cùng ly uống.",
+        _ => "Các món trong nhóm này. Hỏi barista nếu bạn cần gợi ý."
     };
     var catList = Model.Categories.ToList();
     var catalogJson = JsonSerializer.Serialize(
