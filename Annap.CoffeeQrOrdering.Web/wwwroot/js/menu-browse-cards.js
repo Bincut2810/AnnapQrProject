@@ -1,6 +1,7 @@
 /**
  * menu-browse-cards.js — ANNAP physical correspondence cards
- * Aspect composition · proximity drift · compression · ceremonial lift hooks
+ * Load settle · proximity drift · compression · ceremonial lift hooks
+ * Image crop is CSS-only (4:3 + object-fit: cover) — no JS aspect resizing.
  */
 (function (global, document) {
     "use strict";
@@ -24,42 +25,7 @@
         }
     }
 
-    function applyAspectComposition(card, img, frame) {
-        if (card.classList.contains("menu-editorial-card--support")) return;
-
-        var w = img.naturalWidth;
-        var h = img.naturalHeight;
-        if (!w || !h) return;
-
-        var ratio = w / h;
-        frame.style.setProperty("--card-aspect", ratio.toFixed(4));
-        card.classList.remove(
-            "menu-editorial-card--portrait",
-            "menu-editorial-card--landscape",
-            "menu-editorial-card--square"
-        );
-        if (ratio < 0.82) {
-            card.classList.add("menu-editorial-card--portrait");
-        } else if (ratio > 1.18) {
-            card.classList.add("menu-editorial-card--landscape");
-        } else {
-            card.classList.add("menu-editorial-card--square");
-        }
-    }
-
-    function ensurePaperShadow(frame, card) {
-        if (card && card.classList.contains("menu-editorial-card--support")) return;
-        if (!frame || frame.querySelector(".menu-editorial-card__paper-shadow")) return;
-        var shadow = document.createElement("span");
-        shadow.className = "menu-editorial-card__paper-shadow";
-        shadow.setAttribute("aria-hidden", "true");
-        frame.insertBefore(shadow, frame.firstChild);
-    }
-
-    function markLoaded(frame, card, img) {
-        if (img && img.naturalWidth > 0) {
-            applyAspectComposition(card, img, frame);
-        }
+    function markLoaded(frame) {
         frame.classList.add("img-loaded");
     }
 
@@ -75,23 +41,24 @@
             var img = frame && frame.querySelector("img");
             if (!frame) continue;
 
-            ensurePaperShadow(frame);
-
-            if (!img) continue;
+            if (!img) {
+                markLoaded(frame);
+                continue;
+            }
             if (img.complete && img.naturalWidth > 0) {
-                markLoaded(frame, card, img);
+                markLoaded(frame);
             } else {
                 img.addEventListener(
                     "load",
                     function () {
-                        markLoaded(frame, card, img);
+                        markLoaded(frame);
                     },
                     { once: true }
                 );
                 img.addEventListener(
                     "error",
                     function () {
-                        frame.classList.add("img-loaded");
+                        markLoaded(frame);
                     },
                     { once: true }
                 );

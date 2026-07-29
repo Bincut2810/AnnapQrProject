@@ -9,7 +9,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Annap.CoffeeQrOrdering.Web.Services;
 
-/// <summary>Real-data menu bootstrap: sync local .webp assets, import AnnapDrinks.csv, purge legacy demo rows.</summary>
+/// <summary>
+/// First-install menu bootstrap: sync local assets, import AnnapDrinks.csv once, ensure specialty lots exist.
+/// After MenuItems exist, the database is the sole source of truth — CSV is never re-applied.
+/// </summary>
 public static class AnnapMenuBootstrap
 {
     public static async Task EnsureRealMenuAsync(
@@ -32,25 +35,37 @@ public static class AnnapMenuBootstrap
 
         await DbInitializer.TryRemoveLegacyDemoMenuIfUnusedAsync(db, cancellationToken).ConfigureAwait(false);
 
-        var csvPath = MenuCatalogBootstrapPaths.ResolveAnnapDrinksCsvPath(configuration, environment);
-        var imported = await AnnapDrinkCsvImporter.TryImportFromCsvAsync(
-            db,
-            csvPath,
-            (cat, name) => assetResolver.ResolveWebUrl(cat, name),
-            log,
-            cancellationToken,
-            IsManagedOrCloudinaryUrl).ConfigureAwait(false);
-
-        if (imported > 0)
+        var existingCount = await db.MenuItems.CountAsync(cancellationToken).ConfigureAwait(false);
+        if (existingCount == 0)
         {
-            await PurgeUnsupportedRemoteImageUrlsAsync(db, cancellationToken).ConfigureAwait(false);
-            log.LogInformation("Real data mode: {Count} drinks loaded from CSV; JSON catalog import skipped.", imported);
+            var csvPath = MenuCatalogBootstrapPaths.ResolveAnnapDrinksCsvPath(configuration, environment);
+            var imported = await AnnapDrinkCsvImporter.TryImportFromCsvAsync(
+                db,
+                csvPath,
+                (cat, name) => assetResolver.ResolveWebUrl(cat, name),
+                log,
+                cancellationToken,
+                IsManagedOrCloudinaryUrl).ConfigureAwait(false);
+
+            if (imported > 0)
+            {
+                await PurgeUnsupportedRemoteImageUrlsAsync(db, cancellationToken).ConfigureAwait(false);
+                log.LogInformation(
+                    "First-install menu bootstrap: {Count} drinks imported from CSV. Database is now source of truth.",
+                    imported);
+            }
+            else
+            {
+                log.LogWarning(
+                    "First-install menu bootstrap: AnnapDrinks.csv produced 0 rows ({Path}).",
+                    csvPath);
+            }
         }
         else
         {
-            log.LogWarning(
-                "AnnapDrinks.csv import produced 0 rows ({Path}). JSON catalog import is disabled in real-data mode.",
-                csvPath);
+            log.LogInformation(
+                "Menu catalog already present ({Count} items). Skipping CSV import — database is source of truth.",
+                existingCount);
         }
 
         await BakeryPairingService.EnsureBakeryCategoryAsync(db, cancellationToken).ConfigureAwait(false);

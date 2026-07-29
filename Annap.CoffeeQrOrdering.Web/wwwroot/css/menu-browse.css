@@ -116,9 +116,7 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 }
 
 .menu-chapter-hero .menu-editorial-card__frame {
-    aspect-ratio: 4 / 5;
     background: linear-gradient(168deg, var(--menu-print-mat), rgba(239, 230, 214, 0.9));
-    padding: 0.32rem 0.34rem 0.44rem;
     box-shadow:
         inset 0 0 0 1px rgba(26, 20, 16, 0.065),
         inset 0 1px 0 rgba(255, 248, 238, 0.45);
@@ -130,7 +128,6 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
         saturate(0.91)
         sepia(0.04)
         drop-shadow(0 3px 11px rgba(42, 32, 20, 0.075));
-    transform: rotate(-0.22deg);
 }
 
 .menu-chapter-hero .menu-editorial-card__name {
@@ -173,11 +170,6 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
     width: clamp(4rem, 21vw, 5.5rem);
     max-width: 5.5rem;
     flex-shrink: 0;
-    aspect-ratio: 4 / 5;
-}
-
-.menu-chapter-support .menu-editorial-card__frame.img-loaded {
-    aspect-ratio: 4 / 5;
 }
 
 .menu-chapter-support .menu-editorial-card__img {
@@ -271,7 +263,6 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
     border-radius: 0;
     --menu-card-glow-x: 50%;
     --menu-card-glow-y: 38%;
-    --card-aspect: 0.75;
 }
 
 .menu-editorial-card--hero .menu-editorial-card__label {
@@ -296,19 +287,6 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
     color: rgba(var(--muted, 120 100 80) / 0.82);
 }
 
-.menu-editorial-card--portrait .menu-editorial-card__frame {
-    max-width: 92%;
-}
-
-.menu-editorial-card--landscape .menu-editorial-card__frame {
-    max-width: 100%;
-}
-
-.menu-editorial-card--square .menu-editorial-card__frame {
-    max-width: 96%;
-    margin-inline: auto;
-}
-
 .menu-editorial-card:focus-visible {
     outline: 1px solid rgb(var(--accent, 199 168 122));
     outline-offset: 5px;
@@ -319,18 +297,13 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
     position: relative;
     display: block;
     width: 100%;
-    overflow: visible;
+    overflow: hidden;
     border-radius: 0;
     isolation: isolate;
     background: transparent;
     border: none;
     box-shadow: none;
-    aspect-ratio: var(--card-aspect, 3 / 4);
-}
-
-.menu-editorial-card__frame.img-loaded {
-    aspect-ratio: auto;
-    min-height: 0;
+    aspect-ratio: 4 / 3;
 }
 
 .menu-editorial-card__frame::after {
@@ -340,7 +313,7 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 .menu-editorial-card__frame::before {
     content: "";
     position: absolute;
-    inset: -4% -6%;
+    inset: 0;
     z-index: 0;
     pointer-events: none;
     opacity: 0;
@@ -355,11 +328,12 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 /* Press / hover physical motion — menu-browse-physical.css */
 
 .menu-editorial-card__img {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    height: auto;
-    max-width: 100%;
+    height: 100%;
     display: block;
-    position: relative;
+    object-fit: cover;
     z-index: 1;
     opacity: 1;
     filter:
@@ -371,9 +345,6 @@ html.annap-correspond-ui .menu-card-reveal:not(.is-visible) {
 }
 
 .menu-editorial-card__frame--no-poster {
-    aspect-ratio: 4 / 5;
-    min-height: 9.5rem;
-    overflow: hidden;
     background:
         var(--menu-print-grain),
         linear-gradient(
@@ -454,8 +425,7 @@ html.annap-correspond-ui .menu-editorial-card__name {
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
    4. IMAGE SKELETON SHIMMER
    â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
-.menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster),
-.menu-editorial-card__visual:not(.img-loaded):not(.menu-editorial-card__visual--no-poster) {
+.menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster) {
     background:
         var(--menu-print-grain),
         rgba(241, 232, 216, 0.62);
@@ -464,8 +434,7 @@ html.annap-correspond-ui .menu-editorial-card__name {
     animation: none;
 }
 
-html.annap-correspond-ui .menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster),
-html.annap-correspond-ui .menu-editorial-card__visual:not(.img-loaded):not(.menu-editorial-card__visual--no-poster) {
+html.annap-correspond-ui .menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster) {
     background:
         var(--menu-print-grain),
         rgba(236, 226, 208, 0.68);
@@ -475,13 +444,11 @@ html.annap-correspond-ui .menu-editorial-card__visual:not(.img-loaded):not(.menu
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster),
-    .menu-editorial-card__visual:not(.img-loaded):not(.menu-editorial-card__visual--no-poster) {
+    .menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster) {
         animation: none;
         background: rgba(26, 20, 16, 0.04) !important;
     }
-    html.annap-correspond-ui .menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster),
-    html.annap-correspond-ui .menu-editorial-card__visual:not(.img-loaded):not(.menu-editorial-card__visual--no-poster) {
+    html.annap-correspond-ui .menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster) {
         background: rgba(196, 168, 130, 0.08) !important;
     }
 }
@@ -658,8 +625,7 @@ html.annap-correspond-ui .menu-cat-heading {
 
 /* Mobile / touch: calm surfaces, keep grounding, no filters or hover motion */
 @media (hover: none), (pointer: coarse) {
-    .menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster),
-    .menu-editorial-card__visual:not(.img-loaded):not(.menu-editorial-card__visual--no-poster) {
+    .menu-editorial-card__frame:not(.img-loaded):not(.menu-editorial-card__frame--no-poster) {
         animation: none;
         background: rgba(244, 239, 228, 0.45);
     }
@@ -797,7 +763,6 @@ html.annap-correspond-ui .menu-cat-heading {
 }
 
 .menu-browse--catalogue .menu-chapter-hero .menu-editorial-card__frame {
-    padding: 0.28rem 0.3rem 0.38rem;
     background: linear-gradient(168deg, rgba(255, 252, 247, 0.98), rgba(252, 246, 236, 0.94));
     box-shadow:
         inset 0 0 0 1px rgba(26, 20, 16, 0.08),
@@ -882,7 +847,6 @@ html.annap-correspond-ui .menu-cat-heading {
 .menu-browse--catalogue .menu-chapter-support .menu-editorial-card__frame {
     width: clamp(3.65rem, 18vw, 4.85rem);
     max-width: 4.85rem;
-    padding: 0.14rem 0.16rem 0.2rem;
     background: rgba(255, 252, 247, 0.92);
     box-shadow: inset 0 0 0 1px rgba(26, 20, 16, 0.07);
 }

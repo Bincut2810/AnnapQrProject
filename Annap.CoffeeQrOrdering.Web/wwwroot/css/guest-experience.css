@@ -708,6 +708,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
 .ge-sig-visual {
     position: relative;
     aspect-ratio: 4 / 3;
+    overflow: hidden;
     background: rgba(255, 255, 255, 0.04);
 }
 
@@ -733,6 +734,7 @@ html.annap-guest-no-motion .ge-discovery-ambient::before {
     inset: 0;
     width: 100%;
     height: 100%;
+    display: block;
     object-fit: cover;
 }
 
@@ -3892,8 +3894,7 @@ html.annap-guest-no-motion .ge-choice-stack--rebalancing .ge-choice {
     position: relative;
     overflow: hidden;
     border-radius: 0.5rem;
-    aspect-ratio: 16 / 10;
-    max-height: 11.5rem;
+    aspect-ratio: 4 / 3;
     background: rgba(212, 184, 150, 0.14);
 }
 
@@ -3902,6 +3903,7 @@ html.annap-guest-no-motion .ge-choice-stack--rebalancing .ge-choice {
     inset: 0;
     width: 100%;
     height: 100%;
+    display: block;
     object-fit: cover;
 }
 
@@ -4372,8 +4374,9 @@ html.annap-guest-no-motion #ge-panel-discovery {
 .ge-rec-card .ge-cup-moment__visual,
 .ge-rec-card__media {
     border-radius: 0;
-    aspect-ratio: 16 / 9;
-    max-height: 8.75rem;
+    aspect-ratio: 4 / 3;
+    max-height: none;
+    overflow: hidden;
 }
 
 .ge-rec-card__body,
@@ -4481,11 +4484,6 @@ html.annap-guest-no-motion .ge-rec-reason--held {
 }
 
 @media (max-width: 640px) {
-    .ge-rec-card .ge-cup-moment__visual,
-    .ge-rec-card__media {
-        max-height: 7.75rem;
-    }
-
     .ge-rec-alt-row {
         grid-template-columns: 2.5rem 1fr auto;
         gap: 0.5rem 0.55rem;
@@ -4756,40 +4754,24 @@ body.guest-app.ge-sommelier-flow .annap-root-surface > footer {
     }
 }
 
-/* UX-S5A — sommelier featured poster: full image, framed contain */
+/* UX-S5A — sommelier featured poster: unified 4:3 cover crop */
 #ge-sommelier-results .ge-rec-card__poster {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: unset;
-    min-height: 7rem;
-    max-height: 10.5rem;
-    padding: 0.55rem 0.7rem;
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
     background: rgba(248, 244, 238, 0.98);
     border-bottom: 1px solid rgba(212, 184, 150, 0.22);
 }
 
 #ge-sommelier-results .ge-rec-card__poster img {
-    position: static;
-    inset: auto;
-    width: auto;
-    height: auto;
-    max-width: 100%;
-    max-height: 9rem;
-    object-fit: contain;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
     object-position: center;
-}
-
-@media (max-width: 640px) {
-    #ge-sommelier-results .ge-rec-card__poster {
-        min-height: 6.25rem;
-        max-height: 9.25rem;
-        padding: 0.45rem 0.55rem;
-    }
-
-    #ge-sommelier-results .ge-rec-card__poster img {
-        max-height: 7.75rem;
-    }
 }
 
 /* UX-S5B — personalised sommelier waiting ritual */
@@ -5444,9 +5426,6 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 }
 
 #ge-sommelier-results .ge-rec-result--reveal .ge-rec-card__poster {
-    min-height: 8rem;
-    max-height: 11.5rem;
-    padding: 0.65rem 0.75rem;
     background: linear-gradient(
         180deg,
         rgba(252, 248, 242, 0.99) 0%,
@@ -5455,7 +5434,6 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
 }
 
 #ge-sommelier-results .ge-rec-result--reveal .ge-rec-card__poster img {
-    max-height: 10rem;
     filter: drop-shadow(0 4px 12px rgba(26, 18, 9, 0.06));
 }
 
@@ -5668,15 +5646,6 @@ body.ge-sommelier-flow .order-tray-chip--has-items #order-tray-chip-sub {
 @media (max-width: 640px) {
     body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-moment:not(.hidden)) {
         --ge-tray-clearance: max(11rem, calc(8.5rem + env(safe-area-inset-bottom, 0px)));
-    }
-
-    #ge-sommelier-results .ge-rec-result--reveal .ge-rec-card__poster {
-        min-height: 7rem;
-        max-height: 10rem;
-    }
-
-    #ge-sommelier-results .ge-rec-result--reveal .ge-rec-card__poster img {
-        max-height: 8.5rem;
     }
 
     #ge-sommelier-results .ge-rec-alts--shelf .ge-rec-alt-row {
@@ -6153,10 +6122,6 @@ body:has(#guest-experience-root) .guest-masthead__nav {
     color: rgb(var(--muted));
 }
 
-.ge-rec-card__poster img {
-    border-radius: 0.85rem;
-}
-
 body.ge-sommelier-flow #guest-experience-root {
     padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
 }
@@ -6321,12 +6286,6 @@ html.annap-compact-guest-header .guest-main {
     font-size: 0.98rem;
     line-height: 1.5;
     color: rgba(62, 48, 38, 0.88);
-}
-
-.ge-rec-card__poster img {
-    border-radius: 0.55rem;
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
 }
 
 .ge-rec-alts__title {

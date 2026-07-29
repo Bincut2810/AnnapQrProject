@@ -135,15 +135,13 @@ else
                     <div class="relative z-[1] grid grid-cols-[96px_1fr] gap-5 md:grid-cols-[112px_1fr]">
                         <a href="@detailHref"
                            data-ge-open-detail="@drinkIdStr"
-                           class="relative block min-h-[7.5rem] overflow-hidden rounded-[1.25rem] bg-[rgba(26,20,16,0.04)] ring-1 ring-[rgba(212,184,150,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))]/35"
+                           class="relative block aspect-[4/3] overflow-hidden rounded-[1.25rem] bg-[rgba(26,20,16,0.04)] ring-1 ring-[rgba(212,184,150,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[rgb(var(--accent))]/35"
                            aria-label="@drink.Name — view details">
                             @if (!string.IsNullOrWhiteSpace(drink.CardImageUrl))
                             {
                                 <img src="@drink.CardImageUrl"
                                      alt=""
                                      class="absolute inset-0 z-0 h-full w-full object-cover"
-                                     width="960"
-                                     height="720"
                                      loading="lazy"
                                      decoding="async"
                                      referrerpolicy="no-referrer" />

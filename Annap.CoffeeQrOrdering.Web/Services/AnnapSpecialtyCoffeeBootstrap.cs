@@ -8,8 +8,9 @@ using Microsoft.Extensions.Logging;
 namespace Annap.CoffeeQrOrdering.Web.Services;
 
 /// <summary>
-/// Idempotent bootstrap for the four flagship specialty coffees (editorial content from house catalog).
-/// Never overwrites durable Cloudinary / managed media URLs — admin uploads must survive redeploy.
+/// First-install / heal-missing bootstrap for the four flagship specialty coffees.
+/// Creates rows that are absent by CatalogKey. Never overwrites existing MenuItem content —
+/// admin edits and the database remain source of truth after the row exists.
 /// </summary>
 public static class AnnapSpecialtyCoffeeBootstrap
 {
@@ -26,11 +27,21 @@ public static class AnnapSpecialtyCoffeeBootstrap
     {
         var category = await EnsureCategoryAsync(db, cancellationToken).ConfigureAwait(false);
 
+        var created = 0;
         foreach (var seed in Seeds)
-            await UpsertAsync(db, assetResolver, category.Id, seed, cancellationToken).ConfigureAwait(false);
+        {
+            if (await TryInsertMissingAsync(db, assetResolver, category.Id, seed, cancellationToken)
+                    .ConfigureAwait(false))
+                created++;
+        }
 
-        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        log.LogInformation("Specialty coffee bootstrap: {Count} flagship coffees ensured.", Seeds.Length);
+        if (created > 0)
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        log.LogInformation(
+            "Specialty coffee bootstrap: {Created} inserted, {Existing} already present (no overwrite).",
+            created,
+            Seeds.Length - created);
     }
 
     private static async Task<MenuCategory> EnsureCategoryAsync(
@@ -61,7 +72,8 @@ public static class AnnapSpecialtyCoffeeBootstrap
         return category;
     }
 
-    private static async Task UpsertAsync(
+    /// <returns>True when a new row was inserted.</returns>
+    private static async Task<bool> TryInsertMissingAsync(
         IApplicationDbContext db,
         DrinkAssetResolver assetResolver,
         Guid categoryId,
@@ -81,11 +93,11 @@ public static class AnnapSpecialtyCoffeeBootstrap
                 .ConfigureAwait(false);
         }
 
-        if (entity is null)
-        {
-            entity = new MenuItem { CategoryId = categoryId };
-            db.MenuItems.Add(entity);
-        }
+        if (entity is not null)
+            return false;
+
+        entity = new MenuItem { CategoryId = categoryId };
+        db.MenuItems.Add(entity);
 
         entity.Name = seed.Name;
         entity.CategoryId = categoryId;
@@ -117,6 +129,8 @@ public static class AnnapSpecialtyCoffeeBootstrap
         ApplyCanonicalImages(
             entity,
             assetResolver.ResolveWebUrl(AnnapSpecialtyCoffeeCatalog.CategoryName, seed.Name));
+
+        return true;
     }
 
     /// <summary>

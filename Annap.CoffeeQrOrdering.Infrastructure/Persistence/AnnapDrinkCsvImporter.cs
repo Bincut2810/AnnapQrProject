@@ -11,7 +11,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence;
 
-/// <summary>Imports the canonical Annap beverage list from <c>AnnapDrinks.csv</c>.</summary>
+/// <summary>
+/// First-install import of the canonical Annap beverage list from <c>AnnapDrinks.csv</c>.
+/// Refuses to run when <see cref="MenuItem"/> rows already exist — database is source of truth.
+/// </summary>
 public static class AnnapDrinkCsvImporter
 {
     private static readonly Dictionary<string, int> CategorySortHints = new(StringComparer.OrdinalIgnoreCase)
@@ -60,6 +63,13 @@ public static class AnnapDrinkCsvImporter
         if (string.IsNullOrWhiteSpace(absoluteCsvPath) || !File.Exists(absoluteCsvPath))
         {
             log?.LogDebug("Annap drink CSV import skipped: file not found ({Path}).", absoluteCsvPath);
+            return 0;
+        }
+
+        if (await db.MenuItems.AnyAsync(cancellationToken).ConfigureAwait(false))
+        {
+            log?.LogInformation(
+                "Annap drink CSV import refused: MenuItems already exist. Database is source of truth.");
             return 0;
         }
 
@@ -243,13 +253,21 @@ public static class AnnapDrinkCsvImporter
 
     private static async Task AlignCategoryOrderAsync(IApplicationDbContext db, CancellationToken cancellationToken)
     {
+        var categories = await db.MenuCategories.ToListAsync(cancellationToken).ConfigureAwait(false);
+        var changed = false;
         foreach (var kv in CategorySortHints)
         {
-            await db.MenuCategories
-                .Where(c => c.Name == kv.Key)
-                .ExecuteUpdateAsync(s => s.SetProperty(c => c.SortOrder, kv.Value), cancellationToken)
-                .ConfigureAwait(false);
+            foreach (var category in categories.Where(c => c.Name == kv.Key))
+            {
+                if (category.SortOrder == kv.Value)
+                    continue;
+                category.SortOrder = kv.Value;
+                changed = true;
+            }
         }
+
+        if (changed)
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     private static string? NormalizeOrigin(string? origin)

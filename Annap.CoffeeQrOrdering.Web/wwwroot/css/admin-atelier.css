@@ -981,13 +981,16 @@ body.admin-scroll-lock {
 
 .menu-curation-preview-card__frame {
   position: relative;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
 }
 
 .menu-curation-preview-card__img {
+  position: absolute;
+  inset: 0;
   height: 100%;
   width: 100%;
+  display: block;
   object-fit: cover;
   transform: scale(1.02);
   transition: transform 1.2s var(--admin-ease-out);

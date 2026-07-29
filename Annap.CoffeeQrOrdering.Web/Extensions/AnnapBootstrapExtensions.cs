@@ -173,7 +173,8 @@ public static class AnnapBootstrapExtensions
             var mediaMaintenance = scope.ServiceProvider.GetRequiredService<MenuMediaMaintenanceService>();
             await mediaMaintenance.RunAsync(cancellationToken: cancellationToken);
 
-            logger.LogInformation("Database bootstrap: real menu (CSV + local assets), venue tables, experience catalog, menu media maintenance.");
+            logger.LogInformation(
+                "Database bootstrap: menu first-install (if empty), venue tables, experience catalog, menu media maintenance.");
         }
         catch (Exception ex)
         {

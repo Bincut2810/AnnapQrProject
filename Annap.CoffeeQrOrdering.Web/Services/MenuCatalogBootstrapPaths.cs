@@ -5,15 +5,7 @@ namespace Annap.CoffeeQrOrdering.Web.Services;
 
 internal static class MenuCatalogBootstrapPaths
 {
-    internal static string ResolveJsonCatalogPath(IConfiguration configuration, IHostEnvironment environment)
-    {
-        var p = configuration["MenuCatalog:ImportPath"]?.Trim();
-        if (string.IsNullOrEmpty(p))
-            return Path.Combine(environment.ContentRootPath, "wwwroot", "data", "menu-catalog.json");
-        return Path.IsPathRooted(p) ? p : Path.Combine(environment.ContentRootPath, p);
-    }
-
-    /// <summary>Canonical Annap beverage CSV (real data mode).</summary>
+    /// <summary>Canonical Annap beverage CSV (first-install bootstrap only).</summary>
     internal static string ResolveAnnapDrinksCsvPath(IConfiguration configuration, IHostEnvironment environment)
     {
         var p = configuration["MenuCatalog:AnnapDrinksCsvPath"]?.Trim();

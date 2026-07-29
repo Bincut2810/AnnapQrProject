@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence;
 
-public sealed class AppDbContext(DbContextOptions<AppDbContext> options)
+public class AppDbContext(DbContextOptions<AppDbContext> options)
     : DbContext(options), IApplicationDbContext
 {
     public DbSet<MenuCategory> MenuCategories => Set<MenuCategory>();
