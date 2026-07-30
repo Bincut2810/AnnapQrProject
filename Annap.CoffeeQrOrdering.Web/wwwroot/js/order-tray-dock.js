@@ -1469,7 +1469,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             const trackHref = String(buildTrackHref(sess)).replace(/"/g, "&quot;");
             host.innerHTML =
                 '<div class="order-tray-payment-celebration__backdrop" data-celebration-act="close"></div>' +
-                '<div class="order-tray-payment-celebration__card surface-glass">' +
+                '<div class="order-tray-payment-celebration__card">' +
                 '<p class="order-tray-payment-celebration__title">' +
                 escapeHtml(title) +
                 "</p>" +

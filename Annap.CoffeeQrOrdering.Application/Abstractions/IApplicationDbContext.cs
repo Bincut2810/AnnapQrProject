@@ -26,6 +26,8 @@ public interface IApplicationDbContext
     DbSet<ExperiencePublishRecord> ExperiencePublishRecords { get; }
     DbSet<ExperienceGroupSettings> ExperienceGroupSettings { get; }
     DbSet<HomepageExperienceSettings> HomepageExperienceSettings { get; }
+    DbSet<HomepageHeroBanner> HomepageHeroBanners { get; }
+    DbSet<HomepageHeroSlide> HomepageHeroSlides { get; }
     DbSet<AppNetworkSettings> AppNetworkSettings { get; }
     DbSet<KiotVietOutboxMessage> KiotVietOutboxMessages { get; }
     DbSet<KiotVietSyncLog> KiotVietSyncLogs { get; }

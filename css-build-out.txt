@@ -1,0 +1,22 @@
+﻿
+> build:css
+> tailwindcss -c tailwind.config.js -i ./Styles/input.css -o ./wwwroot/css/site.css --minify
+
+npm : Browserslist: caniuse-lite is outdated. Please run:
+At C:\Users\Lenovo\AppData\Local\Temp\ps-script-14499f28-cc45-44e5-93b0-6f7ec310827e.ps1:7 char:51
++ ... P-PROJECT\Annap.CoffeeQrOrdering.Web"; npm run build:css 2>&1 | Out-F ...
++                                            ~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Browserslist: c...ed. Please run::String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+Rebuilding...
+
+Done in 3597ms.
+npm notice 
+npm notice New major version of npm available! 10.2.0 -> 12.0.2
+npm notice Changelog: <https://github.com/npm/cli/releases/tag/v12.0.2>
+npm notice Run `npm install -g npm@12.0.2` to update!
+npm notice 

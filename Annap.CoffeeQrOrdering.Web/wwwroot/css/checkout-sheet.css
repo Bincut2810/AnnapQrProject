@@ -1,0 +1,388 @@
+/* =========================================================
+   CHECKOUT SHEET — single visual architecture
+   Apple Wallet / Stripe PaymentSheet / Notion mobile sheet
+   Solid surfaces only. No glass. No blur. No transparency.
+   ========================================================= */
+
+:root {
+  --checkout-sheet-bg: #faf7f2;
+  --checkout-sheet-fg: #1a1209;
+  --checkout-sheet-muted: #5c4a32;
+  --checkout-sheet-muted-2: #7a6348;
+  --checkout-sheet-line: #d6c4a8;
+  --checkout-sheet-card: #ffffff;
+  --checkout-sheet-ink: #1a1209;
+  --checkout-sheet-ink-fg: #faf7f2;
+  --checkout-sheet-selected: #2a6655;
+  --checkout-sheet-overlay: rgba(0, 0, 0, 0.42);
+  --checkout-sheet-radius: 1.25rem;
+  --checkout-sheet-shadow:
+    0 -16px 48px rgba(0, 0, 0, 0.22),
+    0 -2px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+/* ---------- Overlay / scrim ---------- */
+#order-tray-backdrop.order-tray-backdrop-layer,
+#order-tray-backdrop.order-tray-backdrop,
+html.annap-correspond-ui #order-tray-backdrop.order-tray-backdrop,
+html.annap-correspond-ui .order-tray-backdrop.is-visible,
+body.guest-app .order-tray-backdrop-layer.is-visible {
+  background: var(--checkout-sheet-overlay) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  opacity: 1;
+}
+
+html.annap-correspond-ui #order-tray-backdrop:not(.is-visible),
+#order-tray-backdrop:not(.is-visible) {
+  display: none !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+@media (min-width: 640px) {
+  body.guest-app .order-tray-backdrop-layer.is-visible,
+  html.annap-correspond-ui .order-tray-backdrop.is-visible {
+    background: var(--checkout-sheet-overlay) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ---------- Bottom sheet (solid) ---------- */
+#order-tray-sheet.order-tray-sheet,
+html.annap-correspond-ui #order-tray-sheet.order-tray-sheet,
+html.annap-correspond-ui .order-tray-sheet,
+body.guest-app .order-tray-sheet {
+  background: var(--checkout-sheet-bg) !important;
+  background-image: none !important;
+  color: var(--checkout-sheet-fg);
+  border: 1px solid var(--checkout-sheet-line) !important;
+  border-radius: var(--checkout-sheet-radius) var(--checkout-sheet-radius) 0.35rem 0.35rem !important;
+  box-shadow: var(--checkout-sheet-shadow) !important;
+  overflow: hidden;
+  opacity: 1;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+html.annap-correspond-ui .order-tray-root--sheet-open .order-tray-sheet,
+html.annap-correspond-ui #order-tray-root.order-tray-root--sheet-open #order-tray-sheet {
+  box-shadow: var(--checkout-sheet-shadow) !important;
+  max-height: min(78dvh, 720px) !important;
+}
+
+/* Hide decorative postal edges inside checkout sheet — solid architecture */
+#order-tray-sheet .postal-airmail-edge {
+  display: none !important;
+}
+
+/* ---------- Sheet header ---------- */
+#order-tray-sheet .annap-tray-header,
+#order-tray-sheet .order-tray-header-compact {
+  background: var(--checkout-sheet-bg);
+  border-bottom: 1px solid var(--checkout-sheet-line) !important;
+}
+
+#traySheetTitle,
+html.annap-correspond-ui #traySheetTitle {
+  font-family: var(--font-ui);
+  font-style: normal !important;
+  font-weight: 650;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+  color: var(--checkout-sheet-fg) !important;
+}
+
+#trayCountLine,
+html.annap-correspond-ui #trayCountLine {
+  font-family: var(--font-ui);
+  font-style: normal !important;
+  font-size: 0.75rem;
+  color: var(--checkout-sheet-muted) !important;
+}
+
+.order-tray-header__stamp,
+.order-tray-header__stamp--compact {
+  background: var(--checkout-sheet-card) !important;
+  border: 1px solid var(--checkout-sheet-line) !important;
+  color: var(--checkout-sheet-muted) !important;
+}
+
+.order-tray-handle {
+  background: rgba(26, 18, 9, 0.22) !important;
+  width: 2.25rem !important;
+  height: 0.28rem !important;
+}
+
+/* ---------- Cart lines host ---------- */
+#order-tray-lines-wrap {
+  background: var(--checkout-sheet-bg);
+}
+
+.order-tray-empty {
+  background: var(--checkout-sheet-card) !important;
+  border: 1px solid var(--checkout-sheet-line) !important;
+  color: var(--checkout-sheet-muted) !important;
+  font-style: normal !important;
+}
+
+/* ---------- Cart summary / footer card ---------- */
+#order-tray-sheet-footer.order-tray-sheet-footer {
+  background: var(--checkout-sheet-bg);
+  border-top: 1px solid var(--checkout-sheet-line);
+  padding-top: 0.75rem;
+}
+
+.order-tray-checkout {
+  margin-top: 0.35rem;
+  padding: 0.75rem 0.8rem 0.7rem !important;
+  border: 1px solid var(--checkout-sheet-line) !important;
+  border-radius: 0.85rem;
+  background: var(--checkout-sheet-card) !important;
+  border-top: 1px solid var(--checkout-sheet-line) !important;
+}
+
+.order-tray-checkout__kicker {
+  margin: 0;
+  font-size: 0.6875rem !important;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--checkout-sheet-muted) !important;
+}
+
+.order-tray-checkout__note {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem !important;
+  line-height: 1.4;
+  color: var(--checkout-sheet-muted) !important;
+}
+
+.order-tray-checkout__lines {
+  max-height: 8rem;
+}
+
+.order-tray-checkout__line-name,
+.order-tray-checkout__line-total,
+#order-tray-checkout-total,
+#order-tray-subtotal,
+html.annap-correspond-ui #order-tray-subtotal {
+  font-style: normal !important;
+  color: var(--checkout-sheet-fg) !important;
+  font-weight: 650;
+}
+
+.order-tray-checkout__line-qty {
+  color: var(--checkout-sheet-muted) !important;
+}
+
+.order-tray-subtotal-row {
+  border-top-color: var(--checkout-sheet-line) !important;
+}
+
+.order-tray-subtotal-row > span {
+  color: var(--checkout-sheet-muted) !important;
+  font-weight: 600;
+}
+
+/* ---------- Payment methods (equal solid tiles) ---------- */
+.order-tray-payment-options {
+  gap: 0.5rem !important;
+}
+
+.order-tray-payment-option {
+  min-height: 3.35rem !important;
+  padding: 0.55rem 0.4rem !important;
+  border-radius: 0.75rem !important;
+  border: 1.5px solid var(--checkout-sheet-line) !important;
+  background: var(--checkout-sheet-card) !important;
+  color: var(--checkout-sheet-fg) !important;
+  box-shadow: 0 1px 0 rgba(26, 18, 9, 0.04);
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
+}
+
+.order-tray-payment-options--triple .order-tray-payment-option {
+  min-height: 3.5rem !important;
+}
+
+.order-tray-payment-option__title {
+  font-size: 0.8125rem !important;
+  font-weight: 700 !important;
+  color: inherit !important;
+}
+
+.order-tray-payment-option__subtitle,
+.order-tray-payment-option__hint {
+  font-size: 0.625rem !important;
+  line-height: 1.25;
+  color: var(--checkout-sheet-muted) !important;
+}
+
+.order-tray-payment-option--selected,
+.order-tray-payment-option[aria-pressed="true"] {
+  border-color: var(--checkout-sheet-ink) !important;
+  background: var(--checkout-sheet-ink) !important;
+  color: var(--checkout-sheet-ink-fg) !important;
+  box-shadow: 0 6px 16px rgba(26, 18, 9, 0.18);
+}
+
+.order-tray-payment-option--selected .order-tray-payment-option__subtitle,
+.order-tray-payment-option[aria-pressed="true"] .order-tray-payment-option__subtitle,
+.order-tray-payment-option--selected .order-tray-payment-option__hint,
+.order-tray-payment-option[aria-pressed="true"] .order-tray-payment-option__hint {
+  color: rgba(250, 247, 242, 0.78) !important;
+}
+
+.order-tray-payment-option--disabled {
+  opacity: 0.45;
+  background: #f0ebe3 !important;
+}
+
+.order-tray-payment-preview {
+  margin-top: 0.55rem;
+  padding: 0.65rem 0.75rem !important;
+  border-radius: 0.75rem !important;
+  border: 1px solid var(--checkout-sheet-line) !important;
+  background: var(--checkout-sheet-card) !important;
+}
+
+.order-tray-payment-preview__body {
+  color: var(--checkout-sheet-fg) !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.45;
+}
+
+.order-tray-payment-preview__note {
+  color: var(--checkout-sheet-muted) !important;
+}
+
+/* ---------- Primary CTA ---------- */
+#menuSubmitBtn.order-tray-submit,
+.order-tray-submit.btn-ink {
+  min-height: 3rem !important;
+  border-radius: 0.85rem !important;
+  background: var(--checkout-sheet-ink) !important;
+  color: var(--checkout-sheet-ink-fg) !important;
+  border: 0 !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.02em;
+  box-shadow: 0 8px 22px rgba(26, 18, 9, 0.22) !important;
+  opacity: 1;
+}
+
+#menuSubmitBtn.order-tray-submit:disabled,
+.order-tray-submit.btn-ink:disabled {
+  background: #cbb89a !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+.order-tray-back-btn {
+  min-height: 3rem !important;
+  border-radius: 0.85rem !important;
+  border: 1.5px solid var(--checkout-sheet-line) !important;
+  background: var(--checkout-sheet-card) !important;
+  color: var(--checkout-sheet-fg) !important;
+  font-weight: 600;
+}
+
+.order-tray-checkout-sticky--pinned {
+  background: var(--checkout-sheet-bg) !important;
+  box-shadow: 0 -8px 18px -12px rgba(0, 0, 0, 0.18);
+}
+
+.order-tray-need-qr {
+  background: var(--checkout-sheet-card) !important;
+  border: 1px solid var(--checkout-sheet-line) !important;
+  color: var(--checkout-sheet-muted) !important;
+}
+
+/* ---------- Collapsed chip (solid dock) ---------- */
+#order-tray-chip.order-tray-chip,
+html.annap-correspond-ui #order-tray-chip,
+body.guest-app .order-tray-chip {
+  background: var(--checkout-sheet-bg) !important;
+  background-image: none !important;
+  border: 1px solid var(--checkout-sheet-line) !important;
+  border-radius: 1rem !important;
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.7) inset !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+html.annap-correspond-ui #order-tray-chip:hover,
+body.guest-app .order-tray-root.is-open .order-tray-chip,
+html.annap-correspond-ui .order-tray-root--empty #order-tray-chip,
+body.ge-sommelier-flow .order-tray-root--empty #order-tray-chip,
+body.ge-sommelier-flow .order-tray-root--dock:not(.order-tray-root--sheet-open) #order-tray-chip {
+  background: var(--checkout-sheet-bg) !important;
+  background-image: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  opacity: 1 !important;
+}
+
+#order-tray-chip-title,
+html.annap-correspond-ui #order-tray-chip-title {
+  font-style: normal !important;
+  font-weight: 650;
+  color: var(--checkout-sheet-fg) !important;
+}
+
+#order-tray-chip-sub,
+html.annap-correspond-ui #order-tray-chip-sub {
+  font-style: normal !important;
+  color: var(--checkout-sheet-muted) !important;
+}
+
+.order-tray-chip__kicker {
+  color: var(--checkout-sheet-muted-2) !important;
+}
+
+.order-tray-chip__total,
+.order-tray-root--empty .order-tray-chip__total {
+  color: var(--checkout-sheet-fg) !important;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-tray-chevron,
+html.annap-correspond-ui .order-tray-chevron {
+  background: var(--checkout-sheet-card) !important;
+  border: 1px solid var(--checkout-sheet-line) !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Payment celebration card ---------- */
+.order-tray-payment-celebration__card {
+  background: var(--checkout-sheet-bg) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 1px solid var(--checkout-sheet-line);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+}
+
+.order-tray-payment-celebration__backdrop {
+  background: var(--checkout-sheet-overlay) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* ---------- Motion: transform + opacity only ---------- */
+@media (prefers-reduced-motion: reduce) {
+  #order-tray-sheet,
+  #order-tray-backdrop,
+  #order-tray-chip,
+  .order-tray-payment-option {
+    transition: none !important;
+    animation: none !important;
+  }
+}
