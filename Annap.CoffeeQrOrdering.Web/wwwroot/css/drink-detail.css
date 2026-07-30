@@ -1210,7 +1210,6 @@ html.annap-guest-no-motion #drink-detail-modal.is-open .dd-pairings {
 
 body.drink-detail-open .order-tray-root--dock:not(.order-tray-root--sheet-open) #order-tray-chip {
     opacity: 0.68 !important;
-    box-shadow: 0 1px 6px rgba(26, 18, 9, 0.04) !important;
 }
 
 body.drink-detail-open .order-tray-chip__kicker {

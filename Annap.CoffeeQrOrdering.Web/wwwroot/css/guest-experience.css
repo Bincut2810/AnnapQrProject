@@ -5077,7 +5077,6 @@ html.annap-guest-no-motion .ge-somm-tasting__micro-bar span {
 body.somm-waiting-quiet-tray .order-tray-root--empty #order-tray-chip {
     opacity: 0.68;
     transform: scale(0.97);
-    box-shadow: 0 2px 8px rgba(26, 18, 9, 0.05) !important;
 }
 
 html.annap-guest-no-motion .ge-somm-note__row {
@@ -5255,7 +5254,6 @@ html.annap-guest-no-motion .ge-somm-note__ink span {
 /* Part E — quieter tray during sommelier flow */
 body.ge-sommelier-flow .order-tray-root--dock:not(.order-tray-root--sheet-open) #order-tray-chip {
     opacity: 0.84;
-    box-shadow: 0 2px 10px rgba(26, 18, 9, 0.05) !important;
 }
 
 body.ge-sommelier-flow .order-tray-root--dock:not(.order-tray-root--sheet-open) .order-tray-chip__kicker {
@@ -5598,7 +5596,6 @@ body.ge-sommelier-flow:has(#ge-sommelier-results.ge-sommelier-results--cup-momen
     .order-tray-root--dock:not(.order-tray-root--sheet-open)
     #order-tray-chip {
     opacity: 0.76;
-    box-shadow: 0 2px 8px rgba(26, 18, 9, 0.04) !important;
 }
 
 body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__total--empty,
@@ -5788,8 +5785,6 @@ body.ge-sommelier-flow .ge-sommelier-results--cup-moment .ge-restart--sommelier 
 /* Part E — tray: quieter dock, more clearance */
 body.ge-sommelier-flow .order-tray-root--dock:not(.order-tray-root--sheet-open) #order-tray-chip {
     opacity: 0.7;
-    border-color: rgba(212, 184, 150, 0.26) !important;
-    box-shadow: 0 1px 6px rgba(26, 18, 9, 0.03) !important;
 }
 
 html.annap-mode-pending .order-tray-root--dock:not(.order-tray-root--sheet-open) #order-tray-chip {
@@ -6129,9 +6124,6 @@ body.ge-sommelier-flow #guest-experience-root {
 body.ge-sommelier-flow .order-tray-root--empty #order-tray-chip {
     opacity: 0.72;
     min-height: 3.25rem;
-    background: rgba(253, 249, 244, 0.78);
-    border-color: rgba(190, 165, 130, 0.28);
-    box-shadow: 0 4px 16px -12px rgba(26, 18, 9, 0.16);
 }
 
 body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__kicker,
