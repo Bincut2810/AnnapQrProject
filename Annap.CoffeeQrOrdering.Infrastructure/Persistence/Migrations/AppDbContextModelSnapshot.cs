@@ -538,70 +538,6 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                     b.ToTable("homepage_experience_settings", (string)null);
                 });
 
-            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.HomepageHeroBanner", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsEnabled")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<string>("Subtitle")
-                        .IsRequired()
-                        .HasMaxLength(400)
-                        .HasColumnType("character varying(400)");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("homepage_hero_banners", (string)null);
-                });
-
-            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.HomepageHeroSlide", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BannerId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTimeOffset>("CreatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ImageUrl")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
-
-                    b.Property<int>("SortOrder")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasDefaultValue(0);
-
-                    b.Property<DateTimeOffset?>("UpdatedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BannerId", "SortOrder");
-
-                    b.ToTable("homepage_hero_slides", (string)null);
-                });
-
             modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.Ingredient", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1530,17 +1466,6 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                     b.Navigation("MenuItem");
                 });
 
-            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.HomepageHeroSlide", b =>
-                {
-                    b.HasOne("Annap.CoffeeQrOrdering.Domain.Entities.HomepageHeroBanner", "Banner")
-                        .WithMany("Slides")
-                        .HasForeignKey("BannerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Banner");
-                });
-
             modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.KiotViet.KiotVietOutboxMessage", b =>
                 {
                     b.HasOne("Annap.CoffeeQrOrdering.Domain.Entities.Order", "Order")
@@ -1640,11 +1565,6 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.Ingredient", b =>
                 {
                     b.Navigation("MenuLinks");
-                });
-
-            modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.HomepageHeroBanner", b =>
-                {
-                    b.Navigation("Slides");
                 });
 
             modelBuilder.Entity("Annap.CoffeeQrOrdering.Domain.Entities.MenuCategory", b =>

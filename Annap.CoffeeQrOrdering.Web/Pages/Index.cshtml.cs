@@ -5,7 +5,6 @@ using Annap.CoffeeQrOrdering.Infrastructure.Persistence.Configurations;
 using Annap.CoffeeQrOrdering.Web.Internal;
 using Annap.CoffeeQrOrdering.Web.GuestExperience;
 using Annap.CoffeeQrOrdering.Web.Services;
-using Annap.CoffeeQrOrdering.Web.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
@@ -36,9 +35,6 @@ public sealed class IndexModel(
 
     /// <summary>Letter Room desk copy + three envelope labels (merged defaults + discovery CMS JSON).</summary>
     public string LetterRoomDeskJson { get; private set; } = "{}";
-
-    /// <summary>CMS cinematic hero for unseated homepage (upload-first).</summary>
-    public HomepageHeroVm HeroBanner { get; private set; } = new();
 
     public bool IsDevelopment => env.IsDevelopment();
 
@@ -133,7 +129,6 @@ public sealed class IndexModel(
         }
 
         await HomepageExperienceBootstrapper.EnsureDefaultsAsync(db, cancellationToken);
-        await HomepageHeroBannerBootstrapper.EnsureDefaultsAsync(db, cancellationToken);
         await HomepageExperienceBootstrapper.EnsureDevelopmentRitualFlagsAsync(db, env.IsDevelopment(), cancellationToken);
         await ExperienceCatalogBootstrapper.EnsureGuidedAndDiscoveryAsync(db, cancellationToken);
         await ExperienceCatalogBootstrapper.EnsureSpecialtyCoffeeDiscoveryQuestionsAsync(db, cancellationToken);
@@ -182,8 +177,6 @@ public sealed class IndexModel(
                 isSommelierEnabled = home?.IsSommelierEnabled ?? true
             },
             new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-
-        HeroBanner = await HomepageHeroBannerQuery.LoadPublicAsync(db, cancellationToken);
 
         var discSid = ExperienceDiscoverySettingsConfiguration.SingletonId;
         var discCms = await db.ExperienceDiscoverySettings.AsNoTracking()
