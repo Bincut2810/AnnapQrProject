@@ -41,12 +41,13 @@ public sealed class GuestTrayPaymentCheckoutUxTests
         var jsPath = Path.Combine(WebRoot, "js", "order-tray-dock.js");
         var js = File.ReadAllText(jsPath);
 
-        Assert.Contains("updatePaymentPreviewUi", js, StringComparison.Ordinal);
+        Assert.Contains("function renderPayment", js, StringComparison.Ordinal);
         Assert.Contains("order-tray-payment-preview", js, StringComparison.Ordinal);
         Assert.Contains("getPaymentSubmitLabel", js, StringComparison.Ordinal);
         Assert.Contains("scrollCheckoutCtaIntoView", js, StringComparison.Ordinal);
+        Assert.Contains("function renderCheckoutTray", js, StringComparison.Ordinal);
 
-        var previewStart = js.IndexOf("function updatePaymentPreviewUi", StringComparison.Ordinal);
+        var previewStart = js.IndexOf("function renderPayment", StringComparison.Ordinal);
         var previewEnd = js.IndexOf("function scrollCheckoutCtaIntoView", StringComparison.Ordinal);
         Assert.True(previewStart >= 0 && previewEnd > previewStart);
         var previewBlock = js[previewStart..previewEnd];
@@ -55,7 +56,7 @@ public sealed class GuestTrayPaymentCheckoutUxTests
     }
 
     [Fact]
-    public void Order_tray_dock_fetches_transfer_qr_only_in_submitted_sheet()
+    public void Order_tray_dock_fetches_transfer_qr_only_after_bank_submit()
     {
         var jsPath = Path.Combine(WebRoot, "js", "order-tray-dock.js");
         var js = File.ReadAllText(jsPath);
@@ -67,16 +68,14 @@ public sealed class GuestTrayPaymentCheckoutUxTests
         Assert.DoesNotContain("fetchTransferQr", submitBlock, StringComparison.Ordinal);
         Assert.DoesNotContain("mountTransferCard", submitBlock, StringComparison.Ordinal);
 
-        var sheetStart = js.IndexOf("function renderSubmittedTraySheet", StringComparison.Ordinal);
-        var sheetEnd = js.IndexOf("function updateTraySummary", StringComparison.Ordinal);
-        Assert.True(sheetStart >= 0 && sheetEnd > sheetStart);
-        var sheetBlock = js[sheetStart..sheetEnd];
-        Assert.Contains("mountSubmittedTransferQr", sheetBlock, StringComparison.Ordinal);
-
-        var mountStart = js.IndexOf("function mountSubmittedTransferQr", StringComparison.Ordinal);
-        var mountEnd = js.IndexOf("function applySubmitSuccessUi", StringComparison.Ordinal);
-        Assert.True(mountStart >= 0 && mountEnd > mountStart);
-        Assert.Contains("fetchTransferQr", js[mountStart..mountEnd], StringComparison.Ordinal);
+        var submittedStart = js.IndexOf("function renderSubmitted", StringComparison.Ordinal);
+        var ownerStart = js.IndexOf("function renderCheckoutTray", StringComparison.Ordinal);
+        Assert.True(submittedStart >= 0 && ownerStart > submittedStart);
+        var submittedBlock = js[submittedStart..ownerStart];
+        Assert.Contains("ensureBankTransferQrMounted(sess)", submittedBlock, StringComparison.Ordinal);
+        Assert.Contains("transferHostEl()", js, StringComparison.Ordinal);
+        Assert.Contains("PAYMENT_BANK_LOADING", js, StringComparison.Ordinal);
+        Assert.Contains("PAYMENT_BANK_READY", js, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -91,15 +90,18 @@ public sealed class GuestTrayPaymentCheckoutUxTests
     }
 
     [Fact]
-    public void Order_tray_markup_includes_payment_preview_and_sticky_submit()
+    public void Order_tray_markup_includes_payment_preview_sticky_submit_and_stable_qr_host()
     {
         var cshtmlPath = Path.Combine(PagesRoot, "Shared", "_OrderTrayDock.cshtml");
         var html = File.ReadAllText(cshtmlPath);
 
         Assert.Contains("order-tray-payment-preview", html, StringComparison.Ordinal);
         Assert.Contains("order-tray-checkout-sticky", html, StringComparison.Ordinal);
-        Assert.Contains("checkout.payAtCounter", html, StringComparison.Ordinal);
+        Assert.Contains("checkout.payAtCounterHint", html, StringComparison.Ordinal);
         Assert.Contains("checkout.bankTransferHint", html, StringComparison.Ordinal);
+        Assert.Contains("id=\"order-tray-transfer-host\"", html, StringComparison.Ordinal);
+        Assert.Contains("id=\"order-tray-submitted-panel\"", html, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-i18n=\"checkout.reviewOrder\"", html, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -111,7 +113,7 @@ public sealed class GuestTrayPaymentCheckoutUxTests
         Assert.Contains("TRAY_PAYMENT_FLOW_VERSION", js, StringComparison.Ordinal);
         Assert.Contains("menuOrderSubmitInFlight = false", js, StringComparison.Ordinal);
         Assert.Contains("applySubmitSuccessUi", js, StringComparison.Ordinal);
-        Assert.Contains("mountSubmittedTransferQr", js, StringComparison.Ordinal);
+        Assert.Contains("ensureBankTransferQrMounted", js, StringComparison.Ordinal);
         Assert.Contains("restoreSubmitButtonState", js, StringComparison.Ordinal);
 
         var applyStart = js.IndexOf("function applySubmitSuccessUi", StringComparison.Ordinal);

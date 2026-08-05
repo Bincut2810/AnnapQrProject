@@ -38,7 +38,9 @@ public sealed class PaymentMethodSplitStaticTests
         var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
         Assert.Contains("PAYMENT_METHOD.BANK", js, StringComparison.Ordinal);
         Assert.Contains("checkout.submitForQr", js, StringComparison.Ordinal);
-        Assert.Contains("mountSubmittedTransferQr", js, StringComparison.Ordinal);
+        Assert.Contains("ensureBankTransferQrMounted", js, StringComparison.Ordinal);
+        Assert.Contains("transferHostEl", js, StringComparison.Ordinal);
+        Assert.Contains("PAYMENT_BANK_READY", js, StringComparison.Ordinal);
     }
 
     [Fact]

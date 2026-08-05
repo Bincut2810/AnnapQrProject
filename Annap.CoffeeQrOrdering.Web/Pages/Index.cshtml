@@ -751,6 +751,7 @@ else
         function renderCart() {
             const linesAll = readCartLines();
             const el = document.getElementById("cartItemsHome");
+            if (!el) return;
             el.innerHTML = "";
 
             const guestCount =

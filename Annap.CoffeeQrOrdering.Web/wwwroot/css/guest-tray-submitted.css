@@ -1,6 +1,21 @@
-/* Guest tray — submitted / payment-complete states only.
-   Active checkout visuals live in checkout-sheet.css.
-   Layout/motion live in correspondence.css + site.css. */
+/* Permanent submitted panel — host never recreated by cart render */
+.order-tray-submitted-panel {
+  padding: 0.25rem 0 0.5rem;
+}
+
+.order-tray-submitted-panel.hidden,
+.order-tray-submitted-panel[hidden] {
+  display: none;
+}
+
+.order-tray-transfer-host:empty {
+  display: none;
+}
+
+.order-tray-transfer-host:not(:empty) {
+  display: block;
+  margin-top: 0.35rem;
+}
 
 .order-tray-root--submitted #order-tray-chip,
 .order-tray-root--submitted-paid #order-tray-chip,

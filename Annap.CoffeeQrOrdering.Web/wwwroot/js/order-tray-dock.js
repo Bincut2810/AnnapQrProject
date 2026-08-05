@@ -29,15 +29,27 @@ const TRAY_STATE = {
     PAID: "paid",
     COMPLETED: "completed"
 };
+/** Presentation state — sole owner of checkout tray UI. */
+const CHECKOUT_UI = {
+    EDITING: "editing",
+    REVIEW: "review",
+    PAYMENT_SELECTION: "payment-selection",
+    PAYMENT_BANK_LOADING: "payment-bank-loading",
+    PAYMENT_BANK_READY: "payment-bank-ready",
+    SUBMITTED: "submitted",
+    PAID: "paid",
+    COMPLETED: "completed"
+};
 const PAYMENT_METHOD = {
     CASH: "Cash",
     CARD: "Card",
     BANK: "BankTransfer",
     LEGACY_CASH_CARD: "CashOrCardAtCounter"
 };
-const TRAY_PAYMENT_FLOW_VERSION = "v5-guest-status-poll";
-let checkoutStep = null;
+const TRAY_PAYMENT_FLOW_VERSION = "v6-single-owner";
+let checkoutUi = CHECKOUT_UI.EDITING;
 let selectedPaymentMethod = PAYMENT_METHOD.CASH;
+let trayStatusFingerprint = "";
 const expandedItemNoteKeys = new Set();
 let bankTransferConfigured = null;
 let traySubmittedStatus = null;
@@ -202,8 +214,13 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 tableMeta.classList.toggle("hidden", !meta);
             }
             if (btn) {
-                if (has) btn.removeAttribute("disabled");
-                else btn.setAttribute("disabled", "disabled");
+                if (isPostOrderCheckoutUi(checkoutUi) || menuOrderSubmitInFlight) {
+                    btn.setAttribute("disabled", "disabled");
+                } else if (has) {
+                    btn.removeAttribute("disabled");
+                } else {
+                    btn.setAttribute("disabled", "disabled");
+                }
             }
             document.querySelectorAll(".menu-add-btn").forEach((b) => {
                 b.disabled = !has;
@@ -217,7 +234,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     primary.textContent = seated ? `${seated} ${lab}` : lab;
                 } else primary.textContent = tOrder("cart.linkedTable");
             }
-            if (window.LuxuryI18n) window.LuxuryI18n.applyDom();
+            /* CTA labels are owned by renderCheckoutTray/updateCTA — never applyDom here. */
         }
 
         function formatMoneySafe(n) {
@@ -755,48 +772,83 @@ function __annapMenuRuntimeJsonSelfCheck() {
             return TRAY_STATE.SUBMITTED_COUNTER;
         }
 
-        function resolveTrayState() {
+        function isPostOrderCheckoutUi(ui) {
+            return (
+                ui === CHECKOUT_UI.PAYMENT_BANK_LOADING ||
+                ui === CHECKOUT_UI.PAYMENT_BANK_READY ||
+                ui === CHECKOUT_UI.SUBMITTED ||
+                ui === CHECKOUT_UI.PAID ||
+                ui === CHECKOUT_UI.COMPLETED
+            );
+        }
+
+        function isBankCheckoutUi(ui) {
+            return ui === CHECKOUT_UI.PAYMENT_BANK_LOADING || ui === CHECKOUT_UI.PAYMENT_BANK_READY;
+        }
+
+        function domainStateFromCheckoutUi(ui) {
+            if (ui === CHECKOUT_UI.REVIEW) return TRAY_STATE.REVIEW;
+            if (ui === CHECKOUT_UI.PAYMENT_SELECTION) return TRAY_STATE.PAYMENT_CHOICE;
+            if (isBankCheckoutUi(ui)) return TRAY_STATE.SUBMITTED_BANK;
+            if (ui === CHECKOUT_UI.SUBMITTED) {
+                const sess = readSubmittedSession();
+                return resolveSubmittedCounterState(sess && sess.paymentMethod);
+            }
+            if (ui === CHECKOUT_UI.PAID) return TRAY_STATE.PAID;
+            if (ui === CHECKOUT_UI.COMPLETED) return TRAY_STATE.COMPLETED;
+            if (menuOrderSubmitInFlight) return TRAY_STATE.SUBMITTING;
             const n = totalQty();
-            const sess = readSubmittedSession();
-            if (menuOrderSubmitInFlight) {
-                if (sess && sess.orderId && sess.token && n === 0) {
-                    const st = traySubmittedStatus || sess.status || TRAY_STATE.SUBMITTED_PENDING;
-                    if (st === TRAY_STATE.COMPLETED || st === "completed") return TRAY_STATE.COMPLETED;
-                    if (st === TRAY_STATE.PAID || st === "paid") return TRAY_STATE.PAID;
-                    const pm = String(sess.paymentMethod || "").trim();
-                    if (pm === PAYMENT_METHOD.BANK || st === TRAY_STATE.SUBMITTED_BANK) return TRAY_STATE.SUBMITTED_BANK;
-                    if (st === TRAY_STATE.SUBMITTED_CARD || pm === PAYMENT_METHOD.CARD) return TRAY_STATE.SUBMITTED_CARD;
-                    if (
-                        st === TRAY_STATE.SUBMITTED_CASH ||
-                        st === TRAY_STATE.SUBMITTED_COUNTER ||
-                        pm === PAYMENT_METHOD.CASH ||
-                        pm === PAYMENT_METHOD.LEGACY_CASH_CARD
-                    )
-                        return resolveSubmittedCounterState(pm);
-                    return TRAY_STATE.SUBMITTED_PENDING;
-                }
-                return TRAY_STATE.SUBMITTING;
-            }
-            if (checkoutStep === "review") return TRAY_STATE.REVIEW;
-            if (checkoutStep === "payment") return TRAY_STATE.PAYMENT_CHOICE;
             if (n > 0) return TRAY_STATE.EDITING;
-            if (sess && sess.orderId && sess.token) {
-                const st = traySubmittedStatus || sess.status || TRAY_STATE.SUBMITTED_PENDING;
-                if (st === TRAY_STATE.COMPLETED || st === "completed") return TRAY_STATE.COMPLETED;
-                if (st === TRAY_STATE.PAID || st === "paid") return TRAY_STATE.PAID;
-                const pm = String(sess.paymentMethod || "").trim();
-                if (pm === PAYMENT_METHOD.BANK || st === TRAY_STATE.SUBMITTED_BANK) return TRAY_STATE.SUBMITTED_BANK;
-                if (st === TRAY_STATE.SUBMITTED_CARD || pm === PAYMENT_METHOD.CARD) return TRAY_STATE.SUBMITTED_CARD;
-                if (
-                    st === TRAY_STATE.SUBMITTED_CASH ||
-                    st === TRAY_STATE.SUBMITTED_COUNTER ||
-                    pm === PAYMENT_METHOD.CASH ||
-                    pm === PAYMENT_METHOD.LEGACY_CASH_CARD
-                )
-                    return resolveSubmittedCounterState(pm);
-                return TRAY_STATE.SUBMITTED_PENDING;
-            }
             return TRAY_STATE.EMPTY;
+        }
+
+        function resolveTrayState() {
+            return domainStateFromCheckoutUi(checkoutUi);
+        }
+
+        function checkoutUiFromSession() {
+            const sess = readSubmittedSession();
+            if (!sess || !sess.orderId || !sess.token) {
+                return CHECKOUT_UI.EDITING;
+            }
+            const st = traySubmittedStatus || sess.status || TRAY_STATE.SUBMITTED_PENDING;
+            if (st === TRAY_STATE.COMPLETED || st === "completed") return CHECKOUT_UI.COMPLETED;
+            if (st === TRAY_STATE.PAID || st === "paid") return CHECKOUT_UI.PAID;
+            const pm = String(sess.paymentMethod || "").trim();
+            if (pm === PAYMENT_METHOD.BANK || st === TRAY_STATE.SUBMITTED_BANK) {
+                if (bankTransferQrCache && bankTransferQrCacheKey === `${sess.orderId || ""}|${sess.token || ""}`) {
+                    return CHECKOUT_UI.PAYMENT_BANK_READY;
+                }
+                return CHECKOUT_UI.PAYMENT_BANK_LOADING;
+            }
+            return CHECKOUT_UI.SUBMITTED;
+        }
+
+        function statusFingerprint(sess, status, pending) {
+            return [
+                sess && sess.orderId ? String(sess.orderId) : "",
+                status || "",
+                pending === true ? "1" : pending === false ? "0" : "x",
+                sess && sess.paymentMethod ? String(sess.paymentMethod) : ""
+            ].join("|");
+        }
+
+        function setCheckoutUi(next, opts) {
+            opts = opts || {};
+            const allowed = Object.values(CHECKOUT_UI);
+            if (allowed.indexOf(next) < 0) next = CHECKOUT_UI.EDITING;
+            const prev = checkoutUi;
+            checkoutUi = next;
+            if (next === CHECKOUT_UI.REVIEW) selectedPaymentMethod = PAYMENT_METHOD.CASH;
+            if (next === CHECKOUT_UI.PAYMENT_SELECTION && typeof refreshBankTransferAvailability === "function") {
+                refreshBankTransferAvailability();
+            }
+            renderCheckoutTray(opts);
+            if (next === CHECKOUT_UI.PAYMENT_SELECTION && prev !== next) {
+                window.requestAnimationFrame(function () {
+                    scrollCheckoutCtaIntoView();
+                });
+            }
         }
 
         function isSubmittedTrayState(state) {
@@ -932,48 +984,81 @@ function __annapMenuRuntimeJsonSelfCheck() {
             }
         }
 
+        function transferHostEl() {
+            return document.getElementById("order-tray-transfer-host");
+        }
+
+        function paintQrIntoHost(host, qr, opts) {
+            if (!host) return false;
+            if (qr && window.GuestBankTransfer && typeof window.GuestBankTransfer.mountTransferCard === "function") {
+                window.GuestBankTransfer.mountTransferCard(host, qr, opts || { compact: true });
+            } else if (qr) {
+                renderInlineTransferFallback(host, qr, opts);
+            } else {
+                return false;
+            }
+            return !!host.querySelector(".guest-bank-transfer");
+        }
+
         function ensureBankTransferQrMounted(sess) {
             if (!sess || String(sess.paymentMethod || "").trim() !== PAYMENT_METHOD.BANK) return Promise.resolve(false);
-            const state = resolveTrayState();
-            if (state !== TRAY_STATE.SUBMITTED_BANK) return Promise.resolve(false);
-            const host = document.getElementById("order-tray-transfer-host");
+            if (!isBankCheckoutUi(checkoutUi)) return Promise.resolve(false);
             const cacheKey = `${sess.orderId || ""}|${sess.token || ""}`;
+            const host0 = transferHostEl();
             __annapBankTransferDebugPatch({
                 appVersion: TRAY_PAYMENT_FLOW_VERSION,
-                trayState: state,
+                checkoutUi: checkoutUi,
                 submittedStatus: traySubmittedStatus || sess.status || "",
                 paymentMethod: sess.paymentMethod || "",
                 orderId: sess.orderId || "",
                 hasGuestToken: !!sess.token,
-                qrMountFound: !!host
+                qrMountFound: !!host0
             });
-            if (!host || !sess.orderId || !sess.token) return Promise.resolve(false);
-            host.innerHTML =
-                '<p class="order-tray-submitted-card__note">' +
-                escapeHtml(
-                    trayCopy("checkout.transferQrLoading")
-                ) +
-                "</p>";
-            if (__annapTrayDevOn()) {
-                host.insertAdjacentHTML(
-                    "beforeend",
-                    `<p class="order-tray-submitted-card__note">BT debug: state=${escapeHtml(state)} key=${escapeHtml(cacheKey)}</p>`
-                );
+            if (!host0 || !sess.orderId || !sess.token) return Promise.resolve(false);
+
+            function mountCurrent(qr) {
+                const host = transferHostEl();
+                if (!host) return false;
+                if (qr) {
+                    const ok = paintQrIntoHost(host, qr, { compact: true });
+                    if (ok && checkoutUi === CHECKOUT_UI.PAYMENT_BANK_LOADING) {
+                        checkoutUi = CHECKOUT_UI.PAYMENT_BANK_READY;
+                        updateCTA();
+                        updatePanelVisibility();
+                    }
+                    __annapBankTransferDebugPatch({
+                        qrRenderCalled: true,
+                        qrCardInserted: ok,
+                        qrFetchStatus: "ok"
+                    });
+                    return ok;
+                }
+                renderTransferFatalFallback(host, function () {
+                    bankTransferQrInflightKey = "";
+                    void ensureBankTransferQrMounted(sess);
+                });
+                return false;
             }
+
             if (bankTransferQrCache && bankTransferQrCacheKey === cacheKey) {
-                if (window.GuestBankTransfer && typeof window.GuestBankTransfer.mountTransferCard === "function")
-                    window.GuestBankTransfer.mountTransferCard(host, bankTransferQrCache, { compact: true });
-                else renderInlineTransferFallback(host, bankTransferQrCache);
-                __annapBankTransferDebugPatch({ qrRenderCalled: true, qrCardInserted: true, qrFetchStatus: "cache" });
+                mountCurrent(bankTransferQrCache);
                 return Promise.resolve(true);
             }
             if (bankTransferQrInflightKey === cacheKey) return Promise.resolve(true);
+
+            host0.innerHTML =
+                '<p class="order-tray-submitted-card__note">' +
+                escapeHtml(trayCopy("checkout.transferQrLoading")) +
+                "</p>";
             bankTransferQrInflightKey = cacheKey;
+            if (checkoutUi !== CHECKOUT_UI.PAYMENT_BANK_READY) checkoutUi = CHECKOUT_UI.PAYMENT_BANK_LOADING;
             __annapBankTransferDebugPatch({ qrFetchStarted: true });
+
             const fetchQr =
                 window.GuestBankTransfer && typeof window.GuestBankTransfer.fetchTransferQr === "function"
                     ? window.GuestBankTransfer.fetchTransferQr(sess.orderId, sess.token)
                     : Promise.resolve(null);
+
             return fetchQr
                 .then(function (qr) {
                     __annapBankTransferDebugPatch({
@@ -984,26 +1069,16 @@ function __annapMenuRuntimeJsonSelfCheck() {
                         bankTransferQrCache = qr;
                         bankTransferQrCacheKey = cacheKey;
                     }
-                    if (qr && window.GuestBankTransfer && typeof window.GuestBankTransfer.mountTransferCard === "function")
-                        window.GuestBankTransfer.mountTransferCard(host, qr, { compact: true });
-                    else if (qr) renderInlineTransferFallback(host, qr);
-                    else renderTransferFatalFallback(host, function () { void ensureBankTransferQrMounted(sess); });
-                    const card = host.querySelector(".guest-bank-transfer");
-                    const rect = card ? card.getBoundingClientRect() : null;
-                    __annapBankTransferDebugPatch({
-                        qrRenderCalled: true,
-                        qrCardInserted: !!card,
-                        qrCardVisible: !!(rect && rect.height > 0 && rect.width > 0),
-                        qrCardRect: rect
-                            ? { top: rect.top, left: rect.left, width: rect.width, height: rect.height }
-                            : null
-                    });
-                    return !!card;
+                    return mountCurrent(qr);
                 })
                 .catch(function (err) {
-                    __annapBankTransferDebugPatch({ lastError: String(err && err.message ? err.message : err), qrFetchStatus: "error" });
+                    __annapBankTransferDebugPatch({
+                        lastError: String(err && err.message ? err.message : err),
+                        qrFetchStatus: "error"
+                    });
                     const fallbackPath = `/api/track/orders/${encodeURIComponent(sess.orderId)}?token=${encodeURIComponent(sess.token)}`;
-                    const fallbackUrl = typeof window.__annapApiUrl === "function" ? window.__annapApiUrl(fallbackPath) : fallbackPath;
+                    const fallbackUrl =
+                        typeof window.__annapApiUrl === "function" ? window.__annapApiUrl(fallbackPath) : fallbackPath;
                     return fetch(fallbackUrl, { headers: { Accept: "application/json" }, cache: "no-store" })
                         .then(function (res) {
                             if (!res.ok) throw new Error("fallback track fetch failed");
@@ -1015,14 +1090,10 @@ function __annapMenuRuntimeJsonSelfCheck() {
                                 bankTransferQrCache = qr;
                                 bankTransferQrCacheKey = cacheKey;
                             }
-                            if (qr && window.GuestBankTransfer && typeof window.GuestBankTransfer.mountTransferCard === "function")
-                                window.GuestBankTransfer.mountTransferCard(host, qr, { compact: true });
-                            else if (qr) renderInlineTransferFallback(host, qr, { showWarning: true });
-                            else renderTransferFatalFallback(host, function () { void ensureBankTransferQrMounted(sess); });
-                            return !!host.querySelector(".guest-bank-transfer");
+                            return mountCurrent(qr);
                         })
                         .catch(function () {
-                            renderTransferFatalFallback(host, function () { void ensureBankTransferQrMounted(sess); });
+                            mountCurrent(null);
                             return false;
                         });
                 })
@@ -1051,13 +1122,16 @@ function __annapMenuRuntimeJsonSelfCheck() {
             traySubmittedStatus = submittedStatus;
             trayKnownPendingPayment = true;
             menuOrderSubmitInFlight = false;
-            resetCheckoutStep();
+            selectedPaymentMethod = PAYMENT_METHOD.CASH;
 
             GuestInteractionContract.clearCart();
             linesToCartMap(GuestInteractionContract.getCartLines());
             renderCart();
-            updateCheckoutUi();
-            updateTraySummary();
+
+            const nextUi =
+                paymentMethod === PAYMENT_METHOD.BANK ? CHECKOUT_UI.PAYMENT_BANK_LOADING : CHECKOUT_UI.SUBMITTED;
+            trayStatusFingerprint = statusFingerprint(readSubmittedSession(), submittedStatus, true);
+            setCheckoutUi(nextUi, { skipCart: true });
             setTrayOpen(true, { userIntent: true });
             startTrayStatusPolling();
 
@@ -1068,7 +1142,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
 
             __annapTrayPaymentDevLog("submit success ui", {
                 paymentMethod: paymentMethod,
-                renderState: submittedStatus,
+                renderState: nextUi,
                 orderId: payload.id ? "present" : "missing",
                 token: payload.guestSessionToken ? "present" : "missing",
                 trackUrl: payload.trackUrl ? "present" : "missing"
@@ -1081,26 +1155,6 @@ function __annapMenuRuntimeJsonSelfCheck() {
             window.setTimeout(function () {
                 document.body.classList.remove("annap-order-confirming");
             }, 1200);
-        }
-
-        function resetCheckoutStep() {
-            checkoutStep = null;
-            selectedPaymentMethod = PAYMENT_METHOD.CASH;
-        }
-
-        function setCheckoutStep(step) {
-            checkoutStep = step === "review" || step === "payment" ? step : null;
-            if (checkoutStep === "review") selectedPaymentMethod = PAYMENT_METHOD.CASH;
-            if (checkoutStep === "payment" && typeof refreshBankTransferAvailability === "function") {
-                refreshBankTransferAvailability();
-            }
-            updateCheckoutUi();
-            updateTraySummary();
-            if (checkoutStep === "payment") {
-                window.requestAnimationFrame(function () {
-                    scrollCheckoutCtaIntoView();
-                });
-            }
         }
 
         async function refreshBankTransferAvailability() {
@@ -1138,11 +1192,11 @@ function __annapMenuRuntimeJsonSelfCheck() {
             }
             if (unavailable && selectedPaymentMethod === PAYMENT_METHOD.BANK) {
                 selectedPaymentMethod = PAYMENT_METHOD.CASH;
-                updatePaymentOptionUi();
+                if (checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION) renderPayment();
             }
         }
 
-        function renderCheckoutReviewLines() {
+        function renderReceipt() {
             const host = document.getElementById("order-tray-checkout-lines");
             const totalEl = document.getElementById("order-tray-checkout-total");
             if (!host) return;
@@ -1162,30 +1216,27 @@ function __annapMenuRuntimeJsonSelfCheck() {
 
         function getPaymentSubmitLabel(method) {
             if (method === PAYMENT_METHOD.BANK) {
-                return (
-                    tOrder("checkout.submitForQr") ||
-                    trayCopy("checkout.submitForQr")
-                );
+                return tOrder("checkout.submitForQr") || trayCopy("checkout.submitForQr");
             }
             if (method === PAYMENT_METHOD.CARD) {
-                return (
-                    tOrder("checkout.submitCard") ||
-                    trayCopy("checkout.submitCard")
-                );
+                return tOrder("checkout.submitCard") || trayCopy("checkout.submitCard");
             }
-            return (
-                tOrder("checkout.submitCash") ||
-                trayCopy("checkout.submitCash")
-            );
+            return tOrder("checkout.submitCash") || trayCopy("checkout.submitCash");
         }
 
-        function updatePaymentPreviewUi() {
+        function renderPayment() {
+            document.querySelectorAll(".order-tray-payment-option").forEach(function (btn) {
+                const method = btn.getAttribute("data-payment-method");
+                const on = method === selectedPaymentMethod;
+                btn.classList.toggle("order-tray-payment-option--selected", on);
+                btn.setAttribute("aria-pressed", on ? "true" : "false");
+            });
             const preview = document.getElementById("order-tray-payment-preview");
             const titleEl = document.getElementById("order-tray-payment-preview-title");
             const bodyEl = document.getElementById("order-tray-payment-preview-body");
             const noteEl = document.getElementById("order-tray-payment-preview-note");
             const keepOpenEl = document.getElementById("order-tray-payment-preview-keepopen");
-            if (!preview || checkoutStep !== "payment" || !selectedPaymentMethod) {
+            if (!preview || checkoutUi !== CHECKOUT_UI.PAYMENT_SELECTION || !selectedPaymentMethod) {
                 if (preview) {
                     preview.classList.add("hidden");
                     preview.hidden = true;
@@ -1246,36 +1297,78 @@ function __annapMenuRuntimeJsonSelfCheck() {
             }
         }
 
-        function updatePaymentOptionUi() {
-            document.querySelectorAll(".order-tray-payment-option").forEach(function (btn) {
-                const method = btn.getAttribute("data-payment-method");
-                const on = method === selectedPaymentMethod;
-                btn.classList.toggle("order-tray-payment-option--selected", on);
-                btn.setAttribute("aria-pressed", on ? "true" : "false");
-            });
-            updatePaymentPreviewUi();
+        function updateCTA() {
             const btn = document.getElementById("menuSubmitBtn");
-            if (btn && checkoutStep === "payment" && !menuOrderSubmitInFlight && !isSubmittedTrayState(resolveTrayState())) {
+            if (!btn) return;
+            if (menuOrderSubmitInFlight) return;
+            if (isPostOrderCheckoutUi(checkoutUi)) {
+                btn.setAttribute("disabled", "disabled");
+                return;
+            }
+            if (checkoutUi === CHECKOUT_UI.REVIEW) {
+                btn.textContent = tOrder("checkout.continueToPayment") || trayCopy("checkout.continueToPayment");
+                if (VENUE_TABLE_ID) btn.removeAttribute("disabled");
+                else btn.setAttribute("disabled", "disabled");
+                return;
+            }
+            if (checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION) {
                 btn.textContent = getPaymentSubmitLabel(selectedPaymentMethod);
+                if (VENUE_TABLE_ID) btn.removeAttribute("disabled");
+                else btn.setAttribute("disabled", "disabled");
+                return;
+            }
+            btn.textContent = tOrder("checkout.reviewOrder") || trayCopy("checkout.reviewOrder");
+            if (totalQty() > 0 && VENUE_TABLE_ID) btn.removeAttribute("disabled");
+            else btn.setAttribute("disabled", "disabled");
+        }
+
+        function updateTotals() {
+            const subEl = document.getElementById("order-tray-subtotal");
+            const chipTotal = document.getElementById("order-tray-chip-total");
+            const st = subtotal();
+            const n = totalQty();
+            if (subEl) {
+                if (n === 0) {
+                    subEl.textContent = "\u2014";
+                    subEl.classList.add("order-tray-subtotal--empty");
+                } else {
+                    subEl.textContent = money.format(st);
+                    subEl.classList.remove("order-tray-subtotal--empty");
+                }
+            }
+            if (chipTotal) {
+                if (n === 0) {
+                    chipTotal.textContent = "\u2014";
+                    chipTotal.classList.add("order-tray-chip__total--empty");
+                    chipTotal.setAttribute("aria-hidden", "true");
+                } else {
+                    chipTotal.textContent = money.format(st);
+                    chipTotal.classList.remove("order-tray-chip__total--empty");
+                    chipTotal.removeAttribute("aria-hidden");
+                }
             }
         }
 
-        function updateCheckoutUi() {
+        function updatePanelVisibility() {
             const review = document.getElementById("order-tray-checkout-review");
             const payment = document.getElementById("order-tray-checkout-payment");
             const cartFooter = document.getElementById("order-tray-cart-footer");
             const backRow = document.getElementById("order-tray-checkout-actions");
             const stickyBar = document.getElementById("order-tray-checkout-sticky");
             const clearBtn = document.getElementById("order-tray-clear");
-            const btn = document.getElementById("menuSubmitBtn");
-            const inCheckout = checkoutStep === "review" || checkoutStep === "payment";
-            const inPayment = checkoutStep === "payment";
-            const submitted = isSubmittedTrayState(resolveTrayState());
+            const cartEl = document.getElementById("cart");
+            const submittedPanel = document.getElementById("order-tray-submitted-panel");
+            const footer = document.getElementById("order-tray-sheet-footer");
+            const linesWrap = document.getElementById("order-tray-lines-wrap");
+
+            const inReview = checkoutUi === CHECKOUT_UI.REVIEW;
+            const inPayment = checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION;
+            const inCheckout = inReview || inPayment;
+            const postOrder = isPostOrderCheckoutUi(checkoutUi);
 
             if (review) {
-                const showReview = checkoutStep === "review" || checkoutStep === "payment";
-                review.classList.toggle("hidden", !showReview);
-                review.hidden = !showReview;
+                review.classList.toggle("hidden", !inCheckout);
+                review.hidden = !inCheckout;
                 review.classList.toggle("order-tray-checkout--compact", inPayment);
             }
             if (payment) {
@@ -1283,51 +1376,120 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 payment.hidden = !inPayment;
             }
             if (cartFooter) {
-                const hideSubtotal = inCheckout;
                 cartFooter.classList.toggle("order-tray-cart-footer--checkout", inCheckout);
                 const subtotalRow = cartFooter.querySelector(".order-tray-subtotal-row");
-                if (subtotalRow) subtotalRow.classList.toggle("hidden", hideSubtotal);
+                if (subtotalRow) subtotalRow.classList.toggle("hidden", inCheckout || postOrder);
             }
             if (backRow) {
                 backRow.classList.toggle("hidden", !inCheckout);
                 backRow.hidden = !inCheckout;
             }
-            if (stickyBar) {
-                stickyBar.classList.toggle("order-tray-checkout-sticky--pinned", inPayment);
-            }
-            if (clearBtn) clearBtn.classList.toggle("hidden", inCheckout || submitted);
+            if (stickyBar) stickyBar.classList.toggle("order-tray-checkout-sticky--pinned", inPayment);
+            if (clearBtn) clearBtn.classList.toggle("hidden", inCheckout || postOrder);
 
-            const linesWrap = document.getElementById("order-tray-lines-wrap");
+            if (cartEl) {
+                cartEl.classList.toggle("hidden", postOrder || inCheckout);
+                cartEl.hidden = postOrder || inCheckout;
+            }
+            if (submittedPanel) {
+                submittedPanel.classList.toggle("hidden", !postOrder);
+                submittedPanel.hidden = !postOrder;
+            }
+            if (footer) footer.classList.toggle("order-tray-sheet-footer--hidden", postOrder);
             if (linesWrap) {
-                const showLines = !inCheckout || submitted;
-                linesWrap.classList.toggle("hidden", !showLines);
-                linesWrap.hidden = !showLines;
+                const hideLines = inCheckout && !postOrder;
+                linesWrap.classList.toggle("hidden", hideLines);
+                linesWrap.hidden = hideLines;
             }
             if (orderTrayRoot) {
                 orderTrayRoot.classList.toggle("order-tray-root--checkout", inCheckout);
                 orderTrayRoot.classList.toggle("order-tray-root--checkout-payment", inPayment);
             }
+        }
 
-            if (checkoutStep === "review") renderCheckoutReviewLines();
-            if (checkoutStep === "payment") updatePaymentOptionUi();
-            if (inCheckout || submitted) refreshTableIdentityUi();
+        function renderSubmitted() {
+            const sess = readSubmittedSession();
+            const panel = document.getElementById("order-tray-submitted-panel");
+            const card = document.getElementById("order-tray-submitted-card");
+            const titleEl = document.getElementById("order-tray-submitted-title");
+            const statusEl = document.getElementById("order-tray-submitted-status");
+            const bodyEl = document.getElementById("order-tray-submitted-body");
+            const noteEl = document.getElementById("order-tray-submitted-note");
+            const trackEl = document.getElementById("order-tray-submitted-track");
+            if (!panel || !card || !sess) return;
 
-            if (btn && !submitted && !menuOrderSubmitInFlight) {
-                if (checkoutStep === "review") {
-                    btn.textContent = tOrder("checkout.continueToPayment");
-                    btn.removeAttribute("disabled");
-                } else if (checkoutStep === "payment") {
-                    btn.textContent = getPaymentSubmitLabel(selectedPaymentMethod);
-                    btn.removeAttribute("disabled");
-                } else if (totalQty() > 0 && VENUE_TABLE_ID) {
-                    btn.textContent = tOrder("checkout.reviewOrder");
-                    btn.removeAttribute("disabled");
+            let title;
+            let body;
+            let statusLabel = "";
+            const bankUi = isBankCheckoutUi(checkoutUi);
+            if (checkoutUi === CHECKOUT_UI.COMPLETED) {
+                title = trayCopy("menuTray.chipCompleteTitle");
+                body = trayCopy("menuTray.chipCompleteBody");
+            } else if (checkoutUi === CHECKOUT_UI.PAID) {
+                title = trayCopy("menuTray.chipPaidTitle");
+                body = trayCopy("menuTray.paymentSuccessCelebrationBody");
+            } else if (bankUi) {
+                title = trayCopy("checkout.waitingBankTransfer");
+                body = trayCopy("checkout.bankTransferPendingBodyShort");
+            } else {
+                const pm = String(sess.paymentMethod || "").trim();
+                title = trayCopy("menuTray.chipSubmittedTitle");
+                if (pm === PAYMENT_METHOD.CARD) {
+                    body = trayCopy("checkout.cardSubmittedBodyShort");
+                    statusLabel = trayCopy("checkout.waitingCardPayment");
                 } else {
-                    btn.textContent = tOrder("checkout.reviewOrder");
+                    body = trayCopy("checkout.cashSubmittedBodyShort");
+                    statusLabel = trayCopy("checkout.waitingCashPayment");
                 }
-            } else if (btn && submitted) {
-                btn.setAttribute("disabled", "disabled");
             }
+            const keepOpen = trayCopy("menuTray.chipSubmittedNote");
+            if (titleEl) titleEl.textContent = title;
+            if (bodyEl) bodyEl.textContent = body;
+            if (statusEl) {
+                if (statusLabel) {
+                    statusEl.textContent = statusLabel;
+                    statusEl.classList.remove("hidden");
+                    statusEl.hidden = false;
+                } else {
+                    statusEl.textContent = "";
+                    statusEl.classList.add("hidden");
+                    statusEl.hidden = true;
+                }
+            }
+            if (noteEl) noteEl.textContent = keepOpen;
+            if (trackEl) {
+                trackEl.href = buildTrackHref(sess);
+                trackEl.textContent = trayCopy("menuTray.chipTrackCta");
+            }
+            card.className = bankUi
+                ? "order-tray-submitted-card order-tray-submitted-card--bank"
+                : "order-tray-submitted-card order-tray-submitted-card--compact";
+
+            if (bankUi) void ensureBankTransferQrMounted(sess);
+            else {
+                const host = transferHostEl();
+                if (host) host.innerHTML = "";
+            }
+        }
+
+        /** Sole checkout presentation owner. */
+        function renderCheckoutTray(opts) {
+            opts = opts || {};
+            updatePanelVisibility();
+            updateTotals();
+            refreshTableIdentityUi();
+            updateCTA();
+
+            if (checkoutUi === CHECKOUT_UI.REVIEW || checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION) {
+                renderReceipt();
+            }
+            if (checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION) {
+                renderPayment();
+            }
+            if (isPostOrderCheckoutUi(checkoutUi)) {
+                renderSubmitted();
+            }
+            updateTrayChrome(opts);
         }
 
         function handlePrimaryTrayAction() {
@@ -1335,8 +1497,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             if (!VENUE_TABLE_ID) {
                 const orderResult = document.getElementById("orderResult");
                 if (orderResult)
-                    orderResult.textContent =
-                        tOrder("order.needTableScan") || tOrder("order.needTable");
+                    orderResult.textContent = tOrder("order.needTableScan") || tOrder("order.needTable");
                 return;
             }
             if (cartItems.size === 0) {
@@ -1344,16 +1505,16 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 if (orderResult) orderResult.textContent = tOrder("order.minOne");
                 return;
             }
-            if (!checkoutStep) {
+            if (checkoutUi === CHECKOUT_UI.EDITING) {
                 setTrayOpen(true, { userIntent: true });
-                setCheckoutStep("review");
+                setCheckoutUi(CHECKOUT_UI.REVIEW);
                 return;
             }
-            if (checkoutStep === "review") {
-                setCheckoutStep("payment");
+            if (checkoutUi === CHECKOUT_UI.REVIEW) {
+                setCheckoutUi(CHECKOUT_UI.PAYMENT_SELECTION);
                 return;
             }
-            if (checkoutStep === "payment") {
+            if (checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION) {
                 void submitOrder();
             }
         }
@@ -1412,10 +1573,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 }
                 refreshSubmittedTrayStatus()
                     .then(function (result) {
-                        if (result && result.uiChanged) {
-                            updateTraySummary();
-                            renderCart();
-                        }
+                        if (!result || !result.fingerprintChanged) return;
+                        renderCheckoutTray();
                     })
                     .catch(function () {
                         /* ignore */
@@ -1504,8 +1663,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
 
         function handlePaymentConfirmedCelebration(sess) {
             setTrayOpen(false);
-            updateTraySummary();
-            renderCart();
+            checkoutUi = CHECKOUT_UI.PAID;
+            renderCheckoutTray();
             showPaymentSuccessCelebration(sess);
             if (window.InteractionFeedback) {
                 window.InteractionFeedback.trigger("success", { silentVisual: true });
@@ -1519,7 +1678,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 traySubmittedStatus = null;
                 trayKnownPendingPayment = null;
                 stopTrayStatusPolling();
-                return { uiChanged: false };
+                return { fingerprintChanged: false };
             }
             try {
                 const res = await fetchGuestOrderStatus(sess);
@@ -1528,22 +1687,26 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     traySubmittedStatus = null;
                     trayKnownPendingPayment = null;
                     stopTrayStatusPolling();
-                    return { uiChanged: true };
+                    trayStatusFingerprint = "";
+                    if (isPostOrderCheckoutUi(checkoutUi)) setCheckoutUi(CHECKOUT_UI.EDITING);
+                    return { fingerprintChanged: true };
                 }
-                if (!res.ok) return { uiChanged: false };
+                if (!res.ok) return { fingerprintChanged: false };
                 let data;
                 try {
                     data = await res.json();
                 } catch (_json) {
                     __annapTrayPaymentDevLog("guest status poll: non-json response", { status: res.status });
-                    return { uiChanged: false };
+                    return { fingerprintChanged: false };
                 }
                 if (data.isCancelled) {
                     GuestInteractionContract.removeGuestOrderSession();
                     traySubmittedStatus = null;
                     trayKnownPendingPayment = null;
                     stopTrayStatusPolling();
-                    return { uiChanged: true };
+                    trayStatusFingerprint = "";
+                    if (isPostOrderCheckoutUi(checkoutUi)) setCheckoutUi(CHECKOUT_UI.EDITING);
+                    return { fingerprintChanged: true };
                 }
                 const wasPending =
                     trayKnownPendingPayment === true ||
@@ -1579,120 +1742,57 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     celebrated = true;
                 }
                 if (isPending) startTrayStatusPolling();
-                return { uiChanged: true, celebrated: celebrated };
+                const fp = statusFingerprint(sess, traySubmittedStatus, trayKnownPendingPayment);
+                const fingerprintChanged = fp !== trayStatusFingerprint;
+                if (fingerprintChanged) {
+                    trayStatusFingerprint = fp;
+                    const nextUi = checkoutUiFromSession();
+                    if (nextUi !== checkoutUi) checkoutUi = nextUi;
+                }
+                return { fingerprintChanged: fingerprintChanged, celebrated: celebrated };
             } catch (_st) {
-                return { uiChanged: false };
+                return { fingerprintChanged: false };
             }
         }
 
-        function updateTraySheetForState(state) {
-            const footer = document.getElementById("order-tray-sheet-footer");
-            const clearBtn = document.getElementById("order-tray-clear");
-            const submitted = isSubmittedTrayState(state);
-            if (footer) footer.classList.toggle("order-tray-sheet-footer--hidden", submitted);
-            if (clearBtn) clearBtn.classList.toggle("hidden", submitted);
-        }
-
-        function renderSubmittedTraySheet(sess, state) {
-            const el = document.getElementById("cart");
-            if (!el || !sess) return;
-            let title;
-            let body;
-            let statusLabel;
-            let note;
-            if (state === TRAY_STATE.COMPLETED) {
-                title = trayCopy("menuTray.chipCompleteTitle");
-                body = trayCopy("menuTray.chipCompleteBody");
-                statusLabel = "";
-                note = "";
-            } else if (state === TRAY_STATE.PAID) {
-                title = trayCopy("menuTray.chipPaidTitle");
-                body = trayCopy("menuTray.paymentSuccessCelebrationBody");
-                statusLabel = "";
-                note = "";
-            } else if (state === TRAY_STATE.SUBMITTED_BANK) {
-                title = trayCopy("checkout.waitingBankTransfer");
-                body = trayCopy("checkout.bankTransferPendingBodyShort");
-                statusLabel = "";
-                note = "";
-            } else if (state === TRAY_STATE.SUBMITTED_CARD) {
-                title = trayCopy("menuTray.chipSubmittedTitle");
-                body = trayCopy("checkout.cardSubmittedBodyShort");
-                statusLabel = trayCopy("checkout.waitingCardPayment");
-                note = "";
-            } else {
-                title = trayCopy("menuTray.chipSubmittedTitle");
-                body = trayCopy("checkout.cashSubmittedBodyShort");
-                statusLabel = trayCopy("checkout.waitingCashPayment");
-                note = "";
-            }
-            const cardClass =
-                state === TRAY_STATE.SUBMITTED_BANK
-                    ? "order-tray-submitted-card order-tray-submitted-card--bank"
-                    : "order-tray-submitted-card order-tray-submitted-card--compact";
-            const keepOpen = trayCopy("menuTray.chipSubmittedNote");
-            const cta = trayCopy("menuTray.chipTrackCta");
-            const href = String(buildTrackHref(sess)).replace(/"/g, "&quot;");
-            const statusHtml = statusLabel
-                ? `<p class="order-tray-submitted-card__status">${escapeHtml(statusLabel)}</p>`
-                : "";
-            const noteHtml = note ? `<p class="order-tray-submitted-card__note">${escapeHtml(note)}</p>` : `<p class="order-tray-submitted-card__note">${escapeHtml(keepOpen)}</p>`;
-            el.className = "order-tray-lines order-tray-lines--correspondence pb-0 text-sm";
-            el.innerHTML = `<div class="${cardClass}" role="status">
-                <div class="order-tray-submitted-card__seal" aria-hidden="true">A</div>
-                <p class="order-tray-submitted-card__title">${escapeHtml(title)}</p>
-                ${statusHtml}
-                <p class="order-tray-submitted-card__body">${escapeHtml(body)}</p>
-                ${noteHtml}
-                <div id="order-tray-transfer-host"></div>
-                <a href="${href}" class="order-tray-submitted-card__link">${escapeHtml(cta)}</a>
-            </div>`;
-            if (state === TRAY_STATE.SUBMITTED_BANK) void ensureBankTransferQrMounted(sess);
-        }
-
-        function updateTraySummary(opts) {
+        function updateTrayChrome(opts) {
             opts = opts || {};
             const n = totalQty();
             const state = resolveTrayState();
-            const submitted = isSubmittedTrayState(state);
+            const submitted = isPostOrderCheckoutUi(checkoutUi);
             const isEmpty = n === 0 && !submitted;
             const line = document.getElementById("trayCountLine");
             const sheetTitle = document.getElementById("traySheetTitle");
             const chipTitle = document.getElementById("order-tray-chip-title");
             const chipSub = document.getElementById("order-tray-chip-sub");
             const chipStack = document.getElementById("order-tray-chip-stack");
-            const chipTotal = document.getElementById("order-tray-chip-total");
-            const subEl = document.getElementById("order-tray-subtotal");
             const st = subtotal();
             if (orderTrayRoot) {
                 orderTrayRoot.classList.toggle("order-tray-root--empty", isEmpty);
                 orderTrayRoot.classList.toggle(
                     "order-tray-root--submitted",
-                    submitted && state !== TRAY_STATE.PAID && state !== TRAY_STATE.COMPLETED
+                    submitted && checkoutUi !== CHECKOUT_UI.PAID && checkoutUi !== CHECKOUT_UI.COMPLETED
                 );
-                orderTrayRoot.classList.toggle("order-tray-root--submitted-paid", state === TRAY_STATE.PAID);
-                orderTrayRoot.classList.toggle("order-tray-root--submitted-complete", state === TRAY_STATE.COMPLETED);
+                orderTrayRoot.classList.toggle("order-tray-root--submitted-paid", checkoutUi === CHECKOUT_UI.PAID);
+                orderTrayRoot.classList.toggle("order-tray-root--submitted-complete", checkoutUi === CHECKOUT_UI.COMPLETED);
             }
             if (orderTrayChip) orderTrayChip.classList.toggle("order-tray-chip--has-items", n > 0 && !submitted);
 
             if (sheetTitle) {
-                if (submitted) {
-                    if (state === TRAY_STATE.COMPLETED) {
-                        sheetTitle.textContent = trayCopy("menuTray.chipCompleteTitle");
-                    } else if (state === TRAY_STATE.PAID) {
-                        sheetTitle.textContent = trayCopy("menuTray.chipPaidTitle");
-                    } else if (state === TRAY_STATE.SUBMITTED_BANK) {
-                        sheetTitle.textContent = trayCopy("checkout.waitingBankTransfer");
-                    } else {
-                        sheetTitle.textContent = trayCopy("menuTray.chipSubmittedTitle");
-                    }
-                } else if (checkoutStep === "review" || checkoutStep === "payment") {
+                if (checkoutUi === CHECKOUT_UI.COMPLETED) {
+                    sheetTitle.textContent = trayCopy("menuTray.chipCompleteTitle");
+                } else if (checkoutUi === CHECKOUT_UI.PAID) {
+                    sheetTitle.textContent = trayCopy("menuTray.chipPaidTitle");
+                } else if (isBankCheckoutUi(checkoutUi)) {
+                    sheetTitle.textContent = trayCopy("checkout.waitingBankTransfer");
+                } else if (checkoutUi === CHECKOUT_UI.SUBMITTED) {
+                    sheetTitle.textContent = trayCopy("menuTray.chipSubmittedTitle");
+                } else if (checkoutUi === CHECKOUT_UI.REVIEW || checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION) {
                     sheetTitle.textContent =
                         n === 1
                             ? trayCopy("menuTray.sheetTitleOne")
                             : n > 1
-                              ? tfmt("menuTray.sheetTitleMany", { n }) ||
-                                trayCopy("menuTray.sheetTitleMany")
+                              ? tfmt("menuTray.sheetTitleMany", { n }) || trayCopy("menuTray.sheetTitleMany")
                               : trayCopy("menuTray.sheetTitle");
                 } else {
                     sheetTitle.textContent = trayCopy("menuTray.sheetTitle");
@@ -1700,20 +1800,15 @@ function __annapMenuRuntimeJsonSelfCheck() {
             }
 
             if (line) {
-                if (submitted) {
-                    if (state === TRAY_STATE.SUBMITTED_BANK) {
-                        line.textContent = trayCopy("checkout.waitingBankTransfer");
-                    } else if (state === TRAY_STATE.SUBMITTED_CARD) {
-                        line.textContent = trayCopy("checkout.waitingCardPayment");
-                    } else if (
-                        state === TRAY_STATE.SUBMITTED_CASH ||
-                        state === TRAY_STATE.SUBMITTED_COUNTER ||
-                        state === TRAY_STATE.SUBMITTED_PENDING
-                    ) {
-                        line.textContent = trayCopy("checkout.waitingCashPayment");
-                    } else {
-                        line.textContent = trayCopy("menuTray.chipSubmittedNote");
-                    }
+                if (isBankCheckoutUi(checkoutUi)) {
+                    line.textContent = trayCopy("checkout.waitingBankTransfer");
+                } else if (checkoutUi === CHECKOUT_UI.SUBMITTED) {
+                    const sess = readSubmittedSession();
+                    const pm = sess ? String(sess.paymentMethod || "").trim() : "";
+                    if (pm === PAYMENT_METHOD.CARD) line.textContent = trayCopy("checkout.waitingCardPayment");
+                    else line.textContent = trayCopy("checkout.waitingCashPayment");
+                } else if (submitted) {
+                    line.textContent = trayCopy("menuTray.chipSubmittedNote");
                 } else if (n === 0) line.textContent = trayCopy("menuTray.countNone");
                 else if (n === 1) line.textContent = trayCopy("menuTray.countOne");
                 else line.textContent = tfmt("menuTray.countMany", { n }) || trayCopy("menuTray.countMany");
@@ -1721,14 +1816,12 @@ function __annapMenuRuntimeJsonSelfCheck() {
 
             if (chipTitle) {
                 chipTitle.classList.remove("order-tray-chip__count--settling");
-                if (submitted) {
-                    if (state === TRAY_STATE.COMPLETED) {
-                        chipTitle.textContent = trayCopy("menuTray.chipCompleteTitle");
-                    } else if (state === TRAY_STATE.PAID) {
-                        chipTitle.textContent = trayCopy("menuTray.chipPaidTitle");
-                    } else {
-                        chipTitle.textContent = trayCopy("menuTray.chipSubmittedTitle");
-                    }
+                if (checkoutUi === CHECKOUT_UI.COMPLETED) {
+                    chipTitle.textContent = trayCopy("menuTray.chipCompleteTitle");
+                } else if (checkoutUi === CHECKOUT_UI.PAID) {
+                    chipTitle.textContent = trayCopy("menuTray.chipPaidTitle");
+                } else if (submitted) {
+                    chipTitle.textContent = trayCopy("menuTray.chipSubmittedTitle");
                 } else if (n === 0) {
                     chipTitle.textContent = isSommelierFlowActive()
                         ? trayCopy("menuTray.chipEmptySomm")
@@ -1737,11 +1830,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     chipTitle.textContent = trayCopy("menuTray.chipOne");
                 } else {
                     chipTitle.textContent = isSommelierFlowActive()
-                        ? tfmt("menuTray.chipManySomm", { n }) ||
-                          tfmt("menuTray.chipMany", { n }) ||
-                          trayCopy("menuTray.chipMany")
-                        : tfmt("menuTray.chipMany", { n }) ||
-                          trayCopy("menuTray.chipMany");
+                        ? tfmt("menuTray.chipManySomm", { n }) || tfmt("menuTray.chipMany", { n }) || trayCopy("menuTray.chipMany")
+                        : tfmt("menuTray.chipMany", { n }) || trayCopy("menuTray.chipMany");
                 }
                 if (opts.animateChip && n > 0 && !reducedMotionTray()) {
                     void chipTitle.offsetWidth;
@@ -1749,24 +1839,17 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 }
             }
             if (chipSub) {
-                if (submitted) {
-                    if (state === TRAY_STATE.COMPLETED) {
-                        chipSub.textContent = trayCopy("menuTray.chipCompleteBody");
-                    } else if (state === TRAY_STATE.PAID) {
-                        chipSub.textContent = trayCopy("menuTray.chipPreparingShort");
-                    } else if (state === TRAY_STATE.SUBMITTED_BANK) {
-                        chipSub.textContent = trayCopy("checkout.waitingBankTransfer");
-                    } else if (state === TRAY_STATE.SUBMITTED_CARD) {
-                        chipSub.textContent = trayCopy("checkout.waitingCardPayment");
-                    } else if (
-                        state === TRAY_STATE.SUBMITTED_CASH ||
-                        state === TRAY_STATE.SUBMITTED_COUNTER ||
-                        state === TRAY_STATE.SUBMITTED_PENDING
-                    ) {
-                        chipSub.textContent = trayCopy("checkout.waitingCashPayment");
-                    } else {
-                        chipSub.textContent = trayCopy("menuTray.chipSubmittedBody");
-                    }
+                if (checkoutUi === CHECKOUT_UI.COMPLETED) {
+                    chipSub.textContent = trayCopy("menuTray.chipCompleteBody");
+                } else if (checkoutUi === CHECKOUT_UI.PAID) {
+                    chipSub.textContent = trayCopy("menuTray.chipPreparingShort");
+                } else if (isBankCheckoutUi(checkoutUi)) {
+                    chipSub.textContent = trayCopy("checkout.waitingBankTransfer");
+                } else if (checkoutUi === CHECKOUT_UI.SUBMITTED) {
+                    const sess = readSubmittedSession();
+                    const pm = sess ? String(sess.paymentMethod || "").trim() : "";
+                    if (pm === PAYMENT_METHOD.CARD) chipSub.textContent = trayCopy("checkout.waitingCardPayment");
+                    else chipSub.textContent = trayCopy("checkout.waitingCashPayment");
                 } else {
                     chipSub.textContent =
                         n === 0
@@ -1776,17 +1859,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                             : trayCopy("menuTray.chipSubFilledShort");
                 }
             }
-            if (chipTotal) {
-                if (n === 0) {
-                    chipTotal.textContent = "\u2014";
-                    chipTotal.classList.add("order-tray-chip__total--empty");
-                    chipTotal.setAttribute("aria-hidden", "true");
-                } else {
-                    chipTotal.textContent = money.format(st);
-                    chipTotal.classList.remove("order-tray-chip__total--empty");
-                    chipTotal.removeAttribute("aria-hidden");
-                }
-            }
+            updateTotals();
             if (chipStack) {
                 if (submitted) {
                     chipStack.innerHTML = '<span class="order-tray-chip__seal" aria-hidden="true">A</span>';
@@ -1814,15 +1887,6 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     }
                 }
             }
-            if (subEl) {
-                if (n === 0) {
-                    subEl.textContent = "\u2014";
-                    subEl.classList.add("order-tray-subtotal--empty");
-                } else {
-                    subEl.textContent = money.format(st);
-                    subEl.classList.remove("order-tray-subtotal--empty");
-                }
-            }
             const chipGuest = document.getElementById("order-tray-chip-guest");
             if (chipGuest) {
                 const gb =
@@ -1843,8 +1907,21 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     chipGuest.classList.add("hidden");
                 }
             }
-            updateTraySheetForState(state);
-            updateCheckoutUi();
+        }
+
+        function updateTraySummary(opts) {
+            opts = opts || {};
+            if (
+                isPostOrderCheckoutUi(checkoutUi) ||
+                checkoutUi === CHECKOUT_UI.REVIEW ||
+                checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION
+            ) {
+                renderCheckoutTray(opts);
+                return;
+            }
+            updateTrayChrome(opts);
+            updateCTA();
+            updatePanelVisibility();
         }
 
         function addToCart(menuItemId, btn) {
@@ -2062,7 +2139,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             GuestInteractionContract.clearCart();
             GuestInteractionContract.removeGuestOrderSession();
             traySubmittedStatus = null;
-            resetCheckoutStep();
+            setCheckoutUi(CHECKOUT_UI.EDITING);
             linesToCartMap(GuestInteractionContract.getCartLines());
             renderCart();
             const orderResult = document.getElementById("orderResult");
@@ -2070,7 +2147,6 @@ function __annapMenuRuntimeJsonSelfCheck() {
             const btn = document.getElementById("menuSubmitBtn");
             if (btn) {
                 btn.classList.remove("order-tray-submit--success", "order-tray-submit--pulse");
-                btn.textContent = tOrder("menuTray.requestPreparation");
             }
             updateTraySummary();
             refreshTableIdentityUi();
@@ -2239,13 +2315,11 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 guestCount >= 1;
 
             if (cartItems.size === 0) {
-                const trayState = resolveTrayState();
-                const sess = readSubmittedSession();
-                if (isSubmittedTrayState(trayState) && sess) {
-                    renderSubmittedTraySheet(sess, trayState);
+                el.className = "order-tray-lines order-tray-lines--correspondence pb-1 text-sm";
+                if (isPostOrderCheckoutUi(checkoutUi)) {
+                    el.innerHTML = "";
                     return;
                 }
-                el.className = "order-tray-lines order-tray-lines--correspondence pb-1 text-sm";
                 const emptyMsg = escapeHtml(tOrder("menuTray.emptyBody"));
                 el.innerHTML = `<p class="order-tray-empty">${emptyMsg || trayCopy("menuTray.emptyBody")}</p>`;
                 return;
@@ -2540,7 +2614,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 if (orderResult) orderResult.textContent = tOrder("order.minOne");
                 return;
             }
-            if (checkoutStep !== "payment") {
+            if (checkoutUi !== CHECKOUT_UI.PAYMENT_SELECTION) {
                 handlePrimaryTrayAction();
                 return;
             }
@@ -2693,17 +2767,18 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     if (!method) return;
                     if (method === PAYMENT_METHOD.BANK && bankTransferConfigured === false) return;
                     selectedPaymentMethod = method;
-                    updatePaymentOptionUi();
+                    if (checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION) {
+                        renderPayment();
+                        updateCTA();
+                    }
                     scrollCheckoutCtaIntoView();
                 });
             });
             const backBtn = document.getElementById("order-tray-checkout-back");
             if (backBtn) {
                 backBtn.addEventListener("click", function () {
-                    if (checkoutStep === "payment") setCheckoutStep("review");
-                    else resetCheckoutStep();
-                    updateCheckoutUi();
-                    updateTraySummary();
+                    if (checkoutUi === CHECKOUT_UI.PAYMENT_SELECTION) setCheckoutUi(CHECKOUT_UI.REVIEW);
+                    else setCheckoutUi(CHECKOUT_UI.EDITING);
                 });
             }
         }
@@ -2754,11 +2829,18 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 refreshTableIdentityUi();
                 loadCart();
                 renderCart();
-                updateTraySummary();
+                checkoutUi = checkoutUiFromSession();
+                if (!readSubmittedSession()) checkoutUi = CHECKOUT_UI.EDITING;
+                else if (!isPostOrderCheckoutUi(checkoutUi)) checkoutUi = CHECKOUT_UI.EDITING;
+                trayStatusFingerprint = statusFingerprint(
+                    readSubmittedSession(),
+                    traySubmittedStatus,
+                    trayKnownPendingPayment
+                );
+                renderCheckoutTray();
                 refreshSubmittedTrayStatus()
                     .then(function () {
-                        updateTraySummary();
-                        renderCart();
+                        renderCheckoutTray();
                         if (shouldPollSubmittedTrayStatus()) startTrayStatusPolling();
                     })
                     .catch(function () {
@@ -2827,11 +2909,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
         document.addEventListener("luxury:i18n-changed", function () {
             try {
                 refreshTableIdentityUi();
-                updateTraySummary();
                 renderCart();
-                const btn = document.getElementById("menuSubmitBtn");
-                if (btn && !btn.classList.contains("order-tray-submit--success"))
-                    btn.textContent = tOrder("checkout.reviewOrder");
+                renderCheckoutTray();
             } catch (eI18n) {
                 __annapMenuBootErr("[ANNAP MENU BOOT] luxury:i18n-changed handler failed", eI18n);
             }
@@ -2841,8 +2920,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             if (document.visibilityState !== "visible" || !readSubmittedSession()) return;
             refreshSubmittedTrayStatus()
                 .then(function () {
-                    updateTraySummary();
-                    renderCart();
+                    renderCheckoutTray();
                     if (shouldPollSubmittedTrayStatus()) startTrayStatusPolling();
                 })
                 .catch(function () {

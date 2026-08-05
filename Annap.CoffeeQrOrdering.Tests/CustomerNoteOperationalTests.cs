@@ -24,7 +24,7 @@ public sealed class CustomerNoteOperationalTests
         Assert.Contains("order-tray-payment-preview-keepopen", js, StringComparison.Ordinal);
         Assert.Contains("checkout.bankPreviewKeepOpen", js, StringComparison.Ordinal);
 
-        var previewStart = js.IndexOf("function updatePaymentPreviewUi", StringComparison.Ordinal);
+        var previewStart = js.IndexOf("function renderPayment", StringComparison.Ordinal);
         var previewEnd = js.IndexOf("function scrollCheckoutCtaIntoView", StringComparison.Ordinal);
         var block = js[previewStart..previewEnd];
         Assert.Contains("PAYMENT_METHOD.BANK", block, StringComparison.Ordinal);
@@ -46,7 +46,7 @@ public sealed class CustomerNoteOperationalTests
     public void Cash_and_card_preview_does_not_surface_bank_keep_open_callout()
     {
         var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
-        var previewStart = js.IndexOf("function updatePaymentPreviewUi", StringComparison.Ordinal);
+        var previewStart = js.IndexOf("function renderPayment", StringComparison.Ordinal);
         var previewEnd = js.IndexOf("function scrollCheckoutCtaIntoView", StringComparison.Ordinal);
         var block = js[previewStart..previewEnd];
         Assert.Contains("checkout.cashPreviewTitle", block, StringComparison.Ordinal);

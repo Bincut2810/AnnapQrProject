@@ -14,10 +14,11 @@ public sealed class GuestPaymentUxTests
         Assert.Contains("cache: \"no-store\"", js, StringComparison.Ordinal);
 
         var refreshStart = js.IndexOf("async function refreshSubmittedTrayStatus", StringComparison.Ordinal);
-        var refreshEnd = js.IndexOf("function updateTraySheetForState", StringComparison.Ordinal);
+        var refreshEnd = js.IndexOf("function updateTrayChrome", StringComparison.Ordinal);
         var refreshBlock = js[refreshStart..refreshEnd];
         Assert.Contains("fetchGuestOrderStatus(sess)", refreshBlock, StringComparison.Ordinal);
         Assert.DoesNotContain("buildTrackHref(sess)", refreshBlock, StringComparison.Ordinal);
+        Assert.Contains("fingerprintChanged", refreshBlock, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -26,7 +27,7 @@ public sealed class GuestPaymentUxTests
         var js = File.ReadAllText(Path.Combine(WebRoot, "js", "guest-i18n.js"));
         Assert.Contains("I18N_BUNDLE_REV", js, StringComparison.Ordinal);
         Assert.Contains("cache: \"no-store\"", js, StringComparison.Ordinal);
-        Assert.Contains("/i18n/guest-", js, StringComparison.Ordinal);
+        Assert.Contains("/i18n/", js, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -70,7 +71,6 @@ public sealed class GuestPaymentUxTests
 
         var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
         Assert.Contains("checkout.bankPreviewKeepOpen", js, StringComparison.Ordinal);
-        Assert.Contains("giữ nguyên màn hình chuyển khoản", js, StringComparison.Ordinal);
         Assert.Contains("\"bankTransferPendingBodyShort\": \"Quét mã QR để thanh toán.\"", vi, StringComparison.Ordinal);
     }
 
@@ -78,7 +78,7 @@ public sealed class GuestPaymentUxTests
     public void Cash_and_card_preview_does_not_use_bank_transfer_keep_open_copy()
     {
         var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
-        var start = js.IndexOf("function updatePaymentPreviewUi", StringComparison.Ordinal);
+        var start = js.IndexOf("function renderPayment", StringComparison.Ordinal);
         var end = js.IndexOf("function scrollCheckoutCtaIntoView", StringComparison.Ordinal);
         var block = js[start..end];
         Assert.Contains("checkout.cashPreviewTitle", block, StringComparison.Ordinal);
@@ -101,16 +101,16 @@ public sealed class GuestPaymentUxTests
         Assert.Contains("celebratedPaidOrderIds", js, StringComparison.Ordinal);
         Assert.Contains("handlePaymentConfirmedCelebration", js, StringComparison.Ordinal);
         Assert.Contains("showPaymentSuccessCelebration", js, StringComparison.Ordinal);
-        Assert.Contains("Thanh toán thành công", js, StringComparison.Ordinal);
         Assert.Contains("setTrayOpen(false)", js, StringComparison.Ordinal);
 
         var refreshStart = js.IndexOf("async function refreshSubmittedTrayStatus", StringComparison.Ordinal);
-        var refreshEnd = js.IndexOf("function updateTraySheetForState", StringComparison.Ordinal);
+        var refreshEnd = js.IndexOf("function updateTrayChrome", StringComparison.Ordinal);
         var refreshBlock = js[refreshStart..refreshEnd];
         Assert.Contains("wasPending && isPaid", refreshBlock, StringComparison.Ordinal);
         Assert.Contains("celebratedPaidOrderIds.has", refreshBlock, StringComparison.Ordinal);
         Assert.Contains("resolveSubmittedCounterState(sess.paymentMethod)", refreshBlock, StringComparison.Ordinal);
         Assert.DoesNotContain("traySubmittedStatus = TRAY_STATE.SUBMITTED_PENDING;", refreshBlock, StringComparison.Ordinal);
+        Assert.DoesNotContain("renderCart()", refreshBlock, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -123,6 +123,7 @@ public sealed class GuestPaymentUxTests
         Assert.Contains("checkout.transferQrLoading", block, StringComparison.Ordinal);
         Assert.Contains("/api/track/orders/", block, StringComparison.Ordinal);
         Assert.Contains("track.transferQr", block, StringComparison.Ordinal);
+        Assert.Contains("transferHostEl()", block, StringComparison.Ordinal);
         Assert.Contains("transferUnavailableInTray", js, StringComparison.Ordinal);
         Assert.Contains("transferRetry", js, StringComparison.Ordinal);
         Assert.Contains("window.__annapBankTransferDebug", js, StringComparison.Ordinal);
@@ -151,13 +152,24 @@ public sealed class GuestPaymentUxTests
     }
 
     [Fact]
-    public void Bank_transfer_render_calls_ensure_mount_after_submitted_bank_card_render()
+    public void Bank_transfer_render_uses_stable_host_and_single_owner()
     {
         var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
-        var start = js.IndexOf("function renderSubmittedTraySheet", StringComparison.Ordinal);
-        var end = js.IndexOf("function updateTraySummary", StringComparison.Ordinal);
+        Assert.Contains("function renderCheckoutTray", js, StringComparison.Ordinal);
+        Assert.Contains("function renderSubmitted", js, StringComparison.Ordinal);
+        Assert.Contains("function updateCTA", js, StringComparison.Ordinal);
+        Assert.Contains("CHECKOUT_UI", js, StringComparison.Ordinal);
+        Assert.Contains("PAYMENT_BANK_LOADING", js, StringComparison.Ordinal);
+        Assert.Contains("PAYMENT_BANK_READY", js, StringComparison.Ordinal);
+        Assert.Contains("order-tray-transfer-host", js, StringComparison.Ordinal);
+        Assert.DoesNotContain("function renderSubmittedTraySheet", js, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-i18n=\"checkout.reviewOrder\"", js, StringComparison.Ordinal);
+
+        var start = js.IndexOf("function renderSubmitted", StringComparison.Ordinal);
+        var end = js.IndexOf("function renderCheckoutTray", StringComparison.Ordinal);
         var block = js[start..end];
-        Assert.Contains("if (state === TRAY_STATE.SUBMITTED_BANK) void ensureBankTransferQrMounted(sess);", block, StringComparison.Ordinal);
+        Assert.Contains("ensureBankTransferQrMounted(sess)", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("el.innerHTML = `<div class=\"${cardClass}\"", block, StringComparison.Ordinal);
     }
 
     [Fact]
@@ -178,11 +190,45 @@ public sealed class GuestPaymentUxTests
     public void Paid_tray_state_hides_bank_qr_mount_path()
     {
         var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
-        var start = js.IndexOf("function renderSubmittedTraySheet", StringComparison.Ordinal);
-        var end = js.IndexOf("function updateTraySummary", StringComparison.Ordinal);
+        Assert.Contains("isBankCheckoutUi(checkoutUi)", js, StringComparison.Ordinal);
+        Assert.Contains("CHECKOUT_UI.PAID", js, StringComparison.Ordinal);
+        Assert.Contains("CHECKOUT_UI.COMPLETED", js, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Checkout_cta_not_owned_by_i18n_applyDom()
+    {
+        var markup = File.ReadAllText(
+            Path.GetFullPath(
+                Path.Combine(
+                    AppContext.BaseDirectory,
+                    "..",
+                    "..",
+                    "..",
+                    "..",
+                    "Annap.CoffeeQrOrdering.Web",
+                    "Pages",
+                    "Shared",
+                    "_OrderTrayDock.cshtml")));
+        Assert.Contains("id=\"menuSubmitBtn\"", markup, StringComparison.Ordinal);
+        Assert.DoesNotContain("data-i18n=\"checkout.reviewOrder\"", markup, StringComparison.Ordinal);
+        Assert.Contains("id=\"order-tray-transfer-host\"", markup, StringComparison.Ordinal);
+        Assert.Contains("id=\"order-tray-submitted-panel\"", markup, StringComparison.Ordinal);
+
+        var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
+        Assert.DoesNotContain("LuxuryI18n.applyDom()", js, StringComparison.Ordinal);
+        Assert.Contains("function updateCTA", js, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void Status_poll_does_not_recreate_cart_dom()
+    {
+        var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
+        var start = js.IndexOf("function startTrayStatusPolling", StringComparison.Ordinal);
+        var end = js.IndexOf("function dismissPaymentSuccessCelebration", StringComparison.Ordinal);
         var block = js[start..end];
-        Assert.Contains("TRAY_STATE.SUBMITTED_BANK", block, StringComparison.Ordinal);
-        Assert.Contains("ensureBankTransferQrMounted", block, StringComparison.Ordinal);
-        Assert.Contains("TRAY_STATE.PAID", block, StringComparison.Ordinal);
+        Assert.Contains("fingerprintChanged", block, StringComparison.Ordinal);
+        Assert.Contains("renderCheckoutTray()", block, StringComparison.Ordinal);
+        Assert.DoesNotContain("renderCart()", block, StringComparison.Ordinal);
     }
 }

@@ -38,8 +38,10 @@ public sealed class GuestTraySubmittedCopyTests
 
         Assert.Contains("submittedPendingPayment", js, StringComparison.Ordinal);
         Assert.Contains("order-tray-root--submitted", js, StringComparison.Ordinal);
-        Assert.Contains("renderSubmittedTraySheet", js, StringComparison.Ordinal);
+        Assert.Contains("function renderSubmitted", js, StringComparison.Ordinal);
+        Assert.Contains("function renderCheckoutTray", js, StringComparison.Ordinal);
         Assert.Contains("buildGuestTrackUrl", js, StringComparison.Ordinal);
+        Assert.DoesNotContain("function renderSubmittedTraySheet", js, StringComparison.Ordinal);
     }
 
     [Fact]
