@@ -5,7 +5,8 @@ using Npgsql;
 namespace Annap.CoffeeQrOrdering.Web.Internal;
 
 /// <summary>
-/// Detects whether payment and preparation workflow EF migrations have been applied to PostgreSQL.
+/// Detects whether order workflow EF migrations have been applied to PostgreSQL.
+/// Required column lists are the production schema contract — keep them aligned with mapped entities.
 /// </summary>
 internal static class PaymentWorkflowSchemaGuard
 {
@@ -22,6 +23,8 @@ internal static class PaymentWorkflowSchemaGuard
     public const string EfUpdateCommand =
         "dotnet ef database update --project Annap.CoffeeQrOrdering.Infrastructure --startup-project Annap.CoffeeQrOrdering.Web";
 
+    public const string OrderItemTemperatureMigrationId = "20260805120000_AddOrderItemTemperature";
+
     public static readonly IReadOnlyList<string> RequiredOrderColumns =
     [
         "BillNumber",
@@ -31,11 +34,25 @@ internal static class PaymentWorkflowSchemaGuard
         "CompletedAtUtc"
     ];
 
+    /// <summary>
+    /// Every scalar column mapped on <c>OrderItem</c>. Missing any of these must fail fast
+    /// with <see cref="MigrationRequiredErrorCode"/> — never a hidden 500.
+    /// </summary>
     public static readonly IReadOnlyList<string> RequiredOrderItemColumns =
     [
+        "Id",
+        "OrderId",
+        "MenuItemId",
+        "Quantity",
+        "UnitPrice",
+        "Notes",
+        "CustomerNote",
+        "Temperature",
+        "MenuItemName",
         "PreparedQuantity",
         "PreparedAtUtc",
-        "PreparedBy"
+        "PreparedBy",
+        "PreparedByAccountId"
     ];
 
     public static async Task<IReadOnlyList<string>> GetMissingColumnsAsync(
@@ -51,14 +68,17 @@ internal static class PaymentWorkflowSchemaGuard
         if (conn.State != System.Data.ConnectionState.Open)
             await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
 
+        var orderIn = string.Join(", ", RequiredOrderColumns.Select(QuoteIdent));
+        var itemIn = string.Join(", ", RequiredOrderItemColumns.Select(QuoteIdent));
+
         await using var cmd = conn.CreateCommand();
-        cmd.CommandText = """
+        cmd.CommandText = $"""
             SELECT table_name, column_name
             FROM information_schema.columns
             WHERE table_schema = 'public'
               AND (
-                (table_name = 'orders' AND column_name IN ('BillNumber', 'PaidAtUtc', 'PaymentConfirmedBy', 'PaymentMethod', 'CompletedAtUtc'))
-                OR (table_name = 'order_items' AND column_name IN ('PreparedQuantity', 'PreparedAtUtc', 'PreparedBy'))
+                (table_name = 'orders' AND column_name IN ({orderIn}))
+                OR (table_name = 'order_items' AND column_name IN ({itemIn}))
               )
             """;
 
@@ -103,4 +123,7 @@ internal static class PaymentWorkflowSchemaGuard
         Results.Json(
             new { error = MigrationRequiredErrorCode, message = ApiMessageEn },
             statusCode: StatusCodes.Status503ServiceUnavailable);
+
+    private static string QuoteIdent(string name) =>
+        "'" + name.Replace("'", "''", StringComparison.Ordinal) + "'";
 }

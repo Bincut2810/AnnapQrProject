@@ -29,4 +29,23 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <!-- Fail the build if the Temperature migration is not discoverable (missing [Migration] attribute). -->
+  <Target Name="VerifyOrderItemTemperatureMigrationDiscoverable" BeforeTargets="BeforeBuild">
+    <PropertyGroup>
+      <_TempMigrationFile>$(MSBuildProjectDirectory)\Persistence\Migrations\20260805120000_AddOrderItemTemperature.cs</_TempMigrationFile>
+    </PropertyGroup>
+    <Error
+      Condition="!Exists('$(_TempMigrationFile)')"
+      Text="Missing migration file Persistence/Migrations/20260805120000_AddOrderItemTemperature.cs" />
+    <ReadLinesFromFile File="$(_TempMigrationFile)">
+      <Output TaskParameter="Lines" ItemName="_TempMigrationLines" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <_TempMigrationAttrLines Include="@(_TempMigrationLines)" Condition="$([System.String]::Copy('%(_TempMigrationLines.Identity)').Contains('[Migration(&quot;20260805120000_AddOrderItemTemperature&quot;)]'))" />
+    </ItemGroup>
+    <Error
+      Condition="'@(_TempMigrationAttrLines)' == ''"
+      Text="AddOrderItemTemperature must declare [Migration(&quot;20260805120000_AddOrderItemTemperature&quot;)] so EF can discover it. Undiscoverable migrations cause schema drift and hidden 500s on POST /api/orders." />
+  </Target>
+
 </Project>

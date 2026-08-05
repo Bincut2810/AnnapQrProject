@@ -1124,14 +1124,16 @@ function __annapMenuRuntimeJsonSelfCheck() {
             menuOrderSubmitInFlight = false;
             selectedPaymentMethod = PAYMENT_METHOD.CASH;
 
-            GuestInteractionContract.clearCart();
-            linesToCartMap(GuestInteractionContract.getCartLines());
-            renderCart();
-
+            // Transition checkout UI before clearCart so cartUpdated cannot re-enter payment-selection.
             const nextUi =
                 paymentMethod === PAYMENT_METHOD.BANK ? CHECKOUT_UI.PAYMENT_BANK_LOADING : CHECKOUT_UI.SUBMITTED;
             trayStatusFingerprint = statusFingerprint(readSubmittedSession(), submittedStatus, true);
             setCheckoutUi(nextUi, { skipCart: true });
+
+            GuestInteractionContract.clearCart();
+            linesToCartMap(GuestInteractionContract.getCartLines());
+            renderCart();
+
             setTrayOpen(true, { userIntent: true });
             startTrayStatusPolling();
 

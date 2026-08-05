@@ -1,3 +1,5 @@
+using Annap.CoffeeQrOrdering.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -5,6 +7,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations;
 
 /// <inheritdoc />
+[DbContext(typeof(AppDbContext))]
+[Migration("20260805120000_AddOrderItemTemperature")]
 public partial class AddOrderItemTemperature : Migration
 {
     /// <inheritdoc />

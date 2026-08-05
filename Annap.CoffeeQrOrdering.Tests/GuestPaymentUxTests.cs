@@ -130,6 +130,21 @@ public sealed class GuestPaymentUxTests
     }
 
     [Fact]
+    public void ApplySubmitSuccessUi_transitions_checkout_before_clearCart()
+    {
+        var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
+        var start = js.IndexOf("function applySubmitSuccessUi", StringComparison.Ordinal);
+        Assert.True(start >= 0);
+        var end = js.IndexOf("\n        function ", start + 1, StringComparison.Ordinal);
+        var block = end > start ? js[start..end] : js[start..];
+        var setUi = block.IndexOf("setCheckoutUi(nextUi", StringComparison.Ordinal);
+        var clearCart = block.IndexOf("GuestInteractionContract.clearCart()", StringComparison.Ordinal);
+        Assert.True(setUi >= 0, "setCheckoutUi(nextUi) missing from applySubmitSuccessUi");
+        Assert.True(clearCart >= 0, "clearCart missing from applySubmitSuccessUi");
+        Assert.True(setUi < clearCart, "checkout UI must transition before clearCart to keep single render owner");
+    }
+
+    [Fact]
     public void Bank_transfer_inline_fallback_renders_qr_image_when_url_exists()
     {
         var js = File.ReadAllText(Path.Combine(WebRoot, "js", "order-tray-dock.js"));
