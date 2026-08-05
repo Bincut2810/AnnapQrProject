@@ -157,31 +157,33 @@
 
             <button type="button"
                     id="order-tray-chip"
-                    class="order-tray-chip checkout-sheet-chip pointer-events-auto guest-hit relative z-[1] grid min-h-[2.75rem] w-full grid-cols-[1.85rem_minmax(0,1fr)_auto] items-center gap-1.5 px-2.5 py-1.5 text-left transition-[box-shadow] duration-200 ease-out active:scale-[0.995] sm:min-h-0 sm:duration-300 sm:ease-[cubic-bezier(0.22,1,0.36,1)]"
+                    class="order-tray-chip checkout-sheet-chip pointer-events-auto guest-hit relative z-[1] flex min-h-[2.75rem] w-full items-center gap-1.5 px-2.5 py-1.5 text-left transition-[box-shadow] duration-200 ease-out active:scale-[0.995] sm:min-h-0 sm:duration-300 sm:ease-[cubic-bezier(0.22,1,0.36,1)]"
                     aria-expanded="false"
                     aria-controls="order-tray-sheet"
                     data-i18n-aria="menuTray.ariaChip">
-                <span id="order-tray-chip-impact" aria-hidden="true"></span>
-                <span id="order-tray-chip-stack" class="order-tray-chip__stack" aria-hidden="true">
-                    <span class="order-tray-chip__empty-line"></span>
-                </span>
-                <div class="order-tray-chip__copy min-w-0">
-                    <p class="order-tray-chip__kicker text-[8px] font-medium tracking-[0.24em] uppercase text-[rgb(var(--muted-2))]" data-i18n="menuTray.chipKicker">Khay</p>
-                    <p id="order-tray-chip-title"
-                       class="mt-0.5 truncate text-[0.75rem] font-medium leading-snug text-[rgb(var(--fg))]" data-i18n="menuTray.chipEmpty">Khay đang chờ</p>
-                    <p id="order-tray-chip-sub"
-                       class="order-tray-chip__sub mt-0.5 truncate text-[10px] leading-snug text-[rgb(var(--muted))]" data-i18n="menuTray.chipSubEmpty">Chọn một ly để bắt đầu.</p>
-                    <p id="order-tray-chip-guest"
-                       class="mt-1 hidden truncate text-[10px] font-medium tracking-[0.18em] uppercase text-[rgb(var(--accent))]/80"></p>
-                </div>
-                <span class="order-tray-chip__side">
-                    <span id="order-tray-chip-total" class="order-tray-chip__total">0đ</span>
-                    <span class="order-tray-chevron flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[rgba(253,249,244,0.95)] ring-1 ring-[rgba(212,184,150,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
-                      aria-hidden="true">
-                        <svg class="h-3.5 w-3.5 text-[rgb(var(--muted))]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M6 9l6 6 6-6" />
-                        </svg>
+                <span id="order-tray-chip-impact" class="order-tray-chip__impact" aria-hidden="true"></span>
+                <div class="order-tray-chip__lead">
+                    <span id="order-tray-chip-stack" class="order-tray-chip__stack" aria-hidden="true">
+                        <span class="order-tray-chip__empty-line"></span>
                     </span>
+                    <div class="order-tray-chip__copy">
+                        <p class="order-tray-chip__kicker text-[8px] font-medium tracking-[0.24em] uppercase text-[rgb(var(--muted-2))]" data-i18n="menuTray.chipKicker">Khay</p>
+                        <p id="order-tray-chip-title"
+                           class="mt-0.5 text-[0.75rem] font-medium leading-snug text-[rgb(var(--fg))]" data-i18n="menuTray.chipEmpty">Khay đang chờ</p>
+                        <p id="order-tray-chip-sub"
+                           class="order-tray-chip__sub mt-0.5 text-[10px] leading-snug text-[rgb(var(--muted))]" data-i18n="menuTray.chipSubEmpty">Chọn một ly để bắt đầu.</p>
+                        <p id="order-tray-chip-guest"
+                           class="mt-1 hidden text-[10px] font-medium tracking-[0.18em] uppercase text-[rgb(var(--accent))]/80"></p>
+                    </div>
+                </div>
+                <div class="order-tray-chip__price">
+                    <span id="order-tray-chip-total" class="order-tray-chip__total">0đ</span>
+                </div>
+                <span class="order-tray-chevron flex items-center justify-center rounded-full bg-[rgba(253,249,244,0.95)] ring-1 ring-[rgba(212,184,150,0.45)] transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]"
+                      aria-hidden="true">
+                    <svg class="h-3.5 w-3.5 text-[rgb(var(--muted))]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M6 9l6 6 6-6" />
+                    </svg>
                 </span>
             </button>
         </div>

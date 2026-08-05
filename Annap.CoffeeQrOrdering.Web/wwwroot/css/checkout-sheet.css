@@ -732,14 +732,76 @@
   color: var(--checkout-sheet-muted);
 }
 
-/* ---------- Collapsed chip ---------- */
+/* ---------- Collapsed chip (sole layout owner: lead | price | chevron) ---------- */
 #order-tray-chip.order-tray-chip,
 #order-tray-chip.checkout-sheet-chip {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--checkout-space-2);
+  overflow: hidden;
   background: var(--checkout-sheet-bg);
   background-image: none;
   border: 1px solid var(--checkout-sheet-line);
   border-radius: 1rem;
   box-shadow: var(--checkout-chip-shadow);
+}
+
+.order-tray-chip__impact {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.order-tray-chip__lead {
+  display: flex;
+  align-items: center;
+  gap: var(--checkout-space-2);
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.order-tray-chip__stack {
+  flex: 0 0 auto;
+}
+
+.order-tray-chip__copy {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.order-tray-chip__kicker,
+#order-tray-chip-title,
+#order-tray-chip-sub,
+#order-tray-chip-guest {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.order-tray-chip__price {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.order-tray-chip__total {
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  overflow: visible;
+  text-overflow: clip;
+  font-size: var(--checkout-type-price);
+  line-height: 1.2;
+}
+
+.order-tray-chevron {
+  flex: 0 0 auto;
 }
 
 #order-tray-chip:hover {
@@ -753,27 +815,29 @@
   box-shadow:
     0 6px 18px rgba(26, 18, 9, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.55);
-  grid-template-columns: minmax(0, 1fr) auto;
   min-height: 2.75rem;
   align-items: center;
 }
 
 .order-tray-root--sheet-open #order-tray-chip-impact,
-.order-tray-root--sheet-open .order-tray-chip__stack {
+.order-tray-root--sheet-open .order-tray-chip__stack,
+.order-tray-root--sheet-open .order-tray-chip__kicker,
+.order-tray-root--sheet-open #order-tray-chip-sub,
+.order-tray-root--sheet-open #order-tray-chip-guest {
   display: none;
 }
 
-.order-tray-root--sheet-open .order-tray-chip__side {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: var(--checkout-space-1);
-  flex-shrink: 0;
+.order-tray-root--sheet-open .order-tray-chip__lead {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.order-tray-root--sheet-open .order-tray-chip__price {
+  flex: 0 0 auto;
 }
 
 .order-tray-root--sheet-open .order-tray-chip__total {
   white-space: nowrap;
-  max-width: none;
   overflow: visible;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -805,9 +869,7 @@
 .order-tray-root--empty .order-tray-chip__total {
   color: var(--checkout-sheet-fg);
   font-weight: 700;
-  font-variant-numeric: tabular-nums;
   font-style: normal;
-  white-space: nowrap;
 }
 
 .order-tray-root--empty .order-tray-chip__total--empty {

@@ -5615,11 +5615,6 @@ body.ge-sommelier-flow .order-tray-root--empty .order-tray-chip__total--empty,
     opacity: 0.65;
 }
 
-body.ge-sommelier-flow .order-tray-chip--has-items .order-tray-chip__side {
-    align-items: flex-end;
-    gap: 0.2rem;
-}
-
 body.ge-sommelier-flow .order-tray-chip--has-items .order-tray-chip__total {
     font-family: var(--font-ui);
     font-style: normal;
