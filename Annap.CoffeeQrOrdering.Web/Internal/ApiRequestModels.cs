@@ -30,7 +30,12 @@ internal sealed record CreateOrderRequest(Guid VenueTableId, List<CreateOrderIte
     public string? PaymentMethod { get; init; }
 }
 
-internal sealed record CreateOrderItemRequest(Guid MenuItemId, int Quantity, string? Notes, string? CustomerNote);
+internal sealed record CreateOrderItemRequest(
+    Guid MenuItemId,
+    int Quantity,
+    string? Notes,
+    string? CustomerNote,
+    string? Temperature = null);
 
 internal sealed record StaffOrderStatusPatchRequest(string? StaffStatus);
 

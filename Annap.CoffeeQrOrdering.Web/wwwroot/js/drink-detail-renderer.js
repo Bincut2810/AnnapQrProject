@@ -17,6 +17,13 @@
         return esc(s).replace(/'/g, "&#39;");
     }
 
+    function guestCategoryDisplay(categoryName) {
+        if (categoryName == null || categoryName === "") return "";
+        var s = String(categoryName).trim();
+        if (s === "Signature") return "Good Things";
+        return s;
+    }
+
     function renderAirmailEdge() {
         return '<div class="dd-airmail" aria-hidden="true"></div>';
     }
@@ -31,12 +38,13 @@
     }
 
     function renderTracking(category) {
-        if (!category) return "";
+        var display = guestCategoryDisplay(category);
+        if (!display) return "";
         return (
             '<div class="dd-tracking">' +
             '<span class="dd-tracking__atelier">106/1 Nguyễn Thị Minh Khai</span>' +
             '<span class="dd-tracking__sep"></span>' +
-            '<span class="dd-tracking__cat">' + esc(category.toUpperCase()) + "</span>" +
+            '<span class="dd-tracking__cat">' + esc(display.toUpperCase()) + "</span>" +
             "</div>"
         );
     }
@@ -144,7 +152,7 @@
             esc(data.name || "") +
             "</span>" +
             '<span class="dd-no-poster__cat">' +
-            esc(data.categoryName ? data.categoryName.toUpperCase() : "") +
+            esc(data.categoryName ? guestCategoryDisplay(data.categoryName).toUpperCase() : "") +
             "</span>" +
             "</div>"
         );

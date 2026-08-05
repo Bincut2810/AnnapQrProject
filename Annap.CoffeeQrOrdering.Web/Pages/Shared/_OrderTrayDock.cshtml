@@ -11,14 +11,14 @@
         <div class="relative flex flex-col items-stretch">
             <div id="order-tray-sheet"
                  class="order-tray-sheet checkout-sheet order-tray-sheet--closed pointer-events-none absolute bottom-full left-0 right-0 mb-2 flex max-h-[min(78dvh,720px)] flex-col overflow-hidden">
-                <div class="annap-tray-header order-tray-header-compact relative flex shrink-0 items-center gap-2 px-3 py-2.5 sm:px-4">
+                <div class="annap-tray-header order-tray-header-compact relative flex shrink-0 items-center gap-2">
                     <div class="order-tray-handle pointer-events-none absolute left-1/2 top-1 h-0.5 w-7 -translate-x-1/2 rounded-full bg-[rgba(26,20,16,0.1)]" aria-hidden="true"></div>
 
                     <div class="order-tray-header__stamp order-tray-header__stamp--compact" aria-hidden="true">A</div>
-                    <div class="min-w-0 flex-1 pt-0.5">
-                        <p id="traySheetTitle" class="order-tray-sheet-title text-[0.875rem] font-medium leading-tight tracking-tight text-[rgb(var(--fg))]" data-i18n="menuTray.sheetTitle">Khay của bạn</p>
+                    <div class="min-w-0 flex-1">
+                        <p id="traySheetTitle" class="order-tray-sheet-title" data-i18n="menuTray.sheetTitle">Khay của bạn</p>
                         <p id="trayCountLine"
-                           class="order-tray-sheet-sub mt-0.5 text-[10px] leading-snug text-[rgb(var(--muted))]" data-i18n="menuTray.sheetSub">Chạm để xem và gửi order</p>
+                           class="order-tray-sheet-sub" data-i18n="menuTray.sheetSub">Chạm để xem và gửi order</p>
                         <p id="trayTableMeta" class="order-tray-table-meta hidden" aria-live="polite"></p>
                     </div>
 
@@ -40,25 +40,25 @@
                     </div>
                 </div>
 
-                <div id="order-tray-lines-wrap" class="order-tray-lines-wrap min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-3 pt-1.5 sm:px-4">
+                <div id="order-tray-lines-wrap" class="order-tray-lines-wrap min-h-0 flex-1 overflow-y-auto overscroll-y-contain">
                     <div id="cart" class="order-tray-lines pb-1 text-sm"></div>
                 </div>
 
-                <div id="order-tray-sheet-footer" class="order-tray-sheet-footer shrink-0 px-3 pb-3 pt-2 sm:px-4">
+                <div id="order-tray-sheet-footer" class="order-tray-sheet-footer shrink-0">
                     <div id="order-tray-checkout-body" class="order-tray-checkout-body min-h-0">
                     <div id="order-tray-checkout-review" class="order-tray-checkout hidden" hidden>
-                        <p class="order-tray-checkout__kicker text-[9px] font-medium tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]" data-i18n="checkout.checkBillTitle">Phiếu kiểm đơn</p>
-                        <p class="order-tray-checkout__note mt-0.5 text-[10px] leading-snug text-[rgb(var(--muted))]" data-i18n="checkout.reviewNoteShort">Kiểm tra món trước khi thanh toán.</p>
-                        <ul id="order-tray-checkout-lines" class="order-tray-checkout__lines mt-1.5 space-y-0 text-sm"></ul>
-                        <div class="order-tray-subtotal-row mt-1.5 flex items-baseline justify-between gap-3 border-t border-[rgba(212,184,150,0.35)] pt-1.5">
-                            <span class="text-[9px] font-medium tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]" data-i18n="checkout.estimatedTotal">Tạm tính</span>
-                            <p id="order-tray-checkout-total" class="text-base font-semibold tabular-nums tracking-tight text-[rgb(var(--fg))]">0đ</p>
+                        <p class="order-tray-checkout__kicker" data-i18n="checkout.checkBillTitle">Kiểm tra đơn</p>
+                        <p class="order-tray-checkout__note" data-i18n="checkout.reviewNoteShort">Kiểm tra món trước khi thanh toán.</p>
+                        <ul id="order-tray-checkout-lines" class="order-tray-checkout__lines"></ul>
+                        <div class="order-tray-subtotal-row">
+                            <span data-i18n="checkout.estimatedTotal">Tạm tính</span>
+                            <p id="order-tray-checkout-total">0đ</p>
                         </div>
                     </div>
 
-                    <div id="order-tray-checkout-payment" class="order-tray-checkout hidden mt-2" hidden>
-                        <p class="order-tray-checkout__kicker text-[9px] font-medium tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]" data-i18n="checkout.choosePaymentMethod">Chọn cách thanh toán</p>
-                        <div class="order-tray-payment-options order-tray-payment-options--triple mt-1.5 grid grid-cols-3 gap-1.5" role="radiogroup" data-i18n-aria="checkout.paymentMethodLabel">
+                    <div id="order-tray-checkout-payment" class="order-tray-checkout hidden" hidden>
+                        <p class="order-tray-checkout__kicker" data-i18n="checkout.choosePaymentMethod">Chọn cách thanh toán</p>
+                        <div class="order-tray-payment-options order-tray-payment-options--triple grid grid-cols-3" role="radiogroup" data-i18n-aria="checkout.paymentMethodLabel">
                             <button type="button"
                                     class="order-tray-payment-option guest-hit"
                                     data-payment-method="Cash"
@@ -103,36 +103,34 @@
                     </div>
 
                     <div id="order-tray-cart-footer" class="order-tray-cart-footer">
-                    <div class="order-tray-subtotal-row flex items-baseline justify-between gap-3 border-t border-[rgba(212,184,150,0.35)] pt-1.5">
-                        <span class="text-[9px] font-medium tracking-[0.22em] uppercase text-[rgb(var(--muted-2))]"
-                              data-i18n="menuTray.subtotal">Tạm tính</span>
-                        <p id="order-tray-subtotal"
-                           class="text-base font-semibold tabular-nums tracking-tight text-[rgb(var(--fg))]">0đ</p>
+                    <div class="order-tray-subtotal-row">
+                        <span data-i18n="menuTray.subtotal">Tạm tính</span>
+                        <p id="order-tray-subtotal">0đ</p>
                     </div>
 
                     <div id="menu-table-identity" class="hidden" aria-hidden="true">
                         <p id="menu-table-primary"></p>
                     </div>
                     <div id="menu-table-need-qr"
-                         class="order-tray-need-qr mt-1.5 hidden rounded-sm px-2 py-1 text-[10px] leading-snug text-[rgb(var(--muted))]"
+                         class="order-tray-need-qr hidden"
                          data-i18n="cart.needQr">
                         Vui lòng quét QR trên bàn để bắt đầu.
                     </div>
 
                     <input type="hidden" id="menuVenueTableId" value="" autocomplete="off" />
 
-                    <div id="order-tray-checkout-sticky" class="order-tray-checkout-sticky mt-2">
+                    <div id="order-tray-checkout-sticky" class="order-tray-checkout-sticky">
                         <div id="order-tray-checkout-actions" class="order-tray-checkout-actions flex gap-1.5 hidden" hidden>
                             <button type="button"
                                     id="order-tray-checkout-back"
-                                    class="order-tray-back-btn guest-hit inline-flex min-h-[2.35rem] flex-none items-center justify-center rounded-sm border border-[rgba(212,184,150,0.45)] px-2.5 text-[11px] text-[rgb(var(--muted))] transition hover:text-[rgb(var(--fg))]">
+                                    class="order-tray-back-btn guest-hit">
                                 <span data-i18n="menu.back">Quay lại</span>
                             </button>
                         </div>
 
                         <button type="button"
                                 id="menuSubmitBtn"
-                                class="btn-ink order-tray-submit min-h-[2.5rem] w-full justify-center py-2.5 text-sm font-normal tracking-wide disabled:opacity-45"
+                                class="btn-ink order-tray-submit w-full disabled:opacity-45"
                                 disabled
                                 onclick="if (typeof window.__annapMenuSubmitOrder === 'function') window.__annapMenuSubmitOrder();"
                                 data-i18n="checkout.reviewOrder">
@@ -141,7 +139,7 @@
                     </div>
 
                     <div id="orderResult"
-                         class="order-tray-result mt-1.5 min-h-[1rem] text-center text-[10px] text-[rgb(var(--muted))]"></div>
+                         class="order-tray-result"></div>
                     </div>
                 </div>
             </div>

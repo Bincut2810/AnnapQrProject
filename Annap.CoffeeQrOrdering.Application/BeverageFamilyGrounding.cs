@@ -89,7 +89,7 @@ public static class BeverageFamilyGrounding
             Smoothie => "Smoothie",
             Matcha => "Matcha",
             Fruit => "Juice / Smoothie",
-            Signature => "Signature",
+            Signature => "Good Things",
             _ => "Any"
         };
 

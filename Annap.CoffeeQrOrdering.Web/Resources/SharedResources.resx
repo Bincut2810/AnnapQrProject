@@ -14,13 +14,13 @@
   <data name="cart.openSelections" xml:space="preserve"><value>Open order</value></data>
   <data name="cart.pricesNote" xml:space="preserve"><value>Prices are confirmed when you submit.</value></data>
   <data name="cart.seatedAt" xml:space="preserve"><value>Seated at</value></data>
-  <data name="cart.seatedHint" xml:space="preserve"><value>Your seat is noted at 106/1 Nguyễn Thị Minh Khai.</value></data>
+  <data name="cart.seatedHint" xml:space="preserve"><value>Your seat is noted.</value></data>
   <data name="cart.selectionFallback" xml:space="preserve"><value>Selection</value></data>
-  <data name="cart.submit" xml:space="preserve"><value>Send to the 106/1 bar</value></data>
+  <data name="cart.submit" xml:space="preserve"><value>Send order</value></data>
   <data name="cart.subtitle" xml:space="preserve"><value>Quietly prepared. Confirm when ready.</value></data>
   <data name="cart.tableLabel" xml:space="preserve"><value>Table</value></data>
   <data name="cart.tableLine" xml:space="preserve"><value>Table {label}</value></data>
-  <data name="cart.tableMetaShort" xml:space="preserve"><value>Table {label} · 106/1 Nguyễn Thị Minh Khai</value></data>
+  <data name="cart.tableMetaShort" xml:space="preserve"><value>Table {label}</value></data>
   <data name="cart.title" xml:space="preserve"><value>Order tray</value></data>
   <data name="cart.unitEach" xml:space="preserve"><value>each</value></data>
   <data name="checkout.bankPreviewBody" xml:space="preserve"><value>After you send the order, a transfer QR for the exact amount will appear here.</value></data>
@@ -45,7 +45,7 @@
   <data name="checkout.cashPreviewBody" xml:space="preserve"><value>After you send the order, please go to the counter to pay cash. Staff will check your order.</value></data>
   <data name="checkout.cashPreviewTitle" xml:space="preserve"><value>Pay cash</value></data>
   <data name="checkout.cashSubmittedBodyShort" xml:space="preserve"><value>Please go to the counter to pay cash.</value></data>
-  <data name="checkout.checkBillTitle" xml:space="preserve"><value>Order check bill</value></data>
+  <data name="checkout.checkBillTitle" xml:space="preserve"><value>Review your order</value></data>
   <data name="checkout.choosePayment" xml:space="preserve"><value>Choose payment method</value></data>
   <data name="checkout.choosePaymentMethod" xml:space="preserve"><value>Choose how to pay</value></data>
   <data name="checkout.continueToPayment" xml:space="preserve"><value>Choose payment method</value></data>
@@ -60,7 +60,7 @@
   <data name="checkout.customerNoteHelper" xml:space="preserve"><value>We will try to follow your note when preparing your order.</value></data>
   <data name="checkout.customerNoteLabel" xml:space="preserve"><value>Note for the café</value></data>
   <data name="checkout.customerNotePlaceholder" xml:space="preserve"><value>e.g. less ice, less sugar, no cream...</value></data>
-  <data name="checkout.estimatedTotal" xml:space="preserve"><value>Estimated total</value></data>
+  <data name="checkout.estimatedTotal" xml:space="preserve"><value>Subtotal</value></data>
   <data name="checkout.paidReceiptTitle" xml:space="preserve"><value>Paid receipt</value></data>
   <data name="checkout.payAtCounter" xml:space="preserve"><value>Pay at counter</value></data>
   <data name="checkout.payAtCounterHint" xml:space="preserve"><value>Pay at counter</value></data>
@@ -476,7 +476,8 @@
   <data name="menuTray.itemNoteAction" xml:space="preserve"><value>Note</value></data>
   <data name="menuTray.itemNotePlaceholder" xml:space="preserve"><value>e.g. less ice, less sugar...</value></data>
   <data name="menuTray.itemNotePreview" xml:space="preserve"><value>Note:</value></data>
-  <data name="menuTray.lineDescriptor" xml:space="preserve"><value>Curated at 106/1</value></data>
+  <data name="menuTray.tempHot" xml:space="preserve"><value>Hot</value></data>
+  <data name="menuTray.tempIced" xml:space="preserve"><value>Iced</value></data>
   <data name="menuTray.modalUnavailable" xml:space="preserve"><value>This cup is resting for now.</value></data>
   <data name="menuTray.paymentSuccessCelebrationBody" xml:space="preserve"><value>Staff have confirmed your order. We are preparing your drinks.</value></data>
   <data name="menuTray.paymentSuccessClose" xml:space="preserve"><value>Close</value></data>
@@ -544,7 +545,7 @@
   <data name="order.submitFailedRetry" xml:space="preserve"><value>We could not send your order. Please try again or call staff.</value></data>
   <data name="order.submitFailedStaff" xml:space="preserve"><value>We could not send your order — please ask a staff member.</value></data>
   <data name="order.submitted" xml:space="preserve"><value>The bar has received your order.</value></data>
-  <data name="order.submitting" xml:space="preserve"><value>Sending to the 106/1 bar…</value></data>
+  <data name="order.submitting" xml:space="preserve"><value>Sending…</value></data>
   <data name="order.tableUnavailable" xml:space="preserve"><value>This table is not available just now. A host can help you find a seat.</value></data>
   <data name="refine.brighter.label" xml:space="preserve"><value>Brighter acidity</value></data>
   <data name="refine.brighter.snippet" xml:space="preserve"><value>wants brighter acidity and a fresher taste</value></data>
@@ -596,9 +597,7 @@
   <data name="ritual.whyBelongs" xml:space="preserve"><value>Why it belongs</value></data>
   <data name="toast.addedLong" xml:space="preserve"><value>Added with care.</value></data>
   <data name="toast.addedShort" xml:space="preserve"><value>On your tray.</value></data>
-  <data name="toast.ceremonyFromBar" xml:space="preserve"><value>From Nguyễn Thị Minh Khai to your table</value></data>
   <data name="toast.ceremonyPlaced" xml:space="preserve"><value>Placed on your Annap tray</value></data>
-  <data name="toast.ceremonyPrepared" xml:space="preserve"><value>Prepared at 106/1</value></data>
   <data name="toast.ceremonySaved" xml:space="preserve"><value>Saved for this tasting round</value></data>
   <data name="toast.ceremonyWaiting" xml:space="preserve"><value>Waiting beside the Annap bar</value></data>
   <data name="toast.viewOpen" xml:space="preserve"><value>View tray</value></data>

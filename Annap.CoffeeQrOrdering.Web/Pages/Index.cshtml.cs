@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Annap.CoffeeQrOrdering.Application.Abstractions;
+using Annap.CoffeeQrOrdering.Domain;
 using Annap.CoffeeQrOrdering.Domain.Entities;
 using Annap.CoffeeQrOrdering.Infrastructure.Persistence.Configurations;
 using Annap.CoffeeQrOrdering.Web.Internal;
@@ -285,13 +286,29 @@ public sealed class IndexModel(
             .Select(x => new CategoryVm(x.Id, x.Name))
             .ToListAsync(cancellationToken);
 
-        CartCatalog = await db.MenuItems
+        var catalogRows = await db.MenuItems
             .AsNoTracking()
             .Where(x => x.IsAvailable && !x.IsArchived)
             .OrderBy(x => x.DisplaySortOrder)
             .ThenBy(x => x.Name)
-            .Select(x => new CartCatalogRowVm(x.Id, x.Name, x.Price))
+            .Select(x => new
+            {
+                x.Id,
+                x.Name,
+                x.Price,
+                CategoryName = x.Category.Name,
+                x.ItemType
+            })
             .ToListAsync(cancellationToken);
+
+        CartCatalog = catalogRows
+            .Select(x => new CartCatalogRowVm(
+                x.Id,
+                x.Name,
+                x.Price,
+                x.CategoryName,
+                DrinkServingTemperature.Supports(x.CategoryName, x.Name, x.ItemType)))
+            .ToList();
 
         // Seated arrival HTML carries live CMS payloads — discourage shared caches from serving a stale rail.
         if (VenueTableId is not null)
@@ -311,4 +328,9 @@ public sealed record SignatureDrinkVm(
 
 public sealed record CategoryVm(Guid Id, string Name);
 
-public sealed record CartCatalogRowVm(Guid Id, string Name, decimal Price);
+public sealed record CartCatalogRowVm(
+    Guid Id,
+    string Name,
+    decimal Price,
+    string CategoryName,
+    bool SupportsHotIced);

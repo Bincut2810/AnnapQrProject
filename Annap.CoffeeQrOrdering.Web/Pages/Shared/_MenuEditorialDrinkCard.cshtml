@@ -1,8 +1,10 @@
 @using Annap.CoffeeQrOrdering.Domain.Entities
+@using Annap.CoffeeQrOrdering.Web
 @using Annap.CoffeeQrOrdering.Web.Services
 @model (MenuItem Item, string CategoryName, bool IsHero, int CardIndex, int RevealDelayMs)
 @{
     var (item, categoryName, isHero, cardIndex, revealDelayMs) = Model;
+    var guestCategoryLabel = GuestCategoryDisplay.For(categoryName);
     var badgeLabel = item.IsSignature ? "Đặc trưng quán" : (item.IsFeatured ? "Khách yêu thích" : null);
     var badgeI18n = item.IsSignature ? "menu.ribbonSignature" : (item.IsFeatured ? "menu.ribbonFeatured" : null);
     var cardImg = MenuMediaResolver.TryResolveCardImageUrl(item, categoryName);
@@ -38,7 +40,7 @@
         {
             <div class="menu-editorial-card__no-poster" aria-hidden="true">
                 <span class="menu-editorial-card__no-poster-glyph">@(string.IsNullOrEmpty(item.Name) ? "·" : char.ToUpper(item.Name[0]))</span>
-                <span class="menu-editorial-card__no-poster-lbl">@categoryName</span>
+                <span class="menu-editorial-card__no-poster-lbl">@guestCategoryLabel</span>
             </div>
         }
         @if (isHero)

@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Annap.CoffeeQrOrdering.Domain;
 using Annap.CoffeeQrOrdering.Domain.Entities;
 
 namespace Annap.CoffeeQrOrdering.Application.Integration;
@@ -31,14 +32,21 @@ public static class KiotVietOutboxPayloadFactory
             KiotVietBranchId = table.KiotVietBranchId,
             TotalAmount = order.TotalAmount,
             CreatedAtUtc = snapshotAt,
-            Items = order.Items.Select(item => new KiotVietOrderPayloadLine
+            Items = order.Items.Select(item =>
             {
-                MenuItemId = item.MenuItemId,
-                Name = menuItems[item.MenuItemId].Name,
-                CatalogKey = menuItems[item.MenuItemId].CatalogKey,
-                Quantity = item.Quantity,
-                UnitPrice = item.UnitPrice,
-                Notes = item.Notes
+                var name = menuItems[item.MenuItemId].Name;
+                var temp = DrinkServingTemperature.Normalize(item.Temperature);
+                if (temp != null)
+                    name = $"{name} ({temp})";
+                return new KiotVietOrderPayloadLine
+                {
+                    MenuItemId = item.MenuItemId,
+                    Name = name,
+                    CatalogKey = menuItems[item.MenuItemId].CatalogKey,
+                    Quantity = item.Quantity,
+                    UnitPrice = item.UnitPrice,
+                    Notes = item.Notes
+                };
             }).ToList()
         };
 

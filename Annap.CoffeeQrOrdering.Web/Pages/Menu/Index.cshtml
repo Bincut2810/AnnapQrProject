@@ -2,7 +2,9 @@
 @model Annap.CoffeeQrOrdering.Web.Pages.Menu.IndexModel
 @using System.Globalization
 @using System.Text.Json
+@using Annap.CoffeeQrOrdering.Domain
 @using Annap.CoffeeQrOrdering.Domain.Entities
+@using Annap.CoffeeQrOrdering.Web
 @using Annap.CoffeeQrOrdering.Web.Services
 @{
     ViewData["Title"] = "Menu";
@@ -37,7 +39,13 @@
     };
     var catList = Model.Categories.ToList();
     var catalogJson = JsonSerializer.Serialize(
-        catList.SelectMany(c => c.Items).Select(i => new { id = i.Id, name = i.Name, price = i.Price }),
+        catList.SelectMany(c => c.Items.Select(i => new {
+            id = i.Id,
+            name = i.Name,
+            price = i.Price,
+            categoryName = c.Name,
+            supportsHotIced = DrinkServingTemperature.Supports(c.Name, i.Name, i.ItemType)
+        })),
         new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     var guestCtxJson = JsonSerializer.Serialize(
         new
@@ -116,7 +124,7 @@
                     <button type="button"
                             data-cat-nav="@cat.Id"
                             class="menu-editorial-chip">
-                        @cat.Name
+                        @GuestCategoryDisplay.For(cat.Name)
                     </button>
                 }
             </div>
@@ -156,7 +164,7 @@
             <header class="menu-chapter-head">
                 <div class="menu-chapter-head__lead">
                     <span class="menu-chapter__index" aria-hidden="true">@catIndex.ToString("00")</span>
-                    <h2 class="menu-cat-heading">@category.Name</h2>
+                    <h2 class="menu-cat-heading">@GuestCategoryDisplay.For(category.Name)</h2>
                     <p class="menu-chapter__rest" data-i18n="@chapterEditorialKey">@ChapterEditorialDefault(category.Name)</p>
                 </div>
             </header>

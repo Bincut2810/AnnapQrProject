@@ -1,6 +1,7 @@
 using Annap.CoffeeQrOrdering.Application;
 using Annap.CoffeeQrOrdering.Application.Abstractions;
 using Annap.CoffeeQrOrdering.Application.Integration;
+using Annap.CoffeeQrOrdering.Domain;
 using Annap.CoffeeQrOrdering.Domain.Entities;
 using Annap.CoffeeQrOrdering.Domain.Entities.KiotViet;
 using Annap.CoffeeQrOrdering.Domain.ValueObjects;
@@ -809,6 +810,7 @@ public static class EndpointExtensions
                             UnitPrice = menuItems[i.MenuItemId].Price,
                             Notes = string.IsNullOrWhiteSpace(i.Notes) ? null : i.Notes.Trim(),
                             CustomerNote = OrderItemCustomerNoteHelper.Normalize(i.CustomerNote, out _),
+                            Temperature = DrinkServingTemperature.Normalize(i.Temperature),
                             MenuItemName = menuItems[i.MenuItemId].Name
                         }).ToList()
                     };

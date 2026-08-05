@@ -17,6 +17,9 @@ public sealed class OrderItem : EntityBase
     /// <summary>Guest preparation note for this line (e.g. less ice).</summary>
     public string? CustomerNote { get; set; }
 
+    /// <summary>Serving temperature when the drink supports Hot/Iced: "Hot" | "Iced".</summary>
+    public string? Temperature { get; set; }
+
     /// <summary>
     /// Snapshot of the menu item name at order submit time so historical tickets remain readable
     /// even when the menu is renamed or archived later.

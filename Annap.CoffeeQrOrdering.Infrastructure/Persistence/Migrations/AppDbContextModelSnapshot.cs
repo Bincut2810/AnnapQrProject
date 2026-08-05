@@ -1208,6 +1208,10 @@ namespace Annap.CoffeeQrOrdering.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
+                    b.Property<string>("Temperature")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
 

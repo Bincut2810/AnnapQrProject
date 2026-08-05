@@ -13,16 +13,12 @@
     var detailTrayVisible = false;
     var labelTimers = typeof WeakMap !== "undefined" ? new WeakMap() : null;
     var copyLineKeys = [
-        "toast.ceremonyPrepared",
         "toast.ceremonyPlaced",
-        "toast.ceremonyFromBar",
         "toast.ceremonySaved",
         "toast.ceremonyWaiting"
     ];
     var copyLineVi = [
-        "Pha tại 106/1",
         "Đã thêm vào khay",
-        "Từ Nguyễn Thị Minh Khai đến bàn bạn",
         "Giữ cho vòng nếm này",
         "Chờ bên quầy Annap"
     ];

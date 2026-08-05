@@ -14,6 +14,7 @@ public sealed class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
         builder.Property(x => x.UnitPrice).HasPrecision(10, 2).IsRequired();
         builder.Property(x => x.Notes).HasMaxLength(1000);
         builder.Property(x => x.CustomerNote).HasMaxLength(200);
+        builder.Property(x => x.Temperature).HasMaxLength(16);
         builder.Property(x => x.MenuItemName).HasMaxLength(200);
         builder.Property(x => x.PreparedQuantity).HasDefaultValue(0).IsRequired();
         builder.Property(x => x.PreparedAtUtc);

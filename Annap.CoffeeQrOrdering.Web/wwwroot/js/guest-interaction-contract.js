@@ -81,6 +81,22 @@
         return String(gl).trim();
     }
 
+    function normalizeTemperature(v) {
+        if (v == null || v === "") return "";
+        var s = String(v).trim();
+        if (/^hot$/i.test(s)) return "Hot";
+        if (/^iced$/i.test(s)) return "Iced";
+        return "";
+    }
+
+    function lineKeyMatches(line, menuItemId, guestLabel, temperature) {
+        return (
+            line.menuItemId === menuItemId &&
+            normalizeGuestLabel(line.guestLabel) === guestLabel &&
+            normalizeTemperature(line.temperature) === normalizeTemperature(temperature)
+        );
+    }
+
     /** When group browse is active, tray UI shows only the active guest's lines unless the page uses grouped sections (buildGroupOrderTraySections). */
     function filterCartLinesForActiveGuest(lines) {
         if (!lines || !lines.length) return [];
@@ -142,6 +158,7 @@
             line.customerNote != null && String(line.customerNote).trim()
                 ? String(line.customerNote).trim().slice(0, 200)
                 : "";
+        var temperature = normalizeTemperature(line.temperature);
         return {
             menuItemId: menuItemId,
             name: name,
@@ -149,7 +166,8 @@
             qty: isFinite(qty) && qty > 0 ? qty : 0,
             guestLabel: guestLabel,
             imageSrc: imageSrc,
-            customerNote: customerNote
+            customerNote: customerNote,
+            temperature: temperature
         };
     }
 
@@ -191,10 +209,11 @@
             payload.selectionFallback != null ? String(payload.selectionFallback) : "Selection";
         var guestLabel = normalizeGuestLabel(payload.guestLabel);
         var imageSrc = payload.imageSrc != null ? String(payload.imageSrc) : "";
+        var temperature = normalizeTemperature(payload.temperature);
         var lines = readLinesRaw(cartKey);
         var ix = -1;
         for (var i = 0; i < lines.length; i++) {
-            if (lines[i].menuItemId === menuItemId && normalizeGuestLabel(lines[i].guestLabel) === guestLabel) {
+            if (lineKeyMatches(lines[i], menuItemId, guestLabel, temperature)) {
                 ix = i;
                 break;
             }
@@ -204,6 +223,7 @@
             if (name) lines[ix].name = name;
             if (isFinite(unitPrice)) lines[ix].unitPrice = unitPrice;
             if (imageSrc) lines[ix].imageSrc = imageSrc;
+            lines[ix].temperature = temperature;
         } else {
             lines.push({
                 menuItemId: menuItemId,
@@ -211,7 +231,8 @@
                 unitPrice: isFinite(unitPrice) ? unitPrice : 0,
                 qty: 1,
                 guestLabel: guestLabel,
-                imageSrc: imageSrc
+                imageSrc: imageSrc,
+                temperature: temperature
             });
         }
         writeLinesRaw(cartKey, lines);
@@ -571,7 +592,7 @@
         });
     }
 
-    function adjustItemQuantity(menuItemId, delta, guestLabel) {
+    function adjustItemQuantity(menuItemId, delta, guestLabel, temperature) {
         var d = Number(delta) || 0;
         if (!d) return;
         ensureMigrated();
@@ -579,9 +600,10 @@
         var lines = readLinesRaw(key);
         var id = String(menuItemId);
         var gl = normalizeGuestLabel(guestLabel);
+        var temp = normalizeTemperature(temperature);
         var ix = -1;
         for (var i = 0; i < lines.length; i++) {
-            if (lines[i].menuItemId === id && normalizeGuestLabel(lines[i].guestLabel) === gl) {
+            if (lineKeyMatches(lines[i], id, gl, temp)) {
                 ix = i;
                 break;
             }
@@ -594,26 +616,40 @@
         if (d < 0) emit("itemRemoved", { menuItemId: id });
     }
 
-    function removeItem(menuItemId, guestLabel) {
+    function removeItem(menuItemId, guestLabel, temperature) {
         ensureMigrated();
         var key = getCartStorageKey();
         var id = String(menuItemId);
         var gl = normalizeGuestLabel(guestLabel);
+        var temp = normalizeTemperature(temperature);
         var lines = readLinesRaw(key).filter(function (l) {
-            return !(l.menuItemId === id && normalizeGuestLabel(l.guestLabel) === gl);
+            return !lineKeyMatches(l, id, gl, temp);
         });
         writeLinesRaw(key, lines);
         emit("itemRemoved", { menuItemId: id });
         emitCartUpdated();
     }
 
-    function setLineCustomerNote(menuItemId, note, guestLabel, options) {
+    function setLineCustomerNote(menuItemId, note, guestLabel, temperature, options) {
+        // Compat: setLineCustomerNote(id, note, gl, options) when 4th arg is options object.
+        if (
+            temperature != null &&
+            typeof temperature === "object" &&
+            !Array.isArray(temperature) &&
+            options === undefined
+        ) {
+            options = temperature;
+            temperature = options.temperature;
+        }
         options = options || {};
         var silent = options.silent === true;
         ensureMigrated();
         var key = getCartStorageKey();
         var id = String(menuItemId);
         var gl = normalizeGuestLabel(guestLabel);
+        var temp = normalizeTemperature(
+            temperature !== undefined ? temperature : options.temperature
+        );
         var raw = note != null ? String(note) : "";
         var stored = silent
             ? (raw.length > 200 ? raw.slice(0, 200) : raw)
@@ -621,12 +657,73 @@
         var lines = readLinesRaw(key);
         var changed = false;
         for (var i = 0; i < lines.length; i++) {
-            if (lines[i].menuItemId === id && normalizeGuestLabel(lines[i].guestLabel) === gl) {
+            if (lineKeyMatches(lines[i], id, gl, temp)) {
                 lines[i].customerNote = stored;
                 changed = true;
             }
         }
         if (!changed) return;
+        writeLinesRaw(key, lines);
+        if (!silent) emitCartUpdated();
+    }
+
+    function setLineTemperature(menuItemId, temperature, guestLabel, options) {
+        options = options || {};
+        var silent = options.silent === true;
+        ensureMigrated();
+        var key = getCartStorageKey();
+        var id = String(menuItemId);
+        var gl = normalizeGuestLabel(guestLabel);
+        var newTemp = normalizeTemperature(temperature);
+        var fromTemp = normalizeTemperature(
+            options.fromTemperature !== undefined
+                ? options.fromTemperature
+                : options.currentTemperature !== undefined
+                  ? options.currentTemperature
+                  : ""
+        );
+        var lines = readLinesRaw(key);
+        var ix = -1;
+        if (options.fromTemperature === undefined && options.currentTemperature === undefined) {
+            // Fallback: single line for this menu+guest.
+            for (var f = 0; f < lines.length; f++) {
+                if (lines[f].menuItemId === id && normalizeGuestLabel(lines[f].guestLabel) === gl) {
+                    if (ix >= 0) {
+                        ix = -1;
+                        break;
+                    }
+                    ix = f;
+                    fromTemp = normalizeTemperature(lines[f].temperature);
+                }
+            }
+        } else {
+            for (var i = 0; i < lines.length; i++) {
+                if (lineKeyMatches(lines[i], id, gl, fromTemp)) {
+                    ix = i;
+                    break;
+                }
+            }
+        }
+        if (ix < 0) return;
+        if (normalizeTemperature(lines[ix].temperature) === newTemp) return;
+
+        var collide = -1;
+        for (var j = 0; j < lines.length; j++) {
+            if (j === ix) continue;
+            if (lineKeyMatches(lines[j], id, gl, newTemp)) {
+                collide = j;
+                break;
+            }
+        }
+        if (collide >= 0) {
+            lines[collide].qty = (Number(lines[collide].qty) || 0) + (Number(lines[ix].qty) || 0);
+            if (!lines[collide].customerNote && lines[ix].customerNote) {
+                lines[collide].customerNote = lines[ix].customerNote;
+            }
+            lines.splice(ix, 1);
+        } else {
+            lines[ix].temperature = newTemp;
+        }
         writeLinesRaw(key, lines);
         if (!silent) emitCartUpdated();
     }
@@ -787,6 +884,7 @@
         adjustItemQuantity: adjustItemQuantity,
         removeItem: removeItem,
         setLineCustomerNote: setLineCustomerNote,
+        setLineTemperature: setLineTemperature,
         clearCart: clearCart,
         clearGroupGuestLabeledLines: clearGroupGuestLabeledLines,
         readGuestOrderSession: readGuestOrderSession,

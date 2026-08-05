@@ -1,4 +1,5 @@
 using System.Data;
+using Annap.CoffeeQrOrdering.Domain;
 using Annap.CoffeeQrOrdering.Domain.Entities;
 using Annap.CoffeeQrOrdering.Infrastructure.Persistence;
 using Annap.CoffeeQrOrdering.Web.Internal;
@@ -393,6 +394,8 @@ internal static class OrderWorkflowEndpoints
             i.Id,
             i.MenuItemId,
             name = i.MenuItemName ?? i.MenuItem?.Name ?? "—",
+            temperature = i.Temperature,
+            temperatureLabel = DrinkServingTemperature.DisplayVi(i.Temperature),
             i.Quantity,
             preparedQuantity = i.PreparedQuantity,
             isPrepared = OrderItemPreparationHelper.IsItemFullyPrepared(i),

@@ -443,7 +443,8 @@
     "emptyBody": "Thêm một ly từ gợi ý hoặc thực đơn — khay sẽ hiện tại đây.",
     "emptyGuestSection": "",
     "emptyGuest": "Khách này chưa chọn ly nào — chạm một ly khi đã sẵn sàng.",
-    "lineDescriptor": "Pha tại 106/1",
+    "tempHot": "Nóng",
+    "tempIced": "Đá",
     "modalUnavailable": "Ly này hiện không có.",
     "ariaChip": "Mở khay gọi món"
   },
@@ -629,11 +630,11 @@
     "tableLabel": "Bàn",
     "seatedAt": "Đang ngồi",
     "tableLine": "Bàn {label}",
-    "seatedHint": "Chỗ ngồi của bạn đã được ghi nhận tại 106/1 Nguyễn Thị Minh Khai.",
+    "seatedHint": "Chỗ ngồi của bạn đã được ghi nhận.",
     "linkedTable": "Bàn của bạn",
-    "tableMetaShort": "Bàn {label} · 106/1 Nguyễn Thị Minh Khai",
+    "tableMetaShort": "Bàn {label}",
     "needQr": "Vui lòng quét mã QR tại bàn để gọi món.",
-    "submit": "Gửi xuống quầy 106/1",
+    "submit": "Gửi order",
     "followOrder": "Theo dõi đơn",
     "clear": "Xóa lựa chọn",
     "openSelections": "Xem lựa chọn của bạn",
@@ -646,9 +647,7 @@
     "addedShort": "Đã trên khay.",
     "addedLong": "Đã thêm cẩn thận.",
     "viewOpen": "Xem lựa chọn của bạn",
-    "ceremonyPrepared": "Pha tại 106/1",
     "ceremonyPlaced": "Đã thêm vào khay",
-    "ceremonyFromBar": "Từ Nguyễn Thị Minh Khai đến bàn bạn",
     "ceremonySaved": "Giữ cho vòng nếm này",
     "ceremonyWaiting": "Chờ bên quầy Annap"
   },
@@ -659,7 +658,7 @@
   },
   "checkout": {
     "reviewOrder": "Kiểm tra đơn",
-    "checkBillTitle": "Phiếu kiểm đơn",
+    "checkBillTitle": "Kiểm tra đơn",
     "estimatedTotal": "Tạm tính",
     "reviewNote": "Vui lòng kiểm tra lại món trước khi chọn phương thức thanh toán.",
     "reviewNoteShort": "Kiểm tra món trước khi thanh toán.",
@@ -730,7 +729,7 @@
     "transferRetry": "Tải lại mã chuyển khoản"
   },
   "order": {
-    "submitting": "Đang gửi xuống quầy 106/1…",
+    "submitting": "Đang gửi…",
     "submitted": "Quầy đã nhận order của bạn.",
     "confirmKicker": "Đã gửi",
     "confirmBody": "Quầy đã nhận order của bạn.",

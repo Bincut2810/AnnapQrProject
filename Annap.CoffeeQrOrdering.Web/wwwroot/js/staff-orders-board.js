@@ -270,7 +270,11 @@
                 : "";
         return `<li class="staff-order-card__item${st.done ? " staff-order-card__item--prepared" : ""}">
                 <div class="staff-order-card__item-row">
-                    <span class="staff-order-card__item-name">${escapeHtml(it.name || it.Name)}</span>
+                    <span class="staff-order-card__item-name">${escapeHtml(it.name || it.Name)}${
+                        it.temperatureLabel || it.temperature
+                            ? ` <span class="staff-order-card__item-temp">· ${escapeHtml(it.temperatureLabel || it.temperature)}</span>`
+                            : ""
+                    }</span>
                     <span class="staff-order-card__item-qty">×${it.quantity}</span>
                     ${prepReadonly}
                 </div>

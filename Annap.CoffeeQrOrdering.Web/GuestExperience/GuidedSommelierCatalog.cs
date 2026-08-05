@@ -411,7 +411,7 @@ public static class GuidedSommelierCatalog
                     BranchSpecialty, BeverageFamilyGrounding.Coffee,
                     new DrinkSensoryProfile { AromaFamily = "floral", Energy = "focused", CaffeineIntensity = 3 },
                     MoodKey: "focus"),
-                Opt("q0_signature", "✨ Signature", "✨ Signature", "signature", "signature",
+                Opt("q0_signature", "✨ Good Things", "✨ Good Things", "signature", "signature",
                     BranchSignature, BeverageFamilyGrounding.Signature,
                     new DrinkSensoryProfile { Energy = "playful", SocialMood = "gathered", Finish = "linger" },
                     MoodKey: "adventurous"),

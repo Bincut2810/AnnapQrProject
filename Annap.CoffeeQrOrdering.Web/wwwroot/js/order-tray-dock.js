@@ -258,10 +258,11 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     : l.id != null && l.id !== ""
                       ? l.id
                       : "";
-            return String(menuId) + "\u0001" + gl;
+            const temp = (l.temperature && String(l.temperature).trim()) || "";
+            return String(menuId) + "\u0001" + gl + "\u0001" + temp;
         }
 
-        const cartItems = new Map(); /* line key -> { id, guestLabel, name, unitPrice, qty } */
+        const cartItems = new Map(); /* line key -> { id, guestLabel, temperature, name, unitPrice, qty } */
 
         const orderTrayRoot = document.getElementById("order-tray-root");
         const orderTrayBackdrop = document.getElementById("order-tray-backdrop");
@@ -280,9 +281,11 @@ function __annapMenuRuntimeJsonSelfCheck() {
             cartItems.clear();
             for (const l of lines) {
                 const gl = (l.guestLabel && String(l.guestLabel).trim()) || "";
+                const temp = (l.temperature && String(l.temperature).trim()) || "";
                 cartItems.set(cartLineKey(l), {
                     id: l.menuItemId,
                     guestLabel: gl,
+                    temperature: temp,
                     name: l.name,
                     unitPrice: l.unitPrice,
                     qty: l.qty,
@@ -1282,7 +1285,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             if (cartFooter) {
                 const hideSubtotal = inCheckout;
                 cartFooter.classList.toggle("order-tray-cart-footer--checkout", inCheckout);
-                const subtotalRow = cartFooter.querySelector(".flex.items-baseline");
+                const subtotalRow = cartFooter.querySelector(".order-tray-subtotal-row");
                 if (subtotalRow) subtotalRow.classList.toggle("hidden", hideSubtotal);
             }
             if (backRow) {
@@ -1856,6 +1859,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 typeof window.__annapActiveGroupGuestLabel === "string"
                     ? window.__annapActiveGroupGuestLabel.trim()
                     : "";
+            const row = catalogRow(menuItemId);
+            const temperature = row && row.supportsHotIced ? "Hot" : "";
             GuestInteractionContract.addItem({
                 menuItemId,
                 name: incoming.name,
@@ -1863,7 +1868,8 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 imageSrc: incoming.imageSrc,
                 selectionFallback: tOrder("cart.selectionFallback"),
                 sourceElement: btn || null,
-                guestLabel: gl
+                guestLabel: gl,
+                temperature: temperature
             });
             linesToCartMap(GuestInteractionContract.getCartLines());
             renderCart();
@@ -2070,17 +2076,19 @@ function __annapMenuRuntimeJsonSelfCheck() {
             refreshTableIdentityUi();
         }
 
-        function setQty(id, delta, guestLabel) {
+        function setQty(id, delta, guestLabel, temperature) {
             const gl = guestLabel !== undefined && guestLabel !== null ? String(guestLabel).trim() : "";
-            GuestInteractionContract.adjustItemQuantity(id, delta, gl);
+            const temp = temperature !== undefined && temperature !== null ? String(temperature).trim() : "";
+            GuestInteractionContract.adjustItemQuantity(id, delta, gl, temp);
             linesToCartMap(GuestInteractionContract.getCartLines());
             renderCart();
             updateTraySummary();
         }
 
-        function removeLine(id, guestLabel) {
+        function removeLine(id, guestLabel, temperature) {
             const gl = guestLabel !== undefined && guestLabel !== null ? String(guestLabel).trim() : "";
-            GuestInteractionContract.removeItem(id, gl);
+            const temp = temperature !== undefined && temperature !== null ? String(temperature).trim() : "";
+            GuestInteractionContract.removeItem(id, gl, temp);
             linesToCartMap(GuestInteractionContract.getCartLines());
             renderCart();
             updateTraySummary();
@@ -2101,7 +2109,13 @@ function __annapMenuRuntimeJsonSelfCheck() {
             const stored = cartItems.get(key);
             if (stored) stored.customerNote = draft;
             if (typeof GuestInteractionContract.setLineCustomerNote === "function") {
-                GuestInteractionContract.setLineCustomerNote(line.id, draft, line.guestLabel, { silent: true });
+                GuestInteractionContract.setLineCustomerNote(
+                    line.id,
+                    draft,
+                    line.guestLabel,
+                    line.temperature || "",
+                    { silent: true }
+                );
             }
             return draft;
         }
@@ -2114,9 +2128,15 @@ function __annapMenuRuntimeJsonSelfCheck() {
             const trimmed = raw.trim() ? raw.trim().slice(0, 200) : "";
             if (stored) stored.customerNote = trimmed;
             if (typeof GuestInteractionContract.setLineCustomerNote === "function") {
-                GuestInteractionContract.setLineCustomerNote(line.id, trimmed || null, line.guestLabel, {
-                    silent: options.silent === true
-                });
+                GuestInteractionContract.setLineCustomerNote(
+                    line.id,
+                    trimmed || null,
+                    line.guestLabel,
+                    line.temperature || "",
+                    {
+                        silent: options.silent === true
+                    }
+                );
             }
             if (!trimmed && !expandedItemNoteKeys.has(key)) {
                 refreshNotePillForKey(key);
@@ -2232,9 +2252,7 @@ function __annapMenuRuntimeJsonSelfCheck() {
             }
 
             function descriptorForLine(line) {
-                const gl = line.guestLabel || "";
-                if (gl) return gl;
-                return trayCopy("menuTray.lineDescriptor");
+                return (line.guestLabel && String(line.guestLabel).trim()) || "";
             }
 
             function appendMenuLineRow(line, rowIndex) {
@@ -2280,9 +2298,70 @@ function __annapMenuRuntimeJsonSelfCheck() {
                         notePreviewLabel + " " + noteText
                     )}</p>`;
                 }
+                const descriptor = descriptorForLine(line);
+                const descriptorHtml = descriptor
+                    ? `<p class="tray-correspondence-card__note">${escapeHtml(descriptor)}</p>`
+                    : "";
                 letter.innerHTML = `<p class="tray-correspondence-card__name">${escapeHtml(line.name)}</p>
-                    <p class="tray-correspondence-card__note">${escapeHtml(descriptorForLine(line))}</p>
+                    ${descriptorHtml}
                     ${noteBlock}`;
+
+                const catalog = catalogRow(line.id);
+                const showTemp =
+                    !!(catalog && catalog.supportsHotIced) ||
+                    !!(line.temperature && String(line.temperature).trim());
+                if (showTemp) {
+                    const currentTemp = (line.temperature && String(line.temperature).trim()) || "Hot";
+                    const tempGroup = document.createElement("div");
+                    tempGroup.className = "tray-line-temp";
+                    tempGroup.setAttribute("role", "radiogroup");
+                    tempGroup.setAttribute(
+                        "aria-label",
+                        tOrder("menuTray.tempHot") + " / " + tOrder("menuTray.tempIced")
+                    );
+                    const radioName = "temp-" + noteKey.replace(/[^\w-]/g, "_");
+                    ["Hot", "Iced"].forEach(function (val) {
+                        const label = document.createElement("label");
+                        label.className = "tray-line-temp__opt";
+                        const input = document.createElement("input");
+                        input.type = "radio";
+                        input.name = radioName;
+                        input.value = val;
+                        input.checked = currentTemp === val;
+                        input.addEventListener("change", function () {
+                            if (!input.checked) return;
+                            if (typeof GuestInteractionContract.setLineTemperature === "function") {
+                                GuestInteractionContract.setLineTemperature(
+                                    line.id,
+                                    val,
+                                    line.guestLabel || "",
+                                    { fromTemperature: line.temperature || "" }
+                                );
+                            }
+                            linesToCartMap(GuestInteractionContract.getCartLines());
+                            renderCart();
+                            updateTraySummary();
+                        });
+                        label.appendChild(input);
+                        label.appendChild(
+                            document.createTextNode(
+                                " " +
+                                    (val === "Hot"
+                                        ? tOrder("menuTray.tempHot") || "Hot"
+                                        : tOrder("menuTray.tempIced") || "Iced")
+                            )
+                        );
+                        tempGroup.appendChild(label);
+                    });
+                    const nameEl = letter.querySelector(".tray-correspondence-card__name");
+                    if (nameEl && nameEl.nextSibling) {
+                        letter.insertBefore(tempGroup, nameEl.nextSibling);
+                    } else if (nameEl) {
+                        nameEl.after(tempGroup);
+                    } else {
+                        letter.insertBefore(tempGroup, letter.firstChild);
+                    }
+                }
 
                 const noteToggle = document.createElement("button");
                 noteToggle.type = "button";
@@ -2344,7 +2423,9 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 minus.type = "button";
                 minus.className = "order-tray-qty guest-hit";
                 minus.textContent = "\u2212";
-                minus.addEventListener("click", () => setQty(line.id, -1, line.guestLabel));
+                minus.addEventListener("click", () =>
+                    setQty(line.id, -1, line.guestLabel, line.temperature)
+                );
 
                 const qtyEl = document.createElement("span");
                 qtyEl.className = "tray-correspondence-card__qty";
@@ -2354,7 +2435,9 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 plus.type = "button";
                 plus.className = "order-tray-qty guest-hit";
                 plus.textContent = "+";
-                plus.addEventListener("click", () => setQty(line.id, 1, line.guestLabel));
+                plus.addEventListener("click", () =>
+                    setQty(line.id, 1, line.guestLabel, line.temperature)
+                );
 
                 qtyRing.appendChild(minus);
                 qtyRing.appendChild(qtyEl);
@@ -2369,7 +2452,9 @@ function __annapMenuRuntimeJsonSelfCheck() {
                 removeBtn.className = "tray-correspondence-card__release order-tray-remove";
                 removeBtn.setAttribute("aria-label", (tOrder("menuTray.remove")) + " " + line.name);
                 removeBtn.textContent = "×";
-                removeBtn.addEventListener("click", () => removeLine(line.id, line.guestLabel));
+                removeBtn.addEventListener("click", () =>
+                    removeLine(line.id, line.guestLabel, line.temperature)
+                );
 
                 actions.appendChild(qtyRing);
                 actions.appendChild(lineTotal);
@@ -2497,6 +2582,12 @@ function __annapMenuRuntimeJsonSelfCheck() {
                     };
                     const cn = l.customerNote && String(l.customerNote).trim() ? String(l.customerNote).trim() : "";
                     if (cn) item.customerNote = cn;
+                    let temp = l.temperature && String(l.temperature).trim() ? String(l.temperature).trim() : "";
+                    if (!temp) {
+                        const row = catalogRow(l.id);
+                        if (row && row.supportsHotIced) temp = "Hot";
+                    }
+                    if (temp) item.temperature = temp;
                     return item;
                 });
 

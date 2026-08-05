@@ -13,7 +13,13 @@
         ViewData["CompactGuestHeader"] = true;
     }
     var cartCatalogJson = JsonSerializer.Serialize(
-        Model.CartCatalog.Select(r => new { id = r.Id, name = r.Name, price = r.Price }),
+        Model.CartCatalog.Select(r => new {
+            id = r.Id,
+            name = r.Name,
+            price = r.Price,
+            categoryName = r.CategoryName,
+            supportsHotIced = r.SupportsHotIced
+        }),
         new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     var guestCtxJson = JsonSerializer.Serialize(
         new
@@ -163,7 +169,7 @@ else
                         <div class="min-w-0">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="min-w-0">
-                                    <p class="text-xs tracking-[0.28em] text-[rgb(var(--muted-2))] uppercase">@drink.CategoryName</p>
+                                    <p class="text-xs tracking-[0.28em] text-[rgb(var(--muted-2))] uppercase">@GuestCategoryDisplay.For(drink.CategoryName)</p>
                                     <h3 class="mt-3 text-lg sm:text-xl font-semibold tracking-tight text-[rgb(var(--fg))]">@drink.Name</h3>
                                     @if (!string.IsNullOrWhiteSpace(drink.Subtitle))
                                     {

@@ -14,13 +14,13 @@
   <data name="cart.openSelections" xml:space="preserve"><value>Xem lựa chọn của bạn</value></data>
   <data name="cart.pricesNote" xml:space="preserve"><value>Giá xác nhận khi gửi đơn.</value></data>
   <data name="cart.seatedAt" xml:space="preserve"><value>Đang ngồi</value></data>
-  <data name="cart.seatedHint" xml:space="preserve"><value>Chỗ ngồi của bạn đã được ghi nhận tại 106/1 Nguyễn Thị Minh Khai.</value></data>
+  <data name="cart.seatedHint" xml:space="preserve"><value>Chỗ ngồi của bạn đã được ghi nhận.</value></data>
   <data name="cart.selectionFallback" xml:space="preserve"><value>Món chọn</value></data>
-  <data name="cart.submit" xml:space="preserve"><value>Gửi xuống quầy 106/1</value></data>
+  <data name="cart.submit" xml:space="preserve"><value>Gửi order</value></data>
   <data name="cart.subtitle" xml:space="preserve"><value>Chuẩn bị nhẹ. Xác nhận khi bạn sẵn sàng.</value></data>
   <data name="cart.tableLabel" xml:space="preserve"><value>Bàn</value></data>
   <data name="cart.tableLine" xml:space="preserve"><value>Bàn {label}</value></data>
-  <data name="cart.tableMetaShort" xml:space="preserve"><value>Bàn {label} · 106/1 Nguyễn Thị Minh Khai</value></data>
+  <data name="cart.tableMetaShort" xml:space="preserve"><value>Bàn {label}</value></data>
   <data name="cart.title" xml:space="preserve"><value>Lựa chọn của bạn</value></data>
   <data name="cart.unitEach" xml:space="preserve"><value>mỗi ly</value></data>
   <data name="checkout.bankPreviewBody" xml:space="preserve"><value>Sau khi gửi đơn, mã QR chuyển khoản đúng số tiền sẽ hiện tại đây.</value></data>
@@ -45,7 +45,7 @@
   <data name="checkout.cashPreviewBody" xml:space="preserve"><value>Sau khi gửi đơn, vui lòng đến quầy để thanh toán bằng tiền mặt. Nhân viên sẽ kiểm tra lại đơn của bạn.</value></data>
   <data name="checkout.cashPreviewTitle" xml:space="preserve"><value>Thanh toán tiền mặt</value></data>
   <data name="checkout.cashSubmittedBodyShort" xml:space="preserve"><value>Vui lòng đến quầy để thanh toán bằng tiền mặt.</value></data>
-  <data name="checkout.checkBillTitle" xml:space="preserve"><value>Phiếu kiểm đơn</value></data>
+  <data name="checkout.checkBillTitle" xml:space="preserve"><value>Kiểm tra đơn</value></data>
   <data name="checkout.choosePayment" xml:space="preserve"><value>Chọn phương thức thanh toán</value></data>
   <data name="checkout.choosePaymentMethod" xml:space="preserve"><value>Chọn cách thanh toán</value></data>
   <data name="checkout.continueToPayment" xml:space="preserve"><value>Chọn phương thức thanh toán</value></data>
@@ -476,7 +476,8 @@
   <data name="menuTray.itemNoteAction" xml:space="preserve"><value>Ghi chú</value></data>
   <data name="menuTray.itemNotePlaceholder" xml:space="preserve"><value>Ví dụ: ít đá, ít đường...</value></data>
   <data name="menuTray.itemNotePreview" xml:space="preserve"><value>Ghi chú:</value></data>
-  <data name="menuTray.lineDescriptor" xml:space="preserve"><value>Pha tại 106/1</value></data>
+  <data name="menuTray.tempHot" xml:space="preserve"><value>Nóng</value></data>
+  <data name="menuTray.tempIced" xml:space="preserve"><value>Đá</value></data>
   <data name="menuTray.modalUnavailable" xml:space="preserve"><value>Ly này hiện không có.</value></data>
   <data name="menuTray.paymentSuccessCelebrationBody" xml:space="preserve"><value>Đơn của bạn đã được nhân viên xác nhận. Chúng tôi đang chuẩn bị món.</value></data>
   <data name="menuTray.paymentSuccessClose" xml:space="preserve"><value>Đóng</value></data>
@@ -544,7 +545,7 @@
   <data name="order.submitFailedRetry" xml:space="preserve"><value>Không gửi được đơn. Vui lòng thử lại hoặc gọi nhân viên.</value></data>
   <data name="order.submitFailedStaff" xml:space="preserve"><value>Không gửi được đơn, vui lòng gọi nhân viên.</value></data>
   <data name="order.submitted" xml:space="preserve"><value>Quầy đã nhận order của bạn.</value></data>
-  <data name="order.submitting" xml:space="preserve"><value>Đang gửi xuống quầy 106/1…</value></data>
+  <data name="order.submitting" xml:space="preserve"><value>Đang gửi…</value></data>
   <data name="order.tableUnavailable" xml:space="preserve"><value>Bàn này hiện chưa mở. Nhờ người dẫn giúp bạn chọn chỗ nhé.</value></data>
   <data name="refine.brighter.label" xml:space="preserve"><value>Vị thanh và mở</value></data>
   <data name="refine.brighter.snippet" xml:space="preserve"><value>muốn vị sáng và chua thanh hơn</value></data>
@@ -596,9 +597,7 @@
   <data name="ritual.whyBelongs" xml:space="preserve"><value>Vì sao hợp nhịp này</value></data>
   <data name="toast.addedLong" xml:space="preserve"><value>Đã thêm cẩn thận.</value></data>
   <data name="toast.addedShort" xml:space="preserve"><value>Đã trên khay.</value></data>
-  <data name="toast.ceremonyFromBar" xml:space="preserve"><value>Từ Nguyễn Thị Minh Khai đến bàn bạn</value></data>
   <data name="toast.ceremonyPlaced" xml:space="preserve"><value>Đã thêm vào khay</value></data>
-  <data name="toast.ceremonyPrepared" xml:space="preserve"><value>Pha tại 106/1</value></data>
   <data name="toast.ceremonySaved" xml:space="preserve"><value>Giữ cho vòng nếm này</value></data>
   <data name="toast.ceremonyWaiting" xml:space="preserve"><value>Chờ bên quầy Annap</value></data>
   <data name="toast.viewOpen" xml:space="preserve"><value>Xem lựa chọn của bạn</value></data>
